@@ -1,7 +1,11 @@
 name: APK bauen
 
+permissions:
+  contents: write
+
 on:
   push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -50,3 +54,14 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      - name: APK im Branch "apk" ablegen (einfacher Download)
+        run: |
+          mkdir -p /tmp/out && cp android/app/build/outputs/apk/debug/app-debug.apk /tmp/out/Pflanzen-Wohnung.apk
+          cd /tmp/out
+          git init -q -b apk
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add Pflanzen-Wohnung.apk
+          git commit -qm "APK aus ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" apk
