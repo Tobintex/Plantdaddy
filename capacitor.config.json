@@ -1,0 +1,14 @@
+{
+  "appId": "de.tobi.pflanzenwohnung",
+  "appName": "Pflanzen-Wohnung",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#efede9"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_leaf",
+      "iconColor": "#4f7a5a"
+    }
+  }
+}
