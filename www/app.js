@@ -74,7 +74,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-seg button.on{background:var(--ink);color:#fff}
 .pf-hint{position:absolute;left:50%;bottom:calc(var(--sab) + 72px);transform:translateX(-50%);
   background:rgba(34,35,31,.86);color:#fff;font-size:13.5px;font-weight:500;padding:10px 16px;border-radius:999px;
-  white-space:nowrap;pointer-events:none;box-shadow:var(--shadow);transition:opacity .3s, transform .3s}
+  white-space:nowrap;pointer-events:none;box-shadow:var(--shadow);transition:opacity .3s, transform .3s;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
 .pf-hint.hide{opacity:0;transform:translateX(-50%) translateY(8px)}
 .pf-hint .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9fd0a8;margin-right:8px;vertical-align:1px;
   animation:pfpulse 1.6s ease-in-out infinite}
@@ -83,7 +83,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   border-radius:14px;padding:11px 12px 11px 16px;display:flex;align-items:center;gap:10px;font-size:14px;box-shadow:var(--shadow);
   transition:opacity .2s,transform .2s}
 .pf-banner.hide{opacity:0;transform:translateY(-8px);pointer-events:none}
-.pf-banner span{flex:1}
+.pf-banner span{flex:1;font-size:13.5px;line-height:1.25}
 .pf-banner button{background:rgba(255,255,255,.16);padding:7px 12px;border-radius:999px;font-weight:600;font-size:13px}
 .pf-toast{position:absolute;left:50%;top:calc(var(--sat) + 64px);transform:translateX(-50%);background:var(--green-d);color:#fff;
   padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow);transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap}
@@ -201,6 +201,17 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-water:active{transform:scale(.96)}
 .pf-water.done{background:#fff;color:var(--green-d);box-shadow:none;border:1px solid rgba(60,98,71,.25)}
 #pf-sheet .pf-field{padding:7px 0}
+.pf-fb{margin-top:9px;padding-top:9px;border-top:1px solid rgba(60,98,71,.14)}
+.pf-fb .q{font-size:13px;font-weight:650;color:var(--ink);display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.pf-fb .q small{font-weight:500;color:var(--ink2);font-size:11.5px;white-space:nowrap}
+.pf-fb .r{display:flex;gap:6px;margin-top:6px;align-items:center}
+.pf-fb .r button{height:34px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.85);font-weight:650;font-size:13px;color:var(--ink2);flex:none}
+.pf-fb .r button.ok{background:var(--green);color:#fff}
+.pf-fb .r label{flex:1;min-width:0;display:flex;align-items:center;background:#fff;border-radius:999px;padding:0 12px;height:34px;border:1px solid var(--line)}
+.pf-fb .r input{flex:1;min-width:0;width:100%;border:0;outline:0;background:none;font:inherit;font-size:15px;font-weight:650;color:var(--ink);user-select:text;-webkit-user-select:text}
+.pf-fb .r label span{color:var(--ink3);font-size:13px;font-weight:600}
+.pf-chip.adj{background:#fff;color:var(--green-d)}
+.pf-why .pf-mini{margin-top:6px;height:30px;padding:0 12px;border-radius:999px;background:#f1efeb;font-weight:650;font-size:12.5px;color:var(--ink2)}
 #pf-sheet .pf-field label,#pf-sheet .pf-field .lbl{margin-bottom:5px}
 .pf-two{display:grid;grid-template-columns:1.35fr 1fr;gap:8px}
 .pf-two select{padding:10px 32px 10px 10px;font-size:15px}
@@ -302,6 +313,56 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-bp{display:inline-flex;align-items:center;gap:5px;height:28px;margin:-5px 0 -3px;padding:0 11px 0 9px;border-radius:999px;
   background:#f7f2e2;color:#6b5514;font-weight:650;font-size:12.5px;border:1px solid #ebe0bd;white-space:nowrap}
 .pf-bp:active{transform:scale(.98)}
+/* Ausrichtung: Kompassring um die Wohnung */
+.pf-or{position:absolute;inset:0;touch-action:none;cursor:grab}
+.pf-or.hide,.pf-orb.hide,.pf-orc.hide{display:none}
+.pf-or svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pf-or text{font-family:inherit;font-weight:700;user-select:none}
+.pf-orb{position:absolute;left:12px;right:12px;top:calc(var(--sat) + 10px);margin:0 auto;max-width:440px;background:var(--ink);color:#fff;border-radius:16px;
+  padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.pf-orb .t{flex:1;min-width:0}
+.pf-orb .t b{display:block;font-size:15px;font-weight:700}
+.pf-orb .t span{display:block;font-size:12px;color:#d6d4cc;line-height:1.3}
+.pf-orb button{flex:none;height:36px;padding:0 13px;border-radius:999px;font-weight:700;font-size:13.5px;background:rgba(255,255,255,.16);color:#fff}
+.pf-orb button.ok{background:#fff;color:var(--ink)}
+.pf-orc{position:absolute;left:12px;right:12px;bottom:calc(var(--sab) + 12px);margin:0 auto;max-width:440px;background:var(--card);border-radius:18px;
+  box-shadow:var(--shadow);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.pf-orc .v{display:flex;align-items:baseline;gap:8px}
+.pf-orc .v b{font-size:24px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pf-orc .v span{font-size:13px;color:var(--ink2);font-weight:600}
+.pf-orc p{margin:0;font-size:12.5px;color:var(--ink2);line-height:1.35}
+.pf-orc .a{display:flex;gap:8px}
+.pf-orc .a button{flex:1;height:38px;border-radius:12px;background:#f1efeb;font-weight:650;font-size:13.5px}
+.pf-orc .a button.sens{background:var(--blue-l);color:var(--blue-d)}
+.pf-orc .a button.sens.on{background:var(--blue);color:#fff}
+.pf-orc .msg{font-size:12px;color:var(--blue-d);font-weight:600}
+.pf-orc .msg:empty{display:none}
+.pf-orient .pf-top,.pf-orient .pf-bottom,.pf-orient .pf-lp,.pf-orient .pf-dbn{opacity:0;pointer-events:none!important}
+.pf-orient .pf-top > *,.pf-orient .pf-bottom > *{pointer-events:none!important}
+.pf-orient .pf-badge.mini{visibility:hidden}
+.pf-set-or{display:flex;align-items:center;gap:10px;padding:4px 0 12px}
+.pf-set-or .v{flex:1;min-width:0}
+.pf-set-or .v b{display:block;font-size:20px;font-weight:750;font-variant-numeric:tabular-nums}
+.pf-set-or .v span{font-size:12.5px;color:var(--ink3)}
+.pf-set-or button{height:40px;padding:0 14px;border-radius:12px;background:var(--green);color:#fff;font-weight:700;font-size:14px;flex:none}
+/* Was passt wohin? */
+.pf-lpb{height:30px;border-radius:999px;background:#f1efeb;font-weight:650;font-size:12.5px;color:var(--green-d);display:flex;align-items:center;justify-content:center;gap:6px}
+.pf-rc{border-top:1px solid #efede9;padding:12px 0 10px}
+.pf-rc:first-of-type{border-top:0}
+.pf-rc h3{margin:0;font-size:15.5px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.pf-rc h3 small{font-size:12px;font-weight:600;color:var(--ink3);white-space:nowrap}
+.pf-rc .m{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.pf-rbar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 4px;background:#eee}
+.pf-rbar i{display:block;height:100%}
+.pf-rleg{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11.5px;color:var(--ink2);font-weight:600}
+.pf-rleg span{display:inline-flex;align-items:center;gap:4px}
+.pf-rleg i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.pf-rp{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pf-rg{margin-top:9px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.pf-rp button{display:inline-flex;align-items:center;gap:5px;background:var(--green-l);color:var(--green-d);border-radius:999px;padding:5px 10px 5px 7px;font-size:13px;font-weight:650;max-width:100%}
+.pf-rp button small{font-weight:600;color:#5d7c66;font-size:11.5px}
+.pf-rp button.more{background:#f1efeb;color:var(--ink2);padding:5px 10px}
+.pf-rnone{font-size:12.5px;color:var(--ink3);margin-top:8px}
 .pf-lit .pf-room{color:rgba(255,255,255,.95);text-shadow:0 0 3px rgba(20,24,30,.75),0 0 8px rgba(20,24,30,.45)}
 .pf-lit .pf-room small{color:rgba(255,255,255,.8)}
 `;
@@ -333,14 +394,15 @@ root.innerHTML = `
     <div class="pf-title"><b>Meine Wohnung</b><span id="pf-addr"></span></div>
     <button class="pf-btn" id="pf-list-btn">${ICONS.list}<span>Meine Pflanzen</span><span class="cnt" id="pf-count">0</span></button>
   </div>
-  <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe auf den Boden, um eine Pflanze zu platzieren</div>
-  <div class="pf-banner hide" id="pf-banner"><span>Tippe auf die neue Stelle für die Pflanze</span><button id="pf-move-cancel">Abbrechen</button></div>
+  <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe auf Boden oder Fenster, um zu pflanzen</div>
+  <div class="pf-banner hide" id="pf-banner"><span>Tippe auf die neue Stelle – oder ein Fenster für die Fensterbank</span><button id="pf-move-cancel">Abbrechen</button></div>
   <div class="pf-dbn hide" id="pf-dbn" role="status"><span id="pf-dbn-t"></span><button id="pf-dbn-go">Ansehen</button><button id="pf-dbn-x" aria-label="Hinweis schließen">${ICONS.close}</button></div>
   <div class="pf-toast hide" id="pf-toast"></div>
   <div class="pf-lp hide" id="pf-lp" aria-label="Lichtkarte">
     <div class="pf-lr"><span>Monat</span><div class="pf-ms" id="pf-lm"></div></div>
     <div class="pf-lr"><span>Höhe</span><div class="pf-ms" id="pf-lh"></div></div>
     <div class="pf-leg" id="pf-leg"></div>
+    <button class="pf-lpb" id="pf-recs-btn" type="button">🪴 Was passt wohin? · Ideen je Raum</button>
   </div>
   <div class="pf-bottom" id="pf-bottom">
     <div class="pf-bl">
@@ -352,6 +414,15 @@ root.innerHTML = `
   <div class="pf-bb hide" id="pf-bb" role="status"><div class="pf-emoji" id="pf-bb-e"></div>
     <div class="t"><b id="pf-bb-t"></b><span id="pf-bb-s"></span><div class="pf-leg" id="pf-bb-leg"></div></div>
     <button class="pf-x" id="pf-bb-x" aria-label="Beste Plätze beenden">${ICONS.close}</button></div>
+  <div class="pf-or hide" id="pf-or" aria-label="Kompassring – zum Drehen ziehen"><svg id="pf-or-svg"></svg></div>
+  <div class="pf-orb hide" id="pf-orb"><div class="t"><b>Ausrichtung einstellen</b><span>Ring drehen, bis die Himmelsrichtungen zur echten Wohnung passen</span></div>
+    <button id="or-cancel">Abbrechen</button><button class="ok" id="or-done">Fertig</button></div>
+  <div class="pf-orc hide" id="pf-orc">
+    <div class="v"><b id="or-top"></b><span id="or-sub"></span></div>
+    <p>Halte das Handy flach und dreh dich, bis der Grundriss so liegt wie deine echte Wohnung. Dann sollte oben am Ring dieselbe Gradzahl stehen wie in deiner Kompass-App.</p>
+    <div class="msg" id="or-msg"></div>
+    <div class="a"><button id="or-reset">Zurücksetzen</button><button class="sens" id="or-sens">📱 Handy-Kompass</button></div>
+  </div>
   <div class="pf-scrim" id="pf-scrim"></div>
   <section class="pf-sheet" id="pf-sheet" aria-label="Pflanze"></section>
   <section class="pf-sheet" id="pf-list" aria-label="Meine Pflanzen"><div class="pf-grab"><i></i></div><div class="pf-sheet-body" id="pf-list-body"></div></section>
@@ -488,6 +559,8 @@ function load() {
             standCm: Math.round(num(p.standCm, 0, 0, 150)),
             ...wateringFields(p),
             nick: cleanNick(p.nick),
+            waterAdj: Math.round(num(p.waterAdj, 1, ADJ_MIN, ADJ_MAX) * 100) / 100,
+            fbAt: validIso(p.fbAt, Date.now() + 86400000),
           };
         });
     }
@@ -516,6 +589,17 @@ function vecCompass(nx, ny) {
   return (((planUpDeg() + ang) % 360) + 360) % 360;
 }
 const plantDef = (id) => PLANTS.find((p) => p.id === id) || PLANTS[0] || { id: 'x', name: 'Pflanze', emoji: '🪴', color: '#4f7a5a', shape: 'bush' };
+const CATS = Array.isArray(window.PLANT_CATEGORIES) ? window.PLANT_CATEGORIES : [];
+// Pflanzenauswahl nach Kategorien gruppiert (innerhalb alphabetisch)
+function plantOptionsHTML(cur) {
+  const opt = (d) => `<option value="${esc(d.id)}"${d.id === cur ? ' selected' : ''}>${d.emoji || '🪴'}  ${esc(d.name)}</option>`;
+  const byName = (a, b) => a.name.localeCompare(b.name, 'de');
+  const known = new Set(CATS.map((c) => c.id));
+  const groups = CATS.map((c) => ({ name: c.name, list: PLANTS.filter((d) => d.cat === c.id).sort(byName) })).filter((g) => g.list.length);
+  const rest = PLANTS.filter((d) => !known.has(d.cat));
+  if (rest.length) groups.push({ name: 'Weitere', list: rest.sort(byName) });
+  return groups.map((g) => `<optgroup label="${esc(g.name)}">${g.list.map(opt).join('')}</optgroup>`).join('');
+}
 
 /* ------------------------------------------------------------------ */
 /* Floorplan analysis                                                  */
@@ -636,8 +720,34 @@ function compute(p) {
       });
     }
   } catch (e) { console.warn('computeWater failed', e); }
+  if (r) applyAdj(p, r);
   return { a, r };
 }
+/* Rückmeldung „Wasser lief unten raus“: Faktor je Pflanze auf die Gießmenge.
+ * Ziel: ca. 15 % Ablauf – dann ist der ganze Wurzelballen nass, aber nicht zu viel. */
+const ADJ_MIN = 0.4, ADJ_MAX = 1.8, RUNOFF_TARGET = 0.15;
+const round10 = (v) => Math.round(v / 10) * 10;
+function applyAdj(p, r) {
+  const k = +p.waterAdj || 1;
+  r.mlBase = r.mlPerWatering;
+  if (isDip(r) || Math.abs(k - 1) < 0.005) { r.adj = 1; return r; }
+  r.adj = k;
+  r.mlPerWatering = Math.max(20, round10(r.mlBase * k));
+  r.mlPerWeek = Math.max(10, round10(r.mlPerWatering * 7 / Math.max(1, r.intervalDays)));
+  return r;
+}
+// neuer Faktor aus gemessenem Ablauf (ml); 0 = nichts kam raus
+function adjFromRunoff(k, poured, runoff) {
+  let f;
+  if (!(runoff > 0)) f = 1.1; // nichts kam unten an → etwas mehr
+  else {
+    const ro = Math.min(runoff, poured * 0.9);
+    const ideal = (poured - ro) / (1 - RUNOFF_TARGET); // aufgenommen + 15 % Ablauf
+    f = 1 + 0.7 * (clamp(ideal / poured, 0.5, 1.3) - 1); // gedämpft: eine Messung ist nur ein Hinweis
+  }
+  return Math.round(clamp(k * f, ADJ_MIN, ADJ_MAX) * 100) / 100;
+}
+const pctTxt = (k) => { const v = Math.round((k - 1) * 100); return (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v) + ' %'; };
 function windowText(a) {
   if (!a) return '–';
   if (a.outdoor) return a.windowCompassDeg != null ? `Draußen · Ausrichtung ${compassName(a.windowCompassDeg)}` : 'Draußen';
@@ -1013,6 +1123,7 @@ function addWall(w) {
     m.position.set(w.a[0] + ux * sm, y0 + h / 2, w.a[1] + uy * sm);
     m.rotation.y = ang; m.castShadow = true; m.receiveShadow = true; m.userData.kind = 'wall';
     group.add(m);
+    box.last = m;
     if (y1 >= CUT - 1e-4) {
       // abgerundete Kappe auf der Schnittkante (wird je Wand zu einem Mesh zusammengeführt)
       const cl = len + 2 * CAP_OVER - 2 * CAP_B, cw = t + 2 * CAP_OVER - 2 * CAP_B;
@@ -1030,24 +1141,25 @@ function addWall(w) {
     if (s0 > cur) box(cur, s0, 0, WH, cur === 0 ? ext0 : 0, 0);
     const sill = o.type === 'window' ? (+o.sill || 0) : 0;
     const top = Math.min(WH, sill + (+o.height || (o.type === 'window' ? 1.4 : 2.05)));
-    if (sill > 0) box(s0, s1, 0, sill);
+    box.last = null;
+    if (sill > 0) { box(s0, s1, 0, sill); if (box.last && o.type === 'window') box.last.userData.opening = o; }
     if (top < WH) box(s0, s1, top, WH);
     if (o.type === 'window' || o.type === 'balcony-door') {
       const gTop = Math.min(top, CUT);
       const len = s1 - s0, h = Math.max(0.05, gTop - sill), sm = (s0 + s1) / 2;
       const g = new THREE.Mesh(new THREE.BoxGeometry(len, h, 0.02), glass);
       g.position.set(w.a[0] + ux * sm, sill + h / 2, w.a[1] + uy * sm); g.rotation.y = ang; g.renderOrder = 2;
-      g.userData.kind = 'glass';
+      g.userData.kind = 'glass'; g.userData.opening = o;
       group.add(g);
       // schlanker Rahmen
       const fr = 0.04;
       [[len, fr, sill + fr / 2], [len, fr, sill + h - fr / 2]].forEach(([l, hh, y]) => {
         const f = new THREE.Mesh(new THREE.BoxGeometry(l, hh, 0.07), frame);
-        f.position.set(w.a[0] + ux * sm, y, w.a[1] + uy * sm); f.rotation.y = ang; group.add(f);
+        f.position.set(w.a[0] + ux * sm, y, w.a[1] + uy * sm); f.rotation.y = ang; f.userData.opening = o; group.add(f);
       });
       if (len > 1.3 && o.type === 'window') {
         const f = new THREE.Mesh(new THREE.BoxGeometry(fr, h, 0.07), frame);
-        f.position.set(w.a[0] + ux * sm, sill + h / 2, w.a[1] + uy * sm); f.rotation.y = ang; group.add(f);
+        f.position.set(w.a[0] + ux * sm, sill + h / 2, w.a[1] + uy * sm); f.rotation.y = ang; f.userData.opening = o; group.add(f);
       }
     }
     cur = Math.max(cur, s1);
@@ -1145,6 +1257,53 @@ const sphereGeo = new THREE.IcosahedronGeometry(1, 1);
 const coneGeo = new THREE.ConeGeometry(1, 1, 5, 1);
 const cylGeo = new THREE.CylinderGeometry(1, 1, 1, 7);
 
+// Möbel unter der Pflanze: ab 60 cm Tisch (Platte + 4 Beine), ab 25 cm runder Hocker, darunter ein Holzpodest
+const legMat = new THREE.MeshStandardMaterial({ color: 0xa98763, roughness: 0.8 });
+const topMat = new THREE.MeshStandardMaterial({ color: 0xd9bf96, roughness: 0.7 });
+function buildStand(root, standM, d, R) {
+  const add = (geo, mat, x, y, z) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; m.userData.kind = 'stand';
+    root.add(m); return m;
+  };
+  if (standM >= 0.6) {
+    // Tisch: Platte etwas größer als der Topf (mind. 60 × 60 cm), leicht gedreht wirkt wohnlicher
+    const sz = Math.max(0.6, d + 0.25), th = 0.035, leg = 0.045, ins = 0.05;
+    const grp = new THREE.Group(); root.add(grp);
+    grp.rotation.y = (R() - 0.5) * 0.5;
+    const tp = new THREE.Mesh(new THREE.BoxGeometry(sz, th, sz * 0.85), topMat);
+    tp.position.y = standM - th / 2; grp.add(tp);
+    const lg = new THREE.BoxGeometry(leg, standM - th, leg);
+    for (const [sx, sz2] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      const m = new THREE.Mesh(lg, legMat);
+      m.position.set(sx * (sz / 2 - ins), (standM - th) / 2, sz2 * (sz * 0.85 / 2 - ins)); grp.add(m);
+    }
+    // Zarge
+    const ap = 0.06;
+    for (const [w, dd, x, z] of [[sz - 2 * ins, 0.02, 0, sz * 0.85 / 2 - ins], [sz - 2 * ins, 0.02, 0, -(sz * 0.85 / 2 - ins)], [0.02, sz * 0.85 - 2 * ins, sz / 2 - ins, 0], [0.02, sz * 0.85 - 2 * ins, -(sz / 2 - ins), 0]]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, ap, dd), legMat); m.position.set(x, standM - th - ap / 2, z); grp.add(m);
+    }
+    grp.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.kind = 'stand'; } });
+  } else if (standM >= 0.25) {
+    // Hocker: runde Sitzfläche, drei leicht gespreizte Beine
+    const r = Math.max(0.17, d * 0.55 + 0.04), th = 0.035;
+    add(new THREE.CylinderGeometry(r, r * 0.97, th, 28), topMat, 0, standM - th / 2, 0);
+    const lh = standM - th, spread = r * 0.25;
+    for (let k = 0; k < 3; k++) {
+      const a = k * Math.PI * 2 / 3 + 0.4;
+      const ix = Math.cos(a) * r * 0.62, iz = Math.sin(a) * r * 0.62;
+      const m = add(new THREE.CylinderGeometry(0.016, 0.013, Math.hypot(lh, spread), 8), legMat, ix + Math.cos(a) * spread / 2, lh / 2, iz + Math.sin(a) * spread / 2);
+      const phi = Math.atan2(spread, lh); // Fuß nach außen gespreizt
+      m.rotation.set(-Math.sin(a) * phi, 0, Math.cos(a) * phi);
+    }
+    // Querring
+    const ring = add(new THREE.TorusGeometry(r * 0.62 + spread * 0.55, 0.008, 6, 24), legMat, 0, lh * 0.45, 0);
+    ring.rotation.x = Math.PI / 2;
+  } else {
+    const pw = d * 1.25 + 0.06;
+    add(new THREE.BoxGeometry(pw, standM, pw), woodMat, 0, standM / 2, 0);
+  }
+}
 function buildPlant(p) {
   const def = plantDef(p.plantId);
   const R = rng(p.uid + def.id);
@@ -1171,10 +1330,7 @@ function buildPlant(p) {
       board.castShadow = true; board.receiveShadow = true; board.userData.kind = 'stand';
       root.add(board);
     } else {
-      const pw = d * 1.25 + 0.06;
-      const ped = new THREE.Mesh(new THREE.BoxGeometry(pw, standM, pw), woodMat);
-      ped.position.y = standM / 2; ped.castShadow = true; ped.receiveShadow = true; ped.userData.kind = 'stand';
-      root.add(ped);
+      buildStand(root, standM, d, rng(p.uid));
     }
   }
   root.position.set(p.x, 0.003, p.y);
@@ -1592,6 +1748,7 @@ function updateOverlay() {
   const b = toScreen(new THREE.Vector3(c.x + nx, 0, c.z + ny));
   const ang = Math.atan2(b.x - a.x, -(b.y - a.y)) * 180 / Math.PI;
   $('pf-compass-svg').style.transform = `rotate(${ang.toFixed(1)}deg)`;
+  if (orient.on) drawRing(ang);
 }
 
 const PULSE_MS = 1500;
@@ -1664,6 +1821,9 @@ function pick(sx, sy) {
   wallGroups.forEach((wg) => { if (!wg.exterior || wg.fade > 0.5) objs.push(wg.group); });
   const hits = raycaster.intersectObjects(objs, true);
   for (const h of hits) {
+    // Fenster (Glas, Rahmen, Brüstung) → Fensterbank; Position entlang des Fensters merken
+    const op = h.object.userData.opening;
+    if (op && op.type === 'window') return { type: 'window', o: op, x: h.point.x, y: h.point.z };
     if (h.object.userData.kind === 'glass' || h.object.userData.kind === 'door') continue;
     if (h.object.userData.uid) return { type: 'plant', uid: h.object.userData.uid };
     if (h.object.userData.kind === 'wall') {
@@ -1681,7 +1841,13 @@ function handleTap(sx, sy) {
   if (!hit) { if (selected && !moveMode) closeSheet(); return; }
   if (moveMode) {
     if (hit.type === 'floor') movePlantTo(hit.x, hit.y);
+    else if (hit.type === 'window' && selected) { if (placeOnSill(selected, hit.o, hit.x, hit.y)) movePlantTo(selected.x, selected.y); }
     else if (hit.type === 'plant' && hit.uid === selected?.uid) cancelMove();
+    return;
+  }
+  if (hit.type === 'window') {
+    if (selected) { closeSheet(); return; }
+    placeNewOnSill(hit.o, hit.x, hit.y);
     return;
   }
   if (hit.type === 'plant') {
@@ -1707,10 +1873,14 @@ let moveMode = false;
 let deleteArmTimer = null;
 const sheet = $('pf-sheet'), sheetBody = $('pf-sheet');
 
-function placeNew(x, y) {
+function newPlant(x, y, plantId) {
   const lastId = state.lastPlantId && PLANTS.some((p) => p.id === state.lastPlantId) ? state.lastPlantId : (PLANTS[0] && PLANTS[0].id);
   const today = nowDate().toISOString();
-  const p = { uid: uid(), plantId: lastId, x, y, potDiameterCm: 18, plantHeightCm: 50, standCm: 0, lastWateredAt: today, waterLog: [today], nick: '' };
+  return { uid: uid(), plantId: plantId || lastId, x, y, potDiameterCm: 18, plantHeightCm: 50, standCm: 0, lastWateredAt: today, waterLog: [today], nick: '', waterAdj: 1, fbAt: today }; // fbAt = heute: keine Ablauf-Frage direkt nach dem Platzieren
+}
+function placeNew(x, y) { startDraft(newPlant(x, y)); }
+function startDraft(p) {
+  if (selected) closeSheet({ restoreView: false });
   draft = p;
   if (!state.seenHint) { state.seenHint = true; save(); }
   updateHint();
@@ -1795,7 +1965,7 @@ function pct(input) {
 }
 function renderSheet(isNew) {
   const p = selected;
-  const opts = PLANTS.map((d) => `<option value="${esc(d.id)}"${d.id === p.plantId ? ' selected' : ''}>${d.emoji || '🪴'}  ${esc(d.name)}</option>`).join('');
+  const opts = plantOptionsHTML(p.plantId);
   sheetBody.innerHTML = `<div class="pf-grab"><i></i></div><div class="pf-sheet-body">
     <div class="pf-head">
       <div class="pf-emoji" id="s-emoji"></div>
@@ -1806,6 +1976,7 @@ function renderSheet(isNew) {
       <div id="s-result"></div>
       <div class="pf-due"><div class="d"><b id="s-due"></b><span id="s-last"></span></div>
         <button class="pf-water" id="s-water" type="button">✓ Gegossen</button></div>
+      <div class="pf-fb" id="s-fb" hidden></div>
     </div>
     <div class="pf-field" style="border-top:0">
       <div class="lbl pf-sthead"><label for="s-stand">Standhöhe <span class="val" id="s-stand-v"></span></label>
@@ -1878,15 +2049,31 @@ function standChips(p) {
 // Pflanze auf die Fensterbank des nächsten Fensters setzen (12 cm vor der Wand-Innenseite, innerhalb der Fensterbreite)
 function snapToSill(p) {
   const w = sillWindowAt(p.x, p.y); if (!w) return;
-  const o = w.o, L = segLen(o) || 1, n = openingNormal(o), hw = openingHalfWall(o);
+  placeOnSill(p, w.o, p.x, p.y);
+}
+// Pflanze auf die Fensterbank von Fenster o setzen; (ax, ay) = Stelle entlang des Fensters (z. B. Tipp-Punkt)
+function placeOnSill(p, o, ax, ay) {
+  const L = segLen(o) || 1, n = openingNormal(o), hw = openingHalfWall(o);
   const dx = (o.b[0] - o.a[0]) / L, dy = (o.b[1] - o.a[1]) / L;
   const m = Math.min(L / 2, p.potDiameterCm / 200 + 0.03);
-  const t = clamp((p.x - o.a[0]) * dx + (p.y - o.a[1]) * dy, m, L - m);
+  const t = clamp((ax - o.a[0]) * dx + (ay - o.a[1]) * dy, m, L - m);
   for (const off of [hw + 0.12, 0.12, hw + 0.3]) {
     const x = o.a[0] + dx * t - n[0] * off, y = o.a[1] + dy * t - n[1] * off;
-    if (pointInPoly(x, y, w.room.polygon)) { p.x = x; p.y = y; break; }
+    if (rooms.some((r) => pointInPoly(x, y, r.polygon))) {
+      p.x = x; p.y = y;
+      p.standCm = Math.round((+o.sill || 0) * 100);
+      return true;
+    }
   }
-  p.standCm = Math.round((+o.sill || 0) * 100);
+  return false;
+}
+// Tipp auf ein Fenster: neue Pflanze direkt auf die Fensterbank (kleiner Topf als Start)
+function placeNewOnSill(o, ax, ay) {
+  const p = newPlant(0, 0);
+  if (!placesFor(plantDef(p.plantId)).includes('sill')) p.plantId = 'basilikum'; // große Pflanzen gehören nicht aufs Fensterbrett
+  p.potDiameterCm = 14; p.plantHeightCm = 25;
+  if (!placeOnSill(p, o, ax, ay)) return;
+  startDraft(p);
 }
 function disarmDelete() {
   clearTimeout(deleteArmTimer);
@@ -1900,15 +2087,18 @@ function resultHTML(r, a) {
   const winChip = `<span class="pf-chip" id="s-win">${esc(windowText(a))}</span>`;
   if (isDip(r)) return `<div class="big"><span class="ml dip">Tauchen</span> <span class="ival">· ${intervalText(r.intervalDays)}</span></div>
     <div class="sub"><span>10 min in Wasser, dann abtropfen</span><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}</div>${warn}`;
+  const adjChip = r.adj && r.adj !== 1 ? `<span class="pf-chip adj" title="Aus deiner Rückmeldung zum Ablaufwasser">${ICONS.drop}angepasst ${pctTxt(r.adj)}</span>` : '';
   return `<div class="big"><span class="ml">${fmtInt(r.mlPerWatering)}<small> ml</small></span><span class="ival">${intervalText(r.intervalDays)}</span></div>
-    <div class="sub"><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}</div>${warn}`;
+    <div class="sub"><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}${adjChip}</div>${warn}`;
 }
 function whyHTML(r) {
   if (!r) return '';
   const warn = (r.warnings || []).map((w) => `<div class="pf-warn">${ICONS.warn}<span>${esc(w)}</span></div>`).join('');
   const lines = [...(r.explanation || [])];
+  if (r.adj && r.adj !== 1) lines.push(`Deine Rückmeldung zum Ablaufwasser: ${fmtInt(r.mlBase)} ml ${pctTxt(r.adj)} → ${fmtInt(r.mlPerWatering)} ml`);
   if (r.mlPerWeek != null && !isDip(r)) lines.push(`≈ ${fmtInt(r.mlPerWeek)} ml pro Woche`);
-  return `${warn}${lines.length ? `<ul>${lines.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`;
+  const reset = r.adj && r.adj !== 1 ? '<button type="button" class="pf-mini" id="s-adj-reset">Anpassung zurücksetzen</button>' : '';
+  return `${warn}${lines.length ? `<ul>${lines.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${reset}`;
 }
 function refreshSheet() {
   const p = selected; if (!p) return;
@@ -1932,9 +2122,44 @@ function refreshSheet() {
   const justNow = p.lastWateredAt && dayNum(new Date(p.lastWateredAt)) === dayNum(nowDate());
   $('s-last').textContent = p.lastWateredAt ? `zuletzt gegossen: ${agoText(p.lastWateredAt)}` : '';
   $('s-water').classList.toggle('done', !due.due && !!justNow);
+  renderFeedback(p, r, !!justNow);
+  const rs = $('s-adj-reset');
+  if (rs) rs.addEventListener('click', () => setAdj(p, 1, 'Anpassung zurückgesetzt'));
   badge.textContent = r ? (isDip(r) ? `${def.emoji || ''} Tauchen · ${intervalText(r.intervalDays)}` : `${def.emoji || ''} ${fmtInt(r.mlPerWatering)} ml · ${intervalText(r.intervalDays)}`) : def.name;
   updateDistLine(p);
   requestRender();
+}
+// Nach dem Gießen: „Lief unten Wasser raus?“ (einmal pro Gießen)
+function renderFeedback(p, r, justNow) {
+  const box = $('s-fb'); if (!box) return;
+  const show = justNow && r && !isDip(r) && p.fbAt !== p.lastWateredAt && (state.plants.includes(p) || draft === p);
+  box.hidden = !show;
+  if (!show) { box.innerHTML = ''; return; }
+  if (box.dataset.for === p.lastWateredAt + '|' + r.mlPerWatering) return; // Eingabe nicht verwerfen
+  box.dataset.for = p.lastWateredAt + '|' + r.mlPerWatering;
+  const ideal = Math.max(10, round10(r.mlPerWatering * RUNOFF_TARGET));
+  box.innerHTML = `<div class="q"><span>Lief unten Wasser raus?</span><small>ideal ≈ ${fmtInt(ideal)} ml</small></div>
+    <div class="r"><button type="button" id="fb-none">Nichts</button>
+      <label><input id="fb-ml" type="number" inputmode="numeric" min="0" max="5000" step="10" placeholder="Menge" aria-label="Ablaufwasser in ml"><span>ml</span></label>
+      <button type="button" class="ok" id="fb-ok">OK</button></div>`;
+  const inp = $('fb-ml');
+  const submit = (ml) => {
+    const poured = r.mlPerWatering, k0 = +p.waterAdj || 1, prevFb = p.fbAt;
+    const k = adjFromRunoff(k0, poured, ml);
+    p.fbAt = p.lastWateredAt;
+    const next = Math.max(20, round10(r.mlBase * k));
+    const msg = next === poured ? 'Passt – Menge bleibt' : `Nächstes Mal ${fmtInt(next)} ml statt ${fmtInt(poured)} ml`;
+    setAdj(p, k, msg, { k: k0, fb: prevFb });
+  };
+  $('fb-none').addEventListener('click', () => submit(0));
+  $('fb-ok').addEventListener('click', () => { const v = +inp.value; if (!inp.value || !Number.isFinite(v) || v < 0) { inp.focus(); return; } submit(v); });
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('fb-ok').click(); });
+}
+function setAdj(p, k, msg, prev = { k: +p.waterAdj || 1, fb: p.fbAt }) {
+  p.waterAdj = k;
+  if (state.plants.includes(p)) save();
+  afterWaterChange(); renderMiniBadges();
+  toast(msg, () => { p.waterAdj = prev.k; p.fbAt = prev.fb; if (state.plants.includes(p)) save(); afterWaterChange(); renderMiniBadges(); });
 }
 function saveSelected() { if (selected) closeSheet(); }
 function deleteSelected() {
@@ -2312,6 +2537,7 @@ $('pf-light').addEventListener('click', () => setLight(!light.on));
 $('pf-lm').addEventListener('click', (e) => { const b = e.target.closest('button[data-m]'); if (!b || +b.dataset.m === light.month) return; light.month = +b.dataset.m; renderLightPanel(); refreshLight(); });
 $('pf-lh').addEventListener('click', (e) => { const b = e.target.closest('button[data-k]'); if (!b || b.dataset.k === light.height) return; light.height = b.dataset.k; renderLightPanel(); refreshLight(); });
 $('pf-bb-x').addEventListener('click', () => cancelMove());
+$('pf-recs-btn').addEventListener('click', () => openRecs());
 
 /* ------------------------------------------------------------------ */
 /* List sheet                                                          */
@@ -2357,8 +2583,10 @@ function renderList() {
       ${dueL.length ? `<div class="pf-grp" id="l-due"><h3 class="due">Fällig (${dueL.length} · ${vol(sumMl)})</h3><button id="l-all">Alle gegossen</button></div>
         ${dueL.map(row).join('')}` : '<div class="pf-grp" id="l-due"><h3>Fällig (0)</h3></div><div class="pf-list-empty" style="padding:6px 0 10px">Heute ist nichts zu gießen. 🌿</div>'}
       ${soon.length ? `<div class="pf-grp" id="l-soon"><h3>Demnächst</h3></div>${soon.map(row).join('')}` : ''}`
-    : '<div class="pf-list-empty">Noch keine Pflanzen.<br>Tippe in der 3D-Ansicht auf den Boden, um deine erste Pflanze zu platzieren.</div>'}`;
+    : '<div class="pf-list-empty">Noch keine Pflanzen.<br>Tippe in der 3D-Ansicht auf den Boden oder ein Fenster, um deine erste Pflanze zu platzieren.</div>'}
+    <button class="pf-rlink" id="l-recs"><span class="ic">🪴</span><span class="t"><b>Was passt wohin?</b><span>Freie Plätze und passende Pflanzen je Raum</span></span></button>`;
   $('l-close').addEventListener('click', closeAux);
+  $('l-recs').addEventListener('click', () => openRecs());
   $('l-rem').addEventListener('click', () => openReminder('list'));
   if ($('l-all')) $('l-all').addEventListener('click', () => waterPlants(dueL.map((i) => i.p)));
   body.querySelectorAll('button.open').forEach((b) => b.addEventListener('click', () => {
@@ -2385,35 +2613,360 @@ function openSettings() {
     <button class="pf-x" id="st-close" aria-label="Schließen">${ICONS.close}</button></div>
     <div class="pf-settings">
       <p><b style="color:var(--ink)">Ausrichtung</b> – Wohin zeigt die obere Planseite? Die Himmelsrichtung ist eine Annahme. Stimmt sie nicht, korrigiere sie hier – die Lichtberechnung aller Pflanzen passt sich an.</p>
-      <div class="pf-field" style="border-top:0">
-        <label for="st-n">Plan-oben zeigt nach <span class="val" id="st-v"></span></label>
-        <input type="range" id="st-n" min="0" max="359" step="1" value="${Math.round(planUpDeg())}">
-      </div>
-      <div class="pf-actions" style="border-top:0;padding-top:4px">
-        <button class="pf-act" id="st-reset">Zurücksetzen · ${Math.round(def)}°</button>
-        <button class="pf-act primary" id="st-done" style="flex:.6">Fertig</button>
+      <div class="pf-set-or">
+        <div class="v"><b id="st-v"></b><span>Plan-oben zeigt in diese Richtung</span></div>
+        <button id="st-orient" type="button">Mit Kompass einstellen</button>
       </div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
         <button class="pf-switch" id="st-names" role="switch" aria-checked="${state.showRoomNames}" aria-label="Raumnamen anzeigen"></button></div>
       <button class="pf-rlink" id="st-rem"><span class="ic">${ICONS.bell}</span><span class="t"><b>Erinnerung</b><span>${esc(reminderSummary())}</span></span></button>
     </div>`;
-  const inp = $('st-n');
-  const upd = () => {
-    $('st-v').textContent = `${compassName(planUpDeg())} · ${Math.round(planUpDeg())}°`; pct(inp);
-    updateCount(); refreshSheet(); if (light.on) refreshLight(); placeSun(); shadowsDirty();
-  };
-  inp.addEventListener('input', () => { state.northDeg = +inp.value; upd(); });
-  inp.addEventListener('change', save);
-  $('st-reset').addEventListener('click', () => { state.northDeg = null; inp.value = Math.round(def); upd(); save(); });
-  $('st-done').addEventListener('click', () => { save(); closeAux(); });
+  void def;
+  $('st-v').textContent = `${compassName(planUpDeg())} · ${Math.round(planUpDeg())}°`;
+  $('st-orient').addEventListener('click', () => { save(); startOrient(); });
   $('st-close').addEventListener('click', () => { save(); closeAux(); });
   $('st-rem').addEventListener('click', () => { save(); openReminder('settings'); });
   $('st-names').addEventListener('click', () => {
     state.showRoomNames = !state.showRoomNames; save();
     $('st-names').setAttribute('aria-checked', String(state.showRoomNames)); requestRender();
   });
-  upd();
   setSheet.classList.add('open'); scrim.classList.add('show');
+}
+
+/* ------------------------------------------------------------------ */
+/* Ausrichtung: Kompassring um die Wohnung (nur beim Einstellen)       */
+/* ------------------------------------------------------------------ */
+const orient = { on: false, prevNorth: null, prevView: '3d', drag: null, sens: { on: false, h: null, got: false, timer: null } };
+const DIR_SHORT = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+const mod360 = (v) => ((v % 360) + 360) % 360;
+// Kreis um den Grundriss (Weltkoordinaten)
+const orCircle = (() => {
+  let x = 0, z = 0;
+  fitPts.forEach((p) => { x += p.x; z += p.z; });
+  x /= fitPts.length; z /= fitPts.length;
+  let r = 0; fitPts.forEach((p) => { r = Math.max(r, Math.hypot(p.x - x, p.z - z)); });
+  return { x, z, r: r + 0.35 };
+})();
+function orientPose() {
+  const pts = [];
+  const R = orCircle.r * 1.22; // Platz für die Beschriftung außen
+  for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; pts.push(new THREE.Vector3(orCircle.x + Math.cos(a) * R, 0, orCircle.z + Math.sin(a) * R)); }
+  const top = $('pf-orb').getBoundingClientRect().bottom + 8, bot = $('pf-orc').getBoundingClientRect().top - 8;
+  const r = fitPose(0.01, baseAzimuthDeg(), pts, { x0: -1 + 16 / W, x1: 1 - 16 / W, y0: 1 - 2 * bot / H, y1: 1 - 2 * top / H });
+  controls.maxDistance = Math.max(controls.maxDistance, r.dist * 1.6);
+  return r;
+}
+function startOrient() {
+  closeAux();
+  if (moveMode) cancelMove();
+  if (selected) closeSheet({ restoreView: false });
+  orient.on = true; orient.prevNorth = state.northDeg; orient.prevView = viewMode;
+  appEl.classList.add('pf-orient');
+  ['pf-or', 'pf-orb', 'pf-orc'].forEach((id) => $(id).classList.remove('hide'));
+  $('or-msg').textContent = '';
+  controls.enabled = false;
+  viewMode = 'top';
+  document.querySelectorAll('#pf-viewseg button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'top'));
+  requestAnimationFrame(() => { const r = orientPose(); flyTo(r.pos, r.target, 650); shadowsDirty(); });
+  updateOrientText();
+  requestRender();
+}
+function endOrient(keep) {
+  if (!orient.on) return;
+  if (!keep) state.northDeg = orient.prevNorth;
+  orient.on = false; orient.drag = null;
+  stopSensor();
+  appEl.classList.remove('pf-orient');
+  ['pf-or', 'pf-orb', 'pf-orc'].forEach((id) => $(id).classList.add('hide'));
+  controls.enabled = true;
+  save();
+  northChanged(true);
+  setViewMode(orient.prevView);
+  if (keep) toast(`Ausrichtung: Plan-oben ${compassName(planUpDeg())} · ${Math.round(planUpDeg())}°`);
+}
+// Nordrichtung geändert: Sonne/Schatten sofort, teure Neuberechnungen erst am Ende (full)
+function northChanged(full) {
+  placeSun(); shadowsDirty();
+  if (full) { updateCount(); if (selected) refreshSheet(); if (light.on) refreshLight(); }
+  updateOrientText();
+  requestRender();
+}
+let orGeom = null; // zuletzt gezeichnete Ringgeometrie (Bildschirm)
+// Bildschirmwinkel (im Uhrzeigersinn ab oben) einer Kompassrichtung; angN = Bildschirmwinkel von Nord
+function drawRing(angN) {
+  const c = toScreen(new THREE.Vector3(orCircle.x, 0, orCircle.z));
+  const ex = toScreen(new THREE.Vector3(orCircle.x + orCircle.r, 0, orCircle.z)), ez = toScreen(new THREE.Vector3(orCircle.x, 0, orCircle.z + orCircle.r));
+  const R = (Math.hypot(ex.x - c.x, ex.y - c.y) + Math.hypot(ez.x - c.x, ez.y - c.y)) / 2;
+  orGeom = { cx: c.x, cy: c.y, R, angN };
+  const P = (deg, r) => { const a = (angN + deg) * Math.PI / 180; return [c.x + Math.sin(a) * r, c.y - Math.cos(a) * r]; };
+  let ticks = '', majors = '', labels = '';
+  for (let d = 0; d < 360; d += 5) {
+    const big = d % 15 === 0, l = d % 45 === 0 ? 13 : big ? 9 : 5;
+    const [x0, y0] = P(d, R - 1), [x1, y1] = P(d, R - 1 - l);
+    (big ? (majors += `M${x0.toFixed(1)} ${y0.toFixed(1)}L${x1.toFixed(1)} ${y1.toFixed(1)}`) : (ticks += `M${x0.toFixed(1)} ${y0.toFixed(1)}L${x1.toFixed(1)} ${y1.toFixed(1)}`));
+  }
+  for (let k = 0; k < 8; k++) {
+    const [x, y] = P(k * 45, R + 17);
+    const n = k === 0;
+    labels += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="${n ? 17 : k % 2 ? 11 : 14}" fill="${n ? '#b5483a' : k % 2 ? '#8d8f88' : '#22231f'}">${DIR_SHORT[k]}</text>`;
+  }
+  for (let d = 30; d < 360; d += 30) {
+    if (d % 90 === 0) continue;
+    const [x, y] = P(d, R - 24);
+    labels += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#8d8f88" font-weight="600">${d}</text>`;
+  }
+  const [nx, ny] = P(0, R + 2), [nl, nly] = P(-4, R - 15), [nr, nry] = P(4, R - 15);
+  // fester Index oben = Richtung, in die die Oberkante des Handys zeigt
+  const topDeg = Math.round(mod360(-angN));
+  let sensor = '';
+  if (orient.sens.on && orient.sens.h != null) {
+    const sa = -orient.sens.h; // Handy-Nord auf dem Bildschirm
+    const Q = (r) => { const a = sa * Math.PI / 180; return [c.x + Math.sin(a) * r, c.y - Math.cos(a) * r]; };
+    const [a0, b0] = Q(R - 30), [a1, b1] = Q(R + 32);
+    sensor = `<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}L${a1.toFixed(1)} ${b1.toFixed(1)}" stroke="#2f74d0" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5"/>` +
+      `<circle cx="${a1.toFixed(1)}" cy="${b1.toFixed(1)}" r="11" fill="#2f74d0"/><text x="${a1.toFixed(1)}" y="${b1.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fff">N</text>`;
+  }
+  $('pf-or-svg').innerHTML = `
+    <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${(R + 17).toFixed(1)}" fill="none" stroke="rgba(255,255,255,.82)" stroke-width="30"/>
+    <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${R.toFixed(1)}" fill="none" stroke="#22231f" stroke-width="1.6"/>
+    <path d="${ticks}" stroke="#8d8f88" stroke-width="1.2"/><path d="${majors}" stroke="#22231f" stroke-width="1.8"/>
+    <path d="M${nx.toFixed(1)} ${ny.toFixed(1)}L${nl.toFixed(1)} ${nly.toFixed(1)}L${nr.toFixed(1)} ${nry.toFixed(1)}Z" fill="#b5483a"/>
+    ${labels}${sensor}
+    <path d="M${c.x.toFixed(1)} ${(c.y - R - 36).toFixed(1)}l-8 -12h16z" fill="#22231f"/>
+    <rect x="${(c.x - 26).toFixed(1)}" y="${(c.y - R - 70).toFixed(1)}" width="52" height="22" rx="11" fill="#22231f"/>
+    <text x="${c.x.toFixed(1)}" y="${(c.y - R - 59).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#fff">${topDeg}°</text>`;
+  $('or-top').textContent = `${topDeg}°`;
+  $('or-sub').textContent = `Handy-oben zeigt nach ${compassName(topDeg)}`;
+}
+function updateOrientText() {
+  $('or-msg').textContent = orient.sens.on ? (orient.sens.h == null ? 'Warte auf Kompass-Sensor …' : `Handy-Kompass: ${Math.round(orient.sens.h)}° · blaues N = echter Norden. Tippe „Übernehmen“, wenn der Grundriss wie die Wohnung liegt.`) : '';
+  const b = $('or-sens');
+  b.classList.toggle('on', orient.sens.on && orient.sens.h != null);
+  b.textContent = orient.sens.on && orient.sens.h != null ? '✓ Übernehmen' : '📱 Handy-Kompass';
+}
+// Ring ziehen: Winkel um die Ringmitte → Nordrichtung des Plans
+const orEl = $('pf-or');
+const ptrAng = (e) => { const r = appEl.getBoundingClientRect(); return Math.atan2(e.clientX - r.left - orGeom.cx, -(e.clientY - r.top - orGeom.cy)) * 180 / Math.PI; };
+orEl.addEventListener('pointerdown', (e) => {
+  if (!orGeom) return;
+  orEl.setPointerCapture(e.pointerId);
+  orient.drag = { a0: ptrAng(e), up0: planUpDeg(), id: e.pointerId };
+  orEl.style.cursor = 'grabbing';
+});
+orEl.addEventListener('pointermove', (e) => {
+  const d = orient.drag; if (!d || d.id !== e.pointerId) return;
+  let delta = ptrAng(e) - d.a0;
+  delta = ((delta + 540) % 360) - 180;
+  d.a0 += delta; d.up0 -= delta; // fortlaufend (kein Sprung bei ±180°)
+  const v = Math.round(mod360(d.up0));
+  if (v !== state.northDeg) { state.northDeg = v; northChanged(false); }
+});
+const orUp = (e) => { if (orient.drag && orient.drag.id === e.pointerId) { orient.drag = null; orEl.style.cursor = ''; } };
+orEl.addEventListener('pointerup', orUp); orEl.addEventListener('pointercancel', orUp);
+$('or-done').addEventListener('click', () => endOrient(true));
+$('or-cancel').addEventListener('click', () => endOrient(false));
+$('or-reset').addEventListener('click', () => { state.northDeg = null; northChanged(false); });
+$('or-sens').addEventListener('click', async () => {
+  const S = orient.sens;
+  if (S.on && S.h != null && orGeom) {
+    // Handy-Nord übernehmen: Plan so drehen, dass Plan-Nord auf dem Bildschirm = Sensor-Nord
+    state.northDeg = Math.round(mod360(orGeom.angN + planUpDeg() + S.h));
+    northChanged(false);
+    toast('Handy-Kompass übernommen');
+    return;
+  }
+  if (S.on) { stopSensor(); updateOrientText(); return; }
+  await startSensor();
+});
+function onOrientEvt(e) {
+  let h = null;
+  if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;
+  else if ((e.absolute || e.type === 'deviceorientationabsolute') && e.alpha != null) h = 360 - e.alpha;
+  if (h == null || !Number.isFinite(h)) return;
+  const so = (screen.orientation && Number.isFinite(screen.orientation.angle)) ? screen.orientation.angle : (+window.orientation || 0);
+  h = mod360(h + so);
+  const S = orient.sens;
+  // gleitender Mittelwert auf dem Kreis (Sensor zittert)
+  if (S.h == null) S.h = h; else { const dd = ((h - S.h + 540) % 360) - 180; S.h = mod360(S.h + dd * 0.2); }
+  if (!S.got) { S.got = true; clearTimeout(S.timer); }
+  updateOrientText(); requestRender();
+}
+async function startSensor() {
+  const S = orient.sens;
+  try {
+    const DOE = window.DeviceOrientationEvent;
+    if (DOE && typeof DOE.requestPermission === 'function') { const res = await DOE.requestPermission(); if (res !== 'granted') throw new Error('denied'); }
+  } catch (e) { $('or-msg').textContent = 'Kein Zugriff auf den Kompass-Sensor.'; return; }
+  S.on = true; S.h = null; S.got = false;
+  window.addEventListener('deviceorientationabsolute', onOrientEvt);
+  window.addEventListener('deviceorientation', onOrientEvt);
+  clearTimeout(S.timer);
+  S.timer = setTimeout(() => { if (!S.got) { stopSensor(); $('or-msg').textContent = 'Kein Kompass-Sensor gefunden – stell den Ring von Hand nach deiner Kompass-App ein.'; updateOrientText(); $('or-msg').textContent = 'Kein Kompass-Sensor gefunden – stell den Ring von Hand nach deiner Kompass-App ein.'; } }, 2500);
+  updateOrientText();
+}
+function stopSensor() {
+  const S = orient.sens;
+  S.on = false; S.h = null; clearTimeout(S.timer);
+  window.removeEventListener('deviceorientationabsolute', onOrientEvt);
+  window.removeEventListener('deviceorientation', onOrientEvt);
+  requestRender();
+}
+
+/* ------------------------------------------------------------------ */
+/* Was passt wohin? Freie Plätze + passende Pflanzen je Raum           */
+/* ------------------------------------------------------------------ */
+// Wo steht eine Pflanzenart typischerweise? floor = Boden, table = Tisch/Regal (75 cm), sill = Fensterbank
+const PLACE_OF_CAT = { gruen: 'floor', palme: 'floor', robust: 'floor', haenge: 'table', blatt: 'table', kraut: 'sill', sukk: 'sill' };
+const SILL_IDS = new Set(['orchidee', 'pilea', 'gruenlilie', 'efeutute', 'philodendron', 'speerbogenhanf']);
+const PLACE_NAME = { floor: 'Boden', table: 'Tisch/Regal', sill: 'Fensterbank' };
+const START_SIZE = { gruen: [26, 100], palme: [24, 100], robust: [18, 60], haenge: [15, 30], blatt: [15, 35], kraut: [14, 25], sukk: [12, 15] };
+const RC = 0.25; // Raster 25 cm
+function placesFor(def) {
+  const main = PLACE_OF_CAT[def.cat] || 'table';
+  if (main === 'sill') return ['sill', 'table'];
+  if (SILL_IDS.has(def.id)) return [main, 'sill'];
+  return [main];
+}
+function recSpots(room) {
+  const wins = lightWindowsOf(room), ws = wins.map((w) => ({ ...w.w }));
+  const date = nowDate(), est = window.estimateLight;
+  const occ = state.plants.map((p) => ({ x: p.x, y: p.y, r: p.potDiameterCm / 200 + 0.22 }));
+  const doors = openings.filter((o) => o.type === 'door' || o.type === 'balcony-door');
+  // frei = keine Pflanze dort und nicht im Laufweg vor Türen
+  const isFree = (x, y) => !occ.some((o) => Math.hypot(x - o.x, y - o.y) < o.r) && !doors.some((o) => distToSeg(x, y, o.a, o.b) < 0.85);
+  const at = (x, y, stand, canopy) => {
+    for (let k = 0; k < ws.length; k++) {
+      const w = wins[k], rx = x - w.mx, ry = y - w.my;
+      ws[k].lateralM = rx * w.ux + ry * w.uy;
+      ws[k].distanceM = Math.max(0, -(rx * w.nx + ry * w.ny));
+    }
+    return est({ windows: ws, standHeightM: stand, canopyHeightM: canopy, date });
+  };
+  const spots = { floor: [], table: [], sill: [] };
+  const b = polyBox(room.polygon);
+  for (let y = b.minY + RC / 2; y < b.maxY; y += RC) for (let x = b.minX + RC / 2; x < b.maxX; x += RC) {
+    if (!pointInPoly(x, y, room.polygon) || distToPolyEdge(x, y, room.polygon) < 0.18) continue;
+    const free = isFree(x, y);
+    spots.floor.push({ x, y, free, res: at(x, y, 0, 1.0) });
+    spots.table.push({ x, y, free, res: at(x, y, 0.75, 1.1) });
+  }
+  for (const o of windowsOfRoom(room).filter((q) => q.type === 'window')) {
+    const L = segLen(o) || 1, n = openingNormal(o), hw = openingHalfWall(o), sill = +o.sill || 0;
+    const dx = (o.b[0] - o.a[0]) / L, dy = (o.b[1] - o.a[1]) / L;
+    for (let t = 0.15; t <= L - 0.15 + 1e-6; t += 0.2) {
+      const x = o.a[0] + dx * t - n[0] * (hw + 0.12), y = o.a[1] + dy * t - n[1] * (hw + 0.12);
+      if (!pointInPoly(x, y, room.polygon)) continue;
+      spots.sill.push({ x, y, o, free: isFree(x, y), res: at(x, y, sill, sill + 0.25) });
+    }
+  }
+  return spots;
+}
+function lightBand(res) { const v = res.placeIndex; return v < LT.medium ? 0 : v < LT.bright ? 1 : v < LT.high ? 2 : 3; }
+function computeRecs() {
+  const month = nowDate().getMonth(), fit = window.plantFit;
+  const out = [];
+  for (const room of rooms) {
+    const area = polyArea(room.polygon);
+    if (area < 2) continue;
+    const spots = recSpots(room);
+    const noWin = !windowsOfRoom(room).length;
+    const bands = [0, 0, 0, 0];
+    spots.table.forEach((c) => bands[lightBand(c.res)]++);
+    const cellA = RC * RC;
+    const list = [];
+    for (const def of PLANTS) {
+      let best = null;
+      for (const where of placesFor(def)) {
+        const good = spots[where].filter((c) => c.free && fit(def.id, c.res, month) === 'good');
+        const amount = where === 'sill' ? good.length : good.length * cellA;
+        if (where === 'sill' ? amount < 1 : amount < 0.4) continue;
+        best = { where, amount, good };
+        break; // bevorzugter Platz gewinnt
+      }
+      if (best && !noWin) list.push({ def, ...best });
+    }
+    const RANK = { low: 0, medium: 1, high: 2 };
+    list.sort((A, B) => (RANK[B.def.lightNeed] - RANK[A.def.lightNeed]) || (B.where === 'sill') - (A.where === 'sill') || B.amount - A.amount);
+    const wins = windowsOfRoom(room);
+    const wtxt = wins.length ? [...new Set(wins.map((o) => compassName(vecCompass(...openingNormal(o)))))].join(', ') : '';
+    out.push({ room, area, bands, list, winText: wtxt, nWin: wins.length, count: state.plants.filter((p) => pointInPoly(p.x, p.y, room.polygon)).length });
+  }
+  if (balcony) {
+    const bd = lightOpenings.filter((o) => o.type === 'balcony-door');
+    const o = (bd.length ? bd : lightOpenings)[0];
+    const deg = o ? Math.round(vecCompass(...openingNormal(o))) : 270;
+    const res = window.estimateLight({ windows: [{ compassDeg: deg }], outdoor: true, date: nowDate(), standHeightM: 0, canopyHeightM: 0.5 });
+    const c = centroid(balcony.polygon);
+    const cell = { x: c[0], y: c[1], free: true, res };
+    const list = PLANTS.filter((d) => fit(d.id, res, month) === 'good' && d.cat !== 'sukk').map((def) => ({ def, where: 'floor', amount: polyArea(balcony.polygon), good: [cell] }));
+    const RANK = { low: 0, medium: 1, high: 2 };
+    list.sort((A, B) => (A.def.cat === 'kraut' ? -1 : 0) - (B.def.cat === 'kraut' ? -1 : 0) || RANK[B.def.lightNeed] - RANK[A.def.lightNeed]);
+    out.push({ room: { id: 'balkon', name: 'Balkon', polygon: balcony.polygon }, area: polyArea(balcony.polygon), outdoor: true, label: res.label, list, winText: compassName(deg),
+      count: state.plants.filter((p) => pointInPoly(p.x, p.y, balcony.polygon)).length });
+  }
+  return out;
+}
+// bester freier Platz für eine Pflanze (Lichtbedarf hoch/mittel: hellster passender Platz, wenig: ruhig, nicht der hellste)
+function bestSpot(rec) {
+  const need = rec.def.lightNeed;
+  let best = null, bs = -Infinity;
+  for (const c of rec.good) {
+    const v = c.res.placeIndex;
+    const sc = need === 'low' ? -Math.abs(Math.log(Math.max(v, 1e-4) / 0.12)) : v - (c.res.directSun && need === 'medium' ? 0.15 : 0);
+    if (sc > bs) { bs = sc; best = c; }
+  }
+  return best;
+}
+let recsCache = null;
+function openRecs() {
+  if (moveMode) cancelMove();
+  if (selected) closeSheet();
+  listSheet.classList.remove('open');
+  const body = $('pf-set-body');
+  body.innerHTML = `<div class="pf-head"><div style="min-width:0"><h2>Was passt wohin?</h2><p style="font-style:normal">Freie Plätze je Raum · Lichtbedarf nach Sommerlicht</p></div>
+    <button class="pf-x" id="rc-close" aria-label="Schließen">${ICONS.close}</button></div><div id="rc-body"><div class="pf-list-empty">Berechne Licht …</div></div>`;
+  $('rc-close').addEventListener('click', closeAux);
+  setSheet.classList.add('open'); scrim.classList.add('show');
+  setTimeout(() => {
+    recsCache = computeRecs();
+    renderRecs();
+  }, 30);
+}
+function renderRecs(expanded = new Set()) {
+  const el = $('rc-body'); if (!el || !recsCache) return;
+  const BAND = [{ n: 'schattig', c: LEGEND[0].css }, { n: 'halbschattig', c: LEGEND[1].css }, { n: 'hell', c: LEGEND[2].css }, { n: 'sehr hell', c: `rgb(${SUN_RGB})` }];
+  const MAX = 5;
+  el.innerHTML = `<p class="pf-note" style="margin:0 0 6px">Tippe auf eine Pflanze – sie wird an den besten freien Platz im Raum gestellt.</p>` + recsCache.map((R, ri) => {
+    const tot = R.bands ? R.bands.reduce((a, b) => a + b, 0) || 1 : 1;
+    const bar = R.bands && R.nWin ? `<div class="pf-rbar">${R.bands.map((v, i) => v ? `<i style="width:${(v / tot * 100).toFixed(1)}%;background:${BAND[i].c}"></i>` : '').join('')}</div>
+      <div class="pf-rleg">${R.bands.map((v, i) => v ? `<span><i style="background:${BAND[i].c}"></i>${BAND[i].n} ${fmt1(v * RC * RC)} m²</span>` : '').join('')}</div>` : '';
+    const meta = R.outdoor ? `Draußen · ${esc(R.winText)} · ${esc(R.label || '')}` : R.nWin ? `Fenster ${esc(R.winText)}` : 'Kein Fenster – zu dunkel für die meisten Pflanzen';
+    // nach Platz gruppiert: Boden, Fensterbank, Tisch/Regal
+    const chips = ['floor', 'sill', 'table'].map((wh) => {
+      const idx = R.list.map((x, i) => [x, i]).filter(([x]) => x.where === wh);
+      if (!idx.length) return '';
+      const key = ri + ':' + wh, all = expanded.has(key), shown = all ? idx : idx.slice(0, MAX);
+      return `<div class="pf-rg">${R.outdoor ? 'Gerade passend' : PLACE_NAME[wh]}</div><div class="pf-rp">${shown.map(([x, i]) => `<button type="button" data-r="${ri}" data-i="${i}">${x.def.emoji || '🪴'} ${esc(x.def.name.replace(/\s*\(.*\)\s*$/, ''))}</button>`).join('')}${!all && idx.length > MAX ? `<button type="button" class="more" data-more="${key}">+ ${idx.length - MAX} weitere</button>` : ''}</div>`;
+    }).join('');
+    return `<div class="pf-rc"><h3>${esc(R.room.name)}<small>${fmt1(R.area)} m²${R.count ? ` · ${R.count} ${R.count === 1 ? 'Pflanze' : 'Pflanzen'}` : ''}</small></h3>
+      <div class="m">${meta}</div>${bar}
+      ${R.list.length ? chips : `<div class="pf-rnone">${R.outdoor ? 'Gerade passt draußen nichts – zu kalt für die meisten Pflanzen.' : R.nWin ? 'Kein freier Platz mit passendem Licht.' : 'Ohne Fenster wächst auf Dauer kaum etwas – nur mit Pflanzenlampe.'}</div>`}</div>`;
+  }).join('');
+  el.querySelectorAll('button[data-more]').forEach((b) => b.addEventListener('click', () => { const y = el.closest('.pf-sheet-body')?.scrollTop; expanded.add(b.dataset.more); renderRecs(expanded); if (y != null) el.closest('.pf-sheet-body').scrollTop = y; }));
+  el.querySelectorAll('button[data-i]').forEach((b) => b.addEventListener('click', () => {
+    const R = recsCache[+b.dataset.r], rec = R.list[+b.dataset.i];
+    placeRecommended(rec);
+  }));
+}
+function placeRecommended(rec) {
+  const c = bestSpot(rec); if (!c) return;
+  closeAux();
+  const def = rec.def, sz = START_SIZE[def.cat] || [18, 50];
+  const p = newPlant(c.x, c.y, def.id);
+  p.potDiameterCm = sz[0]; p.plantHeightCm = sz[1];
+  if (rec.where === 'sill' && c.o) placeOnSill(p, c.o, c.x, c.y);
+  else p.standCm = rec.where === 'table' ? 75 : 0;
+  startDraft(p);
 }
 
 /* ------------------------------------------------------------------ */
@@ -2755,5 +3308,8 @@ window.__plantflat = {
     for (let i = 0; i < n; i++) { renderer.render(scene, camera); sync(); }
     return { withShadow: +((t1 - t0) / n).toFixed(2), noShadow: +((performance.now() - t1) / n).toFixed(2), calls: renderer.info.render.calls, tris: renderer.info.render.triangles };
   },
+  cam: (pos, tgt) => { tween = null; camera.position.set(...pos); controls.target.set(...tgt); controls.update(); requestRender(); },
+  recs: () => computeRecs().map((R) => ({ room: R.room.id, n: R.list.length, top: R.list.slice(0, 6).map((x) => x.def.id + '@' + x.where) })),
+  orient: (on) => (on ? startOrient() : endOrient(true)),
   dbg: () => ({ cam: camera.position.toArray().map((v) => +v.toFixed(2)), tgt: controls.target.toArray().map((v) => +v.toFixed(2)), dist: +camera.position.distanceTo(controls.target).toFixed(2), off: sheetOffset, tween: !!tween }),
 };

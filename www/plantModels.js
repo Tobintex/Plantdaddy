@@ -1072,6 +1072,146 @@ function bBasilikum(c) {
   }
 }
 
+/* --- Kräuter --- */
+// Aufrechte Stängel mit gegenständigen Blattpaaren (Minze, Salbei, Oregano)
+function bHerbStems(c, opt) {
+  const { R, H, d, lod } = c;
+  const ns = clampi(opt.s0 + d * opt.s1, opt.s0, lod ? opt.sMax : Math.ceil(opt.sMax * 0.6));
+  const T = gridTpl(opt.tplKey, opt.wfn, lod ? 4 : 3, 2);
+  const stemC = col(opt.stem);
+  const silver = opt.silver ? col(opt.silver) : null;
+  const pair = (p, rot, el, L) => {
+    for (const sd of [0, Math.PI]) {
+      const cc = vary(R, c.base, 0.1, 0.012);
+      if (silver) cc.lerp(silver, R.range(0.2, 0.45));
+      addLeaf(c.B[opt.bucket || 'leaf'], T, { pos: p, F: frameAE(rot + sd + R.sym(0.25), el + R.sym(0.15), R.sym(0.25)), L, W: L * opt.w, curl: opt.curl, fold: opt.fold, color: cc, colorFn: cfStd(opt.vein || 0.1, 0.1) });
+    }
+  };
+  for (let s = 0; s < ns; s++) {
+    const az = s * GOLD + R.sym(0.3), base = soilPt(c, ns > 1 ? d * 0.2 * Math.sqrt(R()) : 0, az);
+    const h = H * R.range(opt.h[0], opt.h[1]), lean = h * R.range(opt.lean[0], opt.lean[1]);
+    const top = base.clone().add(new V3(0, h, 0)).addScaledVector(horiz(az), lean);
+    const pts = bezierPts(base, base.clone().setY(base.y + h * 0.45), top.clone().setY(top.y - h * 0.3), top, 4);
+    addTube(c.B.stem, pts, clamp(H * opt.stemR, 0.0015, 0.006), { seg: 3, color: stemC });
+    const nodes = clampi(2 + h * opt.nodes, 2, lod ? 6 : 4);
+    let rot = az + Math.PI / 4;
+    for (let k = 0; k <= nodes; k++) {
+      const f = k / nodes, p = pts[0].clone().lerp(top, 0.2 + 0.8 * f);
+      const L = clamp(H * opt.leafL, opt.leafMin, opt.leafMax) * (1.1 - 0.4 * f) * R.range(0.88, 1.06);
+      pair(p, rot, lerp(opt.el[0], opt.el[1], f), L);
+      rot += Math.PI / 2;
+    }
+    pair(top.clone().setY(top.y + 0.003), rot, 1.15, clamp(H * opt.leafL * 0.4, 0.01, 0.03));
+  }
+}
+function bMinze(c) {
+  bHerbStems(c, { s0: 4, s1: 20, sMax: 9, tplKey: 'mint', wfn: W.oval, stem: 0x5f7d3e, bucket: 'leaf', w: 0.62, curl: 0.35, fold: 0.3, vein: 0.18,
+    h: [0.55, 0.95], lean: [0.05, 0.25], stemR: 0.012, nodes: 9, leafL: 0.2, leafMin: 0.022, leafMax: 0.07, el: [0.1, 0.8] });
+}
+function bSalbei(c) {
+  bHerbStems(c, { s0: 3, s1: 14, sMax: 7, tplKey: 'sage', wfn: W.ellip, stem: 0x8a8c6a, bucket: 'leaf', w: 0.42, curl: 0.25, fold: 0.25, vein: 0.08, silver: 0xc4cdb8,
+    h: [0.5, 0.9], lean: [0.15, 0.4], stemR: 0.013, nodes: 7, leafL: 0.3, leafMin: 0.03, leafMax: 0.09, el: [0.15, 0.7] });
+}
+function bOregano(c) {
+  bHerbStems(c, { s0: 8, s1: 34, sMax: 18, tplKey: 'oregano', wfn: W.petal, stem: 0x6e5a40, bucket: 'leaf', w: 0.8, curl: 0.3, fold: 0.2, vein: 0.06,
+    h: [0.35, 0.85], lean: [0.25, 0.6], stemR: 0.007, nodes: 20, leafL: 0.11, leafMin: 0.014, leafMax: 0.032, el: [0.2, 0.9] });
+}
+// Verholzte Zweige mit vielen schmalen Blättchen (Rosmarin aufrecht, Thymian polsterförmig)
+function bTwiggy(c, opt) {
+  const { R, H, d, lod } = c;
+  const ns = clampi(opt.s0 + d * opt.s1, opt.s0, lod ? opt.sMax : Math.ceil(opt.sMax * 0.6));
+  const T = gridTpl(opt.tplKey, opt.wfn, 2, 1);
+  const bark = col(opt.bark);
+  const under = opt.under ? col(opt.under) : null;
+  for (let s = 0; s < ns; s++) {
+    const az = s * GOLD + R.sym(0.4), base = soilPt(c, d * 0.18 * Math.sqrt(R()), az);
+    const h = H * R.range(opt.h[0], opt.h[1]);
+    const top = base.clone().add(new V3(0, h, 0)).addScaledVector(horiz(az + R.sym(0.3)), h * R.range(opt.lean[0], opt.lean[1]));
+    const mid = base.clone().lerp(top, 0.5).setY(base.y + h * opt.arch);
+    const pts = bezierPts(base, mid, mid.clone().lerp(top, 0.5), top, lod ? 5 : 3);
+    addTube(c.B.stem, pts, (t) => clamp(H * opt.stemR, 0.0012, 0.006) * (1.2 - 0.6 * t), { seg: 3, color: bark });
+    const nl = clampi(h * opt.dens, 6, lod ? opt.lMax : Math.round(opt.lMax * 0.5));
+    for (let i = 0; i < nl; i++) {
+      const f = opt.leafStart + (1 - opt.leafStart) * (i / nl);
+      const k = f * (pts.length - 1), j = Math.min(pts.length - 2, Math.floor(k));
+      const p = pts[j].clone().lerp(pts[j + 1], k - j);
+      const dir = pts[j + 1].clone().sub(pts[j]).normalize();
+      const a = i * 2.4 + R.sym(0.4);
+      const side = new V3(Math.cos(a), 0, Math.sin(a)).addScaledVector(dir, opt.up).normalize();
+      const L = clamp(H * opt.leafL, opt.leafMin, opt.leafMax) * (1.05 - 0.35 * f) * R.range(0.85, 1.1);
+      const cc = vary(R, c.base, 0.12, 0.015);
+      if (under && R() < 0.35) cc.lerp(under, 0.5);
+      addLeaf(c.B.leaf, T, { pos: p, F: frameDir(side, dir, R.sym(1)), L, W: L * opt.w, curl: opt.curl, color: cc });
+    }
+  }
+}
+function bRosmarin(c) {
+  bTwiggy(c, { s0: 5, s1: 22, sMax: 11, tplKey: 'needle', wfn: W.lance, bark: 0x6f6a4a, under: 0xb9c4b0, h: [0.6, 1.0], lean: [0.02, 0.2], arch: 0.5,
+    stemR: 0.007, dens: 480, lMax: 120, leafStart: 0.08, up: 0.7, leafL: 0.1, leafMin: 0.016, leafMax: 0.035, w: 0.2, curl: 0.4 });
+}
+function bThymian(c) {
+  bTwiggy(c, { s0: 14, s1: 60, sMax: 30, tplKey: 'thyme', wfn: W.ellip, bark: 0x7a604a, under: 0x9fae8c, h: [0.4, 0.9], lean: [0.15, 0.55], arch: 0.85,
+    stemR: 0.004, dens: 900, lMax: 80, leafStart: 0.05, up: 0.3, leafL: 0.07, leafMin: 0.011, leafMax: 0.02, w: 0.6, curl: 0.3 });
+}
+// Petersilie: gefiederte, krause Blätter an langen Stielen
+function bPetersilie(c) {
+  const { R, H, d, lod } = c;
+  const n = clampi(6 + H * 14 + d * 20, 6, lod ? 16 : 9);
+  const T = gridTpl('parsley', W.petal, 3, 2);
+  const stemC = c.base.clone().lerp(col(0xa5c47a), 0.4);
+  for (let i = 0; i < n; i++) {
+    const az = i * GOLD + R.sym(0.3);
+    const pet = { pos: soilPt(c, R() * d * 0.1, az), F: frameAE(az, R.range(0.95, 1.4)), L: H * R.range(0.6, 0.95), curl: R.range(0.3, 0.7) };
+    const pts = arcPts(pet, 4);
+    addTube(c.B.stem, pts, clamp(H * 0.008, 0.0012, 0.004), { seg: 3, color: stemC });
+    const nl = lod ? 16 : 8, Lc = clamp(H * 0.09, 0.01, 0.032);
+    for (let k = 0; k < nl; k++) {
+      const t = 0.55 + 0.45 * (k / (nl - 1)), p = leafPt(pet, 0, t), dir = leafDir(pet, t);
+      const a = k * GOLD * 1.7 + R.sym(0.6);
+      const out = new V3(Math.cos(a), R.range(0.1, 0.9), Math.sin(a)).addScaledVector(dir, 0.8).normalize();
+      const L = Lc * R.range(0.75, 1.1) * (1.15 - 0.3 * (t - 0.55) / 0.45);
+      addLeaf(c.B.leaf, T, { pos: p.addScaledVector(out, L * 0.15), F: frameDir(out, dir, R.sym(1.4)), L, W: L * 0.95, curl: R.range(0.8, 1.6), fold: 0.6, wave: 0.2, color: vary(R, c.base, 0.14, 0.012) });
+    }
+  }
+}
+// Schnittlauch: viele dünne, hohle Halme, ein paar lila Blütenköpfe
+function bSchnittlauch(c) {
+  const { R, H, d, lod } = c;
+  const n = clampi(14 + H * 30 + d * 60, 14, lod ? 48 : 24);
+  const r0 = clamp(H * 0.009, 0.0015, 0.0035);
+  const lilac = col(0xb07ab8);
+  for (let i = 0; i < n; i++) {
+    const az = i * GOLD + R.sym(0.3), base = soilPt(c, d * 0.22 * Math.sqrt(R()), az);
+    const h = H * R.range(0.7, 1.0), lean = h * R.range(0.05, 0.35);
+    const tip = base.clone().add(new V3(0, h, 0)).addScaledVector(horiz(az), lean);
+    const droop = R() < 0.25 ? h * 0.15 : 0;
+    const pts = bezierPts(base, base.clone().setY(base.y + h * 0.5), tip.clone().setY(tip.y - h * 0.15), tip.clone().setY(tip.y - droop).addScaledVector(horiz(az), droop), lod ? 6 : 4);
+    addTube(c.B.leaf, pts, (t) => r0 * (1 - 0.75 * t), { seg: 3, color: vary(R, c.base, 0.12, 0.01) });
+    if (lod && i % 9 === 4 && H > 0.18) addBlob(c.B.leaf, pts[pts.length - 1].clone().setY(pts[pts.length - 1].y + 0.008), new V3(0, 1, 0), 0.018, 0.011, { color: vary(R, lilac, 0.1) });
+  }
+}
+// Speerbogenhanf: runde, spitz zulaufende Blätter im Fächer, quer gebändert
+function bSpeer(c) {
+  const { R, H, d, lod } = c;
+  const n = clampi(3 + H * 5 + d * 10, 3, lod ? 9 : 6);
+  const dark = c.base.clone().multiplyScalar(0.7), light = col(0x9cb08a);
+  const fanAz = R() * TAU, fan = horiz(fanAz), across = horiz(fanAz + Math.PI / 2);
+  const rad = clamp(d * 0.07 + H * 0.012, 0.007, 0.024);
+  for (let i = 0; i < n; i++) {
+    const f = n > 1 ? i / (n - 1) - 0.5 : 0;
+    const base = soilPt(c, 0, 0).addScaledVector(across, f * d * 0.35);
+    const h = H * R.range(0.75, 1.0) * (1 - Math.abs(f) * 0.35);
+    const tilt = f * 0.9 + R.sym(0.1);
+    const tip = base.clone().add(new V3(0, h * Math.cos(tilt * 0.6), 0)).addScaledVector(across, h * Math.sin(tilt * 0.6)).addScaledVector(fan, R.sym(h * 0.08));
+    const pts = bezierPts(base, base.clone().setY(base.y + h * 0.35), tip.clone().lerp(base, 0.3), tip, lod ? 10 : 6);
+    const ph = R() * 6, rows = lod ? 10 : 6;
+    addTube(c.B.waxy, pts, (t) => rad * (t < 0.85 ? 1 - 0.25 * t : (1 - t) / 0.15 * 0.79), {
+      seg: lod ? 7 : 5,
+      colorFn: (o, t) => { const band = 0.5 + 0.5 * Math.sin(TAU * t * rows / 1.3 + ph); o.copy(dark).lerp(light, band * 0.45 * (0.5 + 0.5 * t)); },
+    });
+  }
+}
+
 function bSmallLeafTree(c, opt) {
   // Birkenfeige / Olive: Stamm(e), Äste, viele kleine Blätter
   const { R, H, d, lod } = c;
@@ -1207,6 +1347,14 @@ const SPECIES = {
   schefflera: { fn: bSchefflera, color: '#4a8a3a' },
   basilikum: { fn: bBasilikum, color: '#5fae3c' },
   olivenbaum: { fn: bOlive, color: '#8a9a6b' },
+  speerbogenhanf: { fn: bSpeer, color: '#55704a' },
+  rosmarin: { fn: bRosmarin, color: '#4f6e55' },
+  thymian: { fn: bThymian, color: '#6b8a5a' },
+  minze: { fn: bMinze, color: '#4f9a46' },
+  petersilie: { fn: bPetersilie, color: '#3f8a36' },
+  schnittlauch: { fn: bSchnittlauch, color: '#4f8f3a' },
+  oregano: { fn: bOregano, color: '#5e8a48' },
+  salbei: { fn: bSalbei, color: '#7f9a7c' },
 };
 const ALIAS = {
   sansevieria: 'bogenhanf', zamioculcas: 'gluecksfeder', pothos: 'efeutute', ficuslyrata: 'geigenfeige', 'ficus-lyrata': 'geigenfeige',

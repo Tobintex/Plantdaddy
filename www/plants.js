@@ -5,58 +5,74 @@
   "use strict";
 
   var PLANTS = [
-    { id: "monstera", name: "Monstera", latin: "Monstera deliciosa", waterNeed: "medium", lightNeed: "medium", emoji: "🌿", color: "#2f6b3a", shape: "bush", minTempC: 12,
+    { id: "monstera", cat: "gruen", name: "Monstera", latin: "Monstera deliciosa", waterNeed: "medium", lightNeed: "medium", emoji: "🌿", color: "#2f6b3a", shape: "bush", minTempC: 12,
       note: "Gießen, wenn die oberen 2–3 cm Erde trocken sind; hell ohne pralle Mittagssonne stellen." },
-    { id: "geigenfeige", name: "Geigenfeige", latin: "Ficus lyrata", waterNeed: "medium", lightNeed: "high", emoji: "🌳", color: "#3b6e2e", shape: "tree", minTempC: 12,
+    { id: "geigenfeige", cat: "gruen", name: "Geigenfeige", latin: "Ficus lyrata", waterNeed: "medium", lightNeed: "high", emoji: "🌳", color: "#3b6e2e", shape: "tree", minTempC: 12,
       note: "Sehr hell stellen und den Standort möglichst nicht wechseln, sonst wirft sie Blätter ab." },
-    { id: "birkenfeige", name: "Birkenfeige", latin: "Ficus benjamina", waterNeed: "medium", lightNeed: "high", emoji: "🌳", color: "#4f8a3c", shape: "tree", minTempC: 12,
+    { id: "birkenfeige", cat: "gruen", name: "Birkenfeige", latin: "Ficus benjamina", waterNeed: "medium", lightNeed: "high", emoji: "🌳", color: "#4f8a3c", shape: "tree", minTempC: 12,
       note: "Hell und zugfrei stellen, Erde gleichmäßig leicht feucht halten, keine Staunässe." },
-    { id: "gummibaum", name: "Gummibaum", latin: "Ficus elastica", waterNeed: "medium", lightNeed: "medium", emoji: "🌱", color: "#1f4d2b", shape: "tall", minTempC: 10,
+    { id: "gummibaum", cat: "gruen", name: "Gummibaum", latin: "Ficus elastica", waterNeed: "medium", lightNeed: "medium", emoji: "🌱", color: "#1f4d2b", shape: "tall", minTempC: 10,
       note: "Erst gießen, wenn die Erde oben angetrocknet ist; Blätter gelegentlich abstauben." },
-    { id: "bogenhanf", name: "Bogenhanf (Sansevieria)", latin: "Dracaena trifasciata (syn. Sansevieria trifasciata)", waterNeed: "low", lightNeed: "low", emoji: "🪴", color: "#4f7a3a", shape: "tall", minTempC: 12,
+    { id: "bogenhanf", cat: "robust", name: "Bogenhanf (Sansevieria)", latin: "Dracaena trifasciata (syn. Sansevieria trifasciata)", waterNeed: "low", lightNeed: "low", emoji: "🪴", color: "#4f7a3a", shape: "tall", minTempC: 12,
       note: "Erde zwischen den Wassergaben komplett austrocknen lassen; im Winter nur sehr sparsam gießen." },
-    { id: "gluecksfeder", name: "Glücksfeder (Zamioculcas)", latin: "Zamioculcas zamiifolia", waterNeed: "low", lightNeed: "low", emoji: "🪴", color: "#2e6b2f", shape: "bush", minTempC: 12,
+    { id: "gluecksfeder", cat: "robust", name: "Glücksfeder (Zamioculcas)", latin: "Zamioculcas zamiifolia", waterNeed: "low", lightNeed: "low", emoji: "🪴", color: "#2e6b2f", shape: "bush", minTempC: 12,
       note: "Speichert Wasser in den Rhizomen – lieber zu wenig als zu viel gießen." },
-    { id: "efeutute", name: "Efeutute", latin: "Epipremnum aureum", waterNeed: "medium", lightNeed: "low", emoji: "🍃", color: "#5c9a3a", shape: "hanging", minTempC: 12,
+    { id: "efeutute", cat: "haenge", name: "Efeutute", latin: "Epipremnum aureum", waterNeed: "medium", lightNeed: "low", emoji: "🍃", color: "#5c9a3a", shape: "hanging", minTempC: 12,
       note: "Verträgt Halbschatten gut; gießen, wenn die oberste Erdschicht trocken ist." },
-    { id: "philodendron", name: "Baumfreund (Philodendron scandens)", latin: "Philodendron hederaceum", waterNeed: "medium", lightNeed: "low", emoji: "🍃", color: "#3d7d34", shape: "hanging", minTempC: 12,
+    { id: "philodendron", cat: "haenge", name: "Baumfreund (Philodendron scandens)", latin: "Philodendron hederaceum", waterNeed: "medium", lightNeed: "low", emoji: "🍃", color: "#3d7d34", shape: "hanging", minTempC: 12,
       note: "Hell bis halbschattig ohne direkte Sonne, Erde leicht feucht halten." },
-    { id: "gruenlilie", name: "Grünlilie", latin: "Chlorophytum comosum", waterNeed: "medium", lightNeed: "medium", emoji: "🌾", color: "#8fbf5a", shape: "hanging", minTempC: 8,
+    { id: "gruenlilie", cat: "haenge", name: "Grünlilie", latin: "Chlorophytum comosum", waterNeed: "medium", lightNeed: "medium", emoji: "🌾", color: "#8fbf5a", shape: "hanging", minTempC: 8,
       note: "Im Sommer reichlich, im Winter mäßig gießen; braune Spitzen deuten auf kalkhaltiges Wasser oder Trockenheit." },
-    { id: "einblatt", name: "Einblatt", latin: "Spathiphyllum wallisii", waterNeed: "high", lightNeed: "low", emoji: "🌸", color: "#2b6a3a", shape: "bush", minTempC: 13,
+    { id: "einblatt", cat: "blatt", name: "Einblatt", latin: "Spathiphyllum wallisii", waterNeed: "high", lightNeed: "low", emoji: "🌸", color: "#2b6a3a", shape: "bush", minTempC: 13,
       note: "Erde stets leicht feucht halten; hängende Blätter zeigen Durst an." },
-    { id: "calathea", name: "Calathea (Korbmarante)", latin: "Goeppertia spp. (syn. Calathea)", waterNeed: "high", lightNeed: "medium", emoji: "🌿", color: "#4a7d4f", shape: "bush", minTempC: 15,
+    { id: "calathea", cat: "blatt", name: "Calathea (Korbmarante)", latin: "Goeppertia spp. (syn. Calathea)", waterNeed: "high", lightNeed: "medium", emoji: "🌿", color: "#4a7d4f", shape: "bush", minTempC: 15,
       note: "Mit kalkarmem, zimmerwarmem Wasser gleichmäßig feucht halten und hohe Luftfeuchte bieten, keine direkte Sonne." },
-    { id: "strelitzie", name: "Strelitzie (Paradiesvogelblume)", latin: "Strelitzia reginae", waterNeed: "medium", lightNeed: "high", emoji: "🌴", color: "#4c7a5a", shape: "tall", minTempC: 8,
+    { id: "strelitzie", cat: "gruen", name: "Strelitzie (Paradiesvogelblume)", latin: "Strelitzia reginae", waterNeed: "medium", lightNeed: "high", emoji: "🌴", color: "#4c7a5a", shape: "tall", minTempC: 8,
       note: "Sehr hell bis sonnig stellen; im Sommer reichlich, im Winter sparsamer gießen." },
-    { id: "kentia", name: "Kentia-Palme", latin: "Howea forsteriana", waterNeed: "medium", lightNeed: "low", emoji: "🌴", color: "#3a6b3f", shape: "palm", minTempC: 10,
+    { id: "kentia", cat: "palme", name: "Kentia-Palme", latin: "Howea forsteriana", waterNeed: "medium", lightNeed: "low", emoji: "🌴", color: "#3a6b3f", shape: "palm", minTempC: 10,
       note: "Verträgt auch hellen Schatten; Erde leicht feucht halten, Staunässe vermeiden." },
-    { id: "areca", name: "Goldfruchtpalme (Areca)", latin: "Dypsis lutescens", waterNeed: "high", lightNeed: "medium", emoji: "🌴", color: "#7aa84a", shape: "palm", minTempC: 12,
+    { id: "areca", cat: "palme", name: "Goldfruchtpalme (Areca)", latin: "Dypsis lutescens", waterNeed: "high", lightNeed: "medium", emoji: "🌴", color: "#7aa84a", shape: "palm", minTempC: 12,
       note: "Hell ohne Mittagssonne stellen, Erde gleichmäßig feucht halten und öfter besprühen." },
-    { id: "yucca", name: "Yucca-Palme", latin: "Yucca elephantipes", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#4d7f4a", shape: "tall", minTempC: 5,
+    { id: "yucca", cat: "robust", name: "Yucca-Palme", latin: "Yucca elephantipes", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#4d7f4a", shape: "tall", minTempC: 5,
       note: "Möglichst sonnig stellen; zwischen den Wassergaben gut abtrocknen lassen." },
-    { id: "drachenbaum", name: "Drachenbaum", latin: "Dracaena marginata", waterNeed: "low", lightNeed: "medium", emoji: "🌱", color: "#5b7a3c", shape: "tall", minTempC: 12,
+    { id: "drachenbaum", cat: "robust", name: "Drachenbaum", latin: "Dracaena marginata", waterNeed: "low", lightNeed: "medium", emoji: "🌱", color: "#5b7a3c", shape: "tall", minTempC: 12,
       note: "Hell ohne pralle Sonne; erst gießen, wenn die Erde zur Hälfte abgetrocknet ist." },
-    { id: "elefantenfuss", name: "Elefantenfuß", latin: "Beaucarnea recurvata", waterNeed: "low", lightNeed: "high", emoji: "🌴", color: "#6b8f4a", shape: "tall", minTempC: 8,
+    { id: "elefantenfuss", cat: "robust", name: "Elefantenfuß", latin: "Beaucarnea recurvata", waterNeed: "low", lightNeed: "high", emoji: "🌴", color: "#6b8f4a", shape: "tall", minTempC: 8,
       note: "Speichert Wasser im verdickten Stamm – sonnig stellen und selten gießen." },
-    { id: "aloe", name: "Aloe vera", latin: "Aloe vera", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#7fa37a", shape: "succulent", minTempC: 8,
+    { id: "aloe", cat: "sukk", name: "Aloe vera", latin: "Aloe vera", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#7fa37a", shape: "succulent", minTempC: 8,
       note: "Sonnig stellen, durchdringend gießen und dann vollständig austrocknen lassen." },
-    { id: "echeverie", name: "Echeverie (Sukkulente)", latin: "Echeveria spp.", waterNeed: "low", lightNeed: "high", emoji: "🪷", color: "#8fb3a0", shape: "succulent", minTempC: 5,
+    { id: "echeverie", cat: "sukk", name: "Echeverie (Sukkulente)", latin: "Echeveria spp.", waterNeed: "low", lightNeed: "high", emoji: "🪷", color: "#8fb3a0", shape: "succulent", minTempC: 5,
       note: "Vollsonnig stellen, nur auf die Erde gießen – Wasser in der Rosette führt zu Fäulnis." },
-    { id: "kaktus", name: "Kaktus", latin: "Cactaceae (z. B. Mammillaria)", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#5f8f4e", shape: "succulent", minTempC: 5,
+    { id: "kaktus", cat: "sukk", name: "Kaktus", latin: "Cactaceae (z. B. Mammillaria)", waterNeed: "low", lightNeed: "high", emoji: "🌵", color: "#5f8f4e", shape: "succulent", minTempC: 5,
       note: "Im Sommer selten, im Winter kühl und fast trocken halten – das fördert die Blüte." },
-    { id: "orchidee", name: "Orchidee (Phalaenopsis)", latin: "Phalaenopsis-Hybriden", waterNeed: "medium", lightNeed: "medium", emoji: "🌺", color: "#6c8f4e", shape: "bush", minTempC: 15,
+    { id: "orchidee", cat: "blatt", name: "Orchidee (Phalaenopsis)", latin: "Phalaenopsis-Hybriden", waterNeed: "medium", lightNeed: "medium", emoji: "🌺", color: "#6c8f4e", shape: "bush", minTempC: 15,
       note: "Etwa wöchentlich 10 Minuten tauchen und gut abtropfen lassen; hell, aber ohne Mittagssonne." },
-    { id: "pilea", name: "Ufopflanze (Pilea)", latin: "Pilea peperomioides", waterNeed: "medium", lightNeed: "medium", emoji: "🪙", color: "#6fae4a", shape: "bush", minTempC: 10,
+    { id: "pilea", cat: "blatt", name: "Ufopflanze (Pilea)", latin: "Pilea peperomioides", waterNeed: "medium", lightNeed: "medium", emoji: "🪙", color: "#6fae4a", shape: "bush", minTempC: 10,
       note: "Hell ohne pralle Sonne; gießen, wenn die obere Erdschicht trocken ist, und regelmäßig drehen." },
-    { id: "farn", name: "Schwertfarn (Nephrolepis)", latin: "Nephrolepis exaltata", waterNeed: "high", lightNeed: "medium", emoji: "🌿", color: "#4f9a3f", shape: "hanging", minTempC: 12,
+    { id: "farn", cat: "blatt", name: "Schwertfarn (Nephrolepis)", latin: "Nephrolepis exaltata", waterNeed: "high", lightNeed: "medium", emoji: "🌿", color: "#4f9a3f", shape: "hanging", minTempC: 12,
       note: "Ballen nie austrocknen lassen und für hohe Luftfeuchte sorgen; keine direkte Sonne." },
-    { id: "schefflera", name: "Strahlenaralie (Schefflera)", latin: "Schefflera arboricola", waterNeed: "medium", lightNeed: "medium", emoji: "🌳", color: "#4a8a3a", shape: "tall", minTempC: 10,
+    { id: "schefflera", cat: "gruen", name: "Strahlenaralie (Schefflera)", latin: "Schefflera arboricola", waterNeed: "medium", lightNeed: "medium", emoji: "🌳", color: "#4a8a3a", shape: "tall", minTempC: 10,
       note: "Hell stellen, mäßig gießen und die Erde zwischendurch antrocknen lassen." },
-    { id: "basilikum", name: "Basilikum (Kräuter)", latin: "Ocimum basilicum", waterNeed: "high", lightNeed: "high", emoji: "🌿", color: "#5fae3c", shape: "bush", minTempC: 10,
+    { id: "basilikum", cat: "kraut", name: "Basilikum", latin: "Ocimum basilicum", waterNeed: "high", lightNeed: "high", emoji: "🌿", color: "#5fae3c", shape: "bush", minTempC: 10,
       note: "Sonnig stellen und täglich prüfen – morgens von unten gießen, Erde nie ganz austrocknen lassen." },
-    { id: "olivenbaum", name: "Olivenbaum", latin: "Olea europaea", waterNeed: "medium", lightNeed: "high", emoji: "🫒", color: "#8a9a6b", shape: "tree", minTempC: -5,
-      note: "So sonnig wie möglich; obere Erdschicht abtrocknen lassen, im Winter kühl und sparsam gießen." }
+    { id: "olivenbaum", cat: "gruen", name: "Olivenbaum", latin: "Olea europaea", waterNeed: "medium", lightNeed: "high", emoji: "🫒", color: "#8a9a6b", shape: "tree", minTempC: -5,
+      note: "So sonnig wie möglich; obere Erdschicht abtrocknen lassen, im Winter kühl und sparsam gießen." },
+    { id: "speerbogenhanf", cat: "robust", name: "Speerbogenhanf (African Spear)", latin: "Dracaena angolensis (syn. Sansevieria cylindrica)", waterNeed: "low", lightNeed: "low", emoji: "🪴", color: "#55704a", shape: "tall", minTempC: 12,
+      note: "Runde, speerförmige Blätter speichern viel Wasser – erst gießen, wenn die Erde ganz trocken ist; nie in die Blattachseln gießen." },
+    { id: "rosmarin", cat: "kraut", name: "Rosmarin", latin: "Salvia rosmarinus", waterNeed: "medium", lightNeed: "high", emoji: "🌿", color: "#4f6e55", shape: "bush", minTempC: -5,
+      note: "So sonnig wie möglich; Erde zwischendurch gut abtrocknen lassen, Staunässe vermeiden. Im Winter hell und kühl (5–10 °C) stellen." },
+    { id: "thymian", cat: "kraut", name: "Thymian", latin: "Thymus vulgaris", waterNeed: "medium", lightNeed: "high", emoji: "🌿", color: "#6b8a5a", shape: "bush", minTempC: -10,
+      note: "Vollsonnig und eher trocken halten – erst gießen, wenn die Erde oben trocken ist. Mag durchlässige, sandige Erde." },
+    { id: "minze", cat: "kraut", name: "Minze", latin: "Mentha × piperita", waterNeed: "high", lightNeed: "medium", emoji: "🌱", color: "#4f9a46", shape: "bush", minTempC: -15,
+      note: "Erde gleichmäßig feucht halten; hell bis halbschattig. Wächst stark – regelmäßig ernten und Triebspitzen abknipsen." },
+    { id: "petersilie", cat: "kraut", name: "Petersilie", latin: "Petroselinum crispum", waterNeed: "high", lightNeed: "medium", emoji: "🌿", color: "#3f8a36", shape: "bush", minTempC: -8,
+      note: "Hell ohne pralle Mittagssonne; Erde leicht feucht halten, aber keine Staunässe. Äußere Stiele zuerst ernten." },
+    { id: "schnittlauch", cat: "kraut", name: "Schnittlauch", latin: "Allium schoenoprasum", waterNeed: "high", lightNeed: "high", emoji: "🧅", color: "#4f8f3a", shape: "bush", minTempC: -20,
+      note: "Sonnig bis halbschattig; Erde nicht austrocknen lassen. Halme 2–3 cm über der Erde abschneiden, dann treibt er neu aus." },
+    { id: "oregano", cat: "kraut", name: "Oregano", latin: "Origanum vulgare", waterNeed: "medium", lightNeed: "high", emoji: "🌿", color: "#5e8a48", shape: "bush", minTempC: -15,
+      note: "Sonnig und eher trocken halten; zwischen den Wassergaben antrocknen lassen. Aroma ist in voller Sonne am stärksten." },
+    { id: "salbei", cat: "kraut", name: "Salbei", latin: "Salvia officinalis", waterNeed: "medium", lightNeed: "high", emoji: "🌿", color: "#7f9a7c", shape: "bush", minTempC: -12,
+      note: "Sonnig stellen, mäßig gießen und Erde zwischendurch abtrocknen lassen. Im Frühjahr zurückschneiden, damit er buschig bleibt." }
   ];
 
   /* Interne Modellparameter (nicht Teil des Vertrags)
@@ -86,9 +102,18 @@
     strelitzie:   { use: 1.1 },
     basilikum:    { use: 1.2 },
     olivenbaum:   { use: 0.9 },
+    speerbogenhanf: { use: 0.75, xeric: true, cap: "low" },
+    rosmarin:     { use: 0.75, fraction: 0.1 },   // mediterran: zwischendurch abtrocknen lassen
+    thymian:      { use: 0.6, fraction: 0.09 },
+    oregano:      { use: 0.65, fraction: 0.09 },
+    salbei:       { use: 0.8, fraction: 0.1 },
+    minze:        { use: 1.1 },
+    petersilie:   { use: 0.95 },
+    schnittlauch: { use: 0.9 },
     orchidee:     { use: 0.6, dip: true }
   };
-  var SUN_SENSITIVE = { calathea: 1, farn: 1, einblatt: 1, efeutute: 1, philodendron: 1, kentia: 1, orchidee: 1, areca: 1 };
+  var SUN_SENSITIVE = { calathea: 1, farn: 1, einblatt: 1, efeutute: 1, philodendron: 1, kentia: 1, orchidee: 1, areca: 1, petersilie: 1 };
+  var COOL_WINTER = { olivenbaum: "Olivenbaum", rosmarin: "Rosmarin" }; // hell und kühl überwintern
   var HUMIDITY_LOVERS = { calathea: 1, farn: 1, einblatt: 1, areca: 1, kentia: 1 };
   var RANK = { low: 0, medium: 1, high: 2 };
   // Lichtstufen (Licht-Index = Richtung × Fensteranteil × Jahreszeit)
@@ -321,7 +346,7 @@
       if (need - placeHave >= 2) warnings.push("Deutlich zu dunkel für " + plant.name + " – näher ans Fenster oder höher stellen (z. B. auf die Fensterbank).");
       else if (need - placeHave === 1 && !L.noWindow) warnings.push("Etwas zu dunkel für " + plant.name + " – ein hellerer Platz näher am Fenster wäre besser.");
       if (L.directSun && SUN_SENSITIVE[plant.id] && L.score >= 0.3 && isSunMonth(m)) warnings.push("Direkte Sonne kann die Blätter von " + plant.name + " verbrennen – etwas vom Fenster abrücken oder Gardine nutzen.");
-      if (plant.id === "olivenbaum" && (m >= 10 || m <= 2)) warnings.push("Tipp: Olivenbaum hell und kühl bei 5–10 °C überwintern (z. B. Treppenhaus) – im warmen Wohnzimmer drohen Blattfall und Schädlinge.");
+      if (COOL_WINTER[plant.id] && (m >= 10 || m <= 2)) warnings.push("Tipp: " + COOL_WINTER[plant.id] + " hell und kühl bei 5–10 °C überwintern (z. B. Treppenhaus) – im warmen Wohnzimmer drohen Blattfall und Schädlinge.");
     }
     if (ratio > 2) warnings.push("Topf wirkt sehr klein für die Pflanzenhöhe – Umtopfen in einen größeren Topf empfohlen.");
     else if (potTooBig || ratio < 0.35) warnings.push("Topf ist sehr groß für die Pflanze – nur ca. " + ml + " ml gießen, sonst bleibt die Erde lange nass (Staunässe, Wurzelfäule).");
@@ -409,26 +434,43 @@
       res.placeLevel = levelOf(res.placeIndex);
     }
     if (input.plantId) {
-      var plant = null;
-      for (var k = 0; k < PLANTS.length; k++) if (PLANTS[k].id === input.plantId) { plant = PLANTS[k]; break; }
-      if (plant) {
-        var gap = RANK[plant.lightNeed] - RANK[res.placeLevel];
-        var sunny = res.directSun && ((SUN_SENSITIVE[plant.id] && res.placeIndex >= 0.3) || (plant.lightNeed === "low" && res.placeIndex >= LIGHT_HIGH));
-        // draußen zu kalt? (gleiche Regel wie die Kälte-Warnungen in computeWater)
-        var cold = false;
-        if (res.outdoor) {
-          var mm = S.month, minT = num(plant.minTempC, 10), nl = HH_NIGHT_LOW[mm];
-          cold = minT > 0 && (((mm >= 9 || mm <= 3) && nl <= minT + 2) || nl < minT - 2);
-        }
-        res.fit = cold ? "cold" : gap >= 1 ? "dark" : sunny ? "sunny" : "good";
-      }
+      var f = plantFit(input.plantId, res, S.month);
+      if (f) res.fit = f;
     }
     return res;
+  }
+
+  /* Passt eine Pflanze an einen Platz? res = { placeIndex, placeLevel, directSun, outdoor } (aus estimateLight)
+   * → "good" | "dark" | "sunny" | "cold" (draußen) – nach denselben Regeln wie die Warnungen in computeWater. */
+  function plantFit(plantId, res, month) {
+    var plant = null;
+    for (var k = 0; k < PLANTS.length; k++) if (PLANTS[k].id === plantId) { plant = PLANTS[k]; break; }
+    if (!plant || !res) return null;
+    var gap = RANK[plant.lightNeed] - RANK[res.placeLevel];
+    var sunny = res.directSun && ((SUN_SENSITIVE[plant.id] && res.placeIndex >= 0.3) || (plant.lightNeed === "low" && res.placeIndex >= LIGHT_HIGH));
+    // draußen zu kalt? (gleiche Regel wie die Kälte-Warnungen in computeWater)
+    var cold = false;
+    if (res.outdoor) {
+      var mm = month == null ? new Date().getMonth() : month, minT = num(plant.minTempC, 10), nl = HH_NIGHT_LOW[mm];
+      cold = minT > 0 && (((mm >= 9 || mm <= 3) && nl <= minT + 2) || nl < minT - 2);
+    }
+    return cold ? "cold" : gap >= 1 ? "dark" : sunny ? "sunny" : "good";
   }
 
   window.PLANTS = PLANTS;
   window.computeWater = computeWater;
   window.estimateLight = estimateLight;
+  window.plantFit = plantFit;
+  // Kategorien für die Auswahl (Reihenfolge = Anzeige)
+  window.PLANT_CATEGORIES = [
+    { id: "gruen", name: "Grünpflanzen & Bäume" },
+    { id: "palme", name: "Palmen" },
+    { id: "haenge", name: "Hänge- & Rankpflanzen" },
+    { id: "blatt", name: "Blattschmuck & Blüten" },
+    { id: "robust", name: "Robust & genügsam" },
+    { id: "sukk", name: "Sukkulenten & Kakteen" },
+    { id: "kraut", name: "Kräuter" }
+  ];
   // Licht-Index-Schwellen: < medium schattig · medium…bright halbschattig · bright…high hell · ≥ high sehr hell/sonnig
   window.LIGHT_THRESHOLDS = { medium: LIGHT_MED, bright: LIGHT_BRIGHT, high: LIGHT_HIGH, noWindow: NO_WINDOW_SCORE, cap: LIGHT_CAP };
 })();
