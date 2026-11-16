@@ -50,6 +50,56 @@ const MATS = {
 export const plantMaterials = MATS;
 
 /* ------------------------------------------------------------------ */
+/* Lebendige Pflanzen: Wind (leichtes Wiegen) + Durst (hängen, blass)   */
+/* Jede Pflanze bekommt eigene Material-Kopien mit eigenen Uniforms;    */
+/* alle teilen sich dasselbe Shader-Programm.                           */
+/* ------------------------------------------------------------------ */
+export const windUniforms = { uTime: { value: 0 }, uWind: { value: 1 } };
+const LIVE_VERT = `
+  {
+    // Pflanze lokal: y = Höhe über Topfboden, xz = Abstand zur Mitte
+    float hr = length(transformed.xz);
+    float hy = transformed.y;
+    // Durst: äußere Teile hängen nach unten, Krone sackt etwas
+    float dr = uDroop * (1.0 - 0.7 * uRigid);
+    float up = smoothstep(0.02, 0.25, hy);
+    float y0 = transformed.y;
+    transformed.y -= dr * up * (0.24 * hr + 0.1 * hy);
+    transformed.y = max(transformed.y, min(y0, 0.05)); // nicht durch den Boden
+    transformed.xz *= 1.0 + dr * up * 0.08;
+    // Wind: Biegung wächst mit der Höhe, dazu feines Flattern an den Rändern
+    float t = uTime + uPhase;
+    float a = pow(abs(hy - 0.04), 1.35) * uWind * uSway;
+    transformed.x += a * 0.016 * sin(t * 1.30 + hy * 2.1);
+    transformed.z += a * 0.012 * sin(t * 1.05 + 1.7 + hy * 1.6);
+    float fl = uWind * uSway * 0.0035 * hr * up;
+    transformed.y += fl * sin(t * 2.7 + transformed.x * 23.0 + transformed.z * 17.0);
+  }`;
+const LIVE_FRAG = `
+  {
+    float l = dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11));
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(l) * vec3(1.12, 1.02, 0.62), uPale * 0.55);
+  }`;
+// u = { uDroop, uPale, uPhase, uRigid, uSway } (je Pflanze, {value})
+export function makeLiveMaterials(u) {
+  const out = {};
+  for (const k of Object.keys(MATS)) {
+    const m = MATS[k].clone();
+    m.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, windUniforms, u);
+      sh.vertexShader = 'uniform float uTime; uniform float uWind; uniform float uDroop; uniform float uPhase; uniform float uRigid; uniform float uSway;\n' +
+        sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n' + LIVE_VERT);
+      sh.fragmentShader = 'uniform float uPale;\n' + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' + LIVE_FRAG);
+    };
+    m.customProgramCacheKey = () => 'pf-live';
+    out[k] = m;
+  }
+  return out;
+}
+// steife Arten: hängen bei Durst kaum (Sukkulenten, Kakteen, Bogenhanf …)
+export const RIGID = { kaktus: 1, aloe: 1, echeverie: 1, bogenhanf: 0.9, speerbogenhanf: 1, yucca: 0.8, elefantenfuss: 0.7, gluecksfeder: 0.5, kentia: 0.3, areca: 0.3, rosmarin: 0.6, thymian: 0.4, schnittlauch: 0.2 };
+
+/* ------------------------------------------------------------------ */
 /* Topf (geteilte Einheitsgeometrie, per Mesh-Skalierung angepasst)     */
 /* ------------------------------------------------------------------ */
 const POT_PROFILE = [

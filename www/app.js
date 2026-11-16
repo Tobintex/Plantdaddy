@@ -345,6 +345,32 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-set-or .v b{display:block;font-size:20px;font-weight:750;font-variant-numeric:tabular-nums}
 .pf-set-or .v span{font-size:12.5px;color:var(--ink3)}
 .pf-set-or button{height:40px;padding:0 14px;border-radius:12px;background:var(--green);color:#fff;font-weight:700;font-size:14px;flex:none}
+/* Pflanzenbilder + Auswahl */
+.pf-th{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.pf-emoji .pf-th{width:118%;height:118%;margin:-9%}
+.pf-badge.mini .e .pf-th{width:150%;height:150%}
+.pf-badge .bi{display:inline-block;width:20px;height:20px;vertical-align:-5px;margin:-2px 2px -2px -4px}
+.pf-badge .bi .pf-th{width:130%;height:130%;margin:-15%}
+.pf-pickbtn{width:100%;display:flex;align-items:center;gap:8px;height:48px;padding:0 30px 0 6px;border-radius:12px;background:#f7f5f1;border:1px solid var(--line);font-size:16px;font-weight:600;color:var(--ink);text-align:left}
+.pf-pickbtn .ic{width:36px;height:36px;border-radius:9px;background:var(--green-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;overflow:hidden}
+.pf-pickbtn .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-pick{position:absolute;inset:0;z-index:60}
+.pf-pick.hide{display:none}
+.pf-pick-bg{position:absolute;inset:0;background:rgba(30,32,28,.32);opacity:0;transition:opacity .2s}
+.pf-pick.open .pf-pick-bg{opacity:1}
+.pf-pick-p{position:absolute;left:0;right:0;bottom:0;max-height:86%;background:var(--card);border-radius:22px 22px 0 0;box-shadow:var(--shadow);display:flex;flex-direction:column;
+  padding:14px 16px 0;transform:translateY(100%);transition:transform .22s ease-out;max-width:560px;margin:0 auto}
+.pf-pick.open .pf-pick-p{transform:none}
+.pf-pq{display:flex;align-items:center;background:#f1efeb;border-radius:12px;padding:0 12px;height:42px;margin:4px 0 6px}
+.pf-pq input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:16px;color:var(--ink);user-select:text;-webkit-user-select:text}
+.pf-pick-b{overflow:auto;padding-bottom:calc(var(--sab) + 16px);-webkit-overflow-scrolling:touch}
+.pf-pg{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin:12px 2px 6px}
+.pf-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pf-pt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 9px;border-radius:14px;background:#f7f5f1;border:2px solid transparent}
+.pf-pt.on{border-color:var(--green);background:var(--green-l)}
+.pf-pt .im{width:66px;height:66px;display:flex;align-items:center;justify-content:center;font-size:38px}
+.pf-pt b{font-size:12.5px;font-weight:650;line-height:1.2;text-align:center;color:var(--ink)}
+.pf-rp button .pf-th{width:22px;height:22px;margin:-3px 0}
 /* Was passt wohin? */
 .pf-lpb{height:30px;border-radius:999px;background:#f1efeb;font-weight:650;font-size:12.5px;color:var(--green-d);display:flex;align-items:center;justify-content:center;gap:6px}
 .pf-rc{border-top:1px solid #efede9;padding:12px 0 10px}
@@ -424,6 +450,14 @@ root.innerHTML = `
     <div class="a"><button id="or-reset">Zurücksetzen</button><button class="sens" id="or-sens">📱 Handy-Kompass</button></div>
   </div>
   <div class="pf-scrim" id="pf-scrim"></div>
+  <div class="pf-pick hide" id="pf-pick" role="dialog" aria-label="Pflanze wählen">
+    <div class="pf-pick-bg" id="pk-bg"></div>
+    <div class="pf-pick-p">
+      <div class="pf-head"><div><h2>Pflanze wählen</h2></div><button class="pf-x" id="pk-close" aria-label="Schließen">${ICONS.close}</button></div>
+      <label class="pf-pq"><input id="pk-q" type="search" placeholder="Suchen … z. B. Minze" autocomplete="off"></label>
+      <div class="pf-pick-b" id="pk-body"></div>
+    </div>
+  </div>
   <section class="pf-sheet" id="pf-sheet" aria-label="Pflanze"></section>
   <section class="pf-sheet" id="pf-list" aria-label="Meine Pflanzen"><div class="pf-grab"><i></i></div><div class="pf-sheet-body" id="pf-list-body"></div></section>
   <section class="pf-sheet" id="pf-set" aria-label="Einstellungen"><div class="pf-grab"><i></i></div><div class="pf-sheet-body" id="pf-set-body"></div></section>
@@ -496,6 +530,7 @@ const state = {
   lastPlantId: null,
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
+  motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
 };
 // Gießen: lastWateredAt (ISO) + kurze Historie (max. 10 Einträge)
 const nowDate = () => new Date();
@@ -568,6 +603,7 @@ function load() {
     if (known(d.lastPlantId)) state.lastPlantId = d.lastPlantId;
     state.seenHint = d.seenHint === true;
     state.showRoomNames = d.showRoomNames === true;
+    state.motion = d.motion !== false;
     if (d.reminder && typeof d.reminder === 'object') {
       state.reminder = { on: d.reminder.on === true, h: Math.round(num(d.reminder.h, 8, 0, 23)), m: Math.round(num(d.reminder.m, 0, 0, 59)) };
     }
@@ -577,7 +613,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -590,6 +626,14 @@ function vecCompass(nx, ny) {
 }
 const plantDef = (id) => PLANTS.find((p) => p.id === id) || PLANTS[0] || { id: 'x', name: 'Pflanze', emoji: '🪴', color: '#4f7a5a', shape: 'bush' };
 const CATS = Array.isArray(window.PLANT_CATEGORIES) ? window.PLANT_CATEGORIES : [];
+/* Pflanzenbilder: aus den eigenen 3D-Modellen gerendert (statt Emojis), im Gerät zwischengespeichert */
+const THUMB_KEY = 'plantflat.thumbs', THUMB_VER = 'v1-' + PLANTS.length;
+const thumbs = new Map();
+loadThumbs();
+function plantIcon(def) {
+  const u = thumbs.get(def.id);
+  return u ? `<img class="pf-th" src="${u}" alt="">` : esc(def.emoji || '🪴');
+}
 // Pflanzenauswahl nach Kategorien gruppiert (innerhalb alphabetisch)
 function plantOptionsHTML(cur) {
   const opt = (d) => `<option value="${esc(d.id)}"${d.id === cur ? ' selected' : ''}>${d.emoji || '🪴'}  ${esc(d.name)}</option>`;
@@ -1315,6 +1359,7 @@ function buildPlant(p) {
   const model = PM.buildPlant(p.plantId, { potDiameterCm: p.potDiameterCm, plantHeightCm: p.plantHeightCm,
     color: def.color, shape: def.shape, hangBelowM: standM });
   g.add(model);
+  applyLive(p, model);
   if (standM > 0) {
     const sw = sillOf(p);
     if (sw) {
@@ -1339,7 +1384,47 @@ function buildPlant(p) {
   root.traverse((o) => { o.userData.uid = p.uid; });
   root.userData.standY = standM;
   root.userData.topY = standM + model.userData.topY;
+  root.userData.potH = model.userData.potHeight;
+  root.userData.potR = model.userData.potRadius;
   return root;
+}
+/* Lebendige Pflanzen: eigene Materialien je Pflanze (Wind + Durst), bleiben über Neuaufbauten erhalten */
+const live = new Map(); // uid -> { u, mats, anim }
+function liveOf(uid) {
+  let L = live.get(uid);
+  if (!L) {
+    const h = [...String(uid)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    const u = { uDroop: { value: 0 }, uPale: { value: 0 }, uPhase: { value: (h % 1000) / 1000 * 40 }, uRigid: { value: 0 }, uSway: { value: 1 } };
+    L = { u, mats: PM.makeLiveMaterials(u), anim: false };
+    live.set(uid, L);
+  }
+  return L;
+}
+function applyLive(p, model) {
+  const L = liveOf(p.uid), rigid = PM.RIGID[p.plantId] || 0;
+  L.u.uRigid.value = rigid;
+  L.u.uSway.value = 1 - 0.75 * rigid;
+  model.traverse((o) => { if (o.isMesh && L.mats[o.userData.part]) o.material = L.mats[o.userData.part]; });
+  if (!L.anim) setThirst(p);
+}
+function dropLive(uid) {
+  const L = live.get(uid); if (!L) return;
+  Object.values(L.mats).forEach((m) => m.dispose());
+  live.delete(uid);
+}
+// Durst: fällig = leicht hängend, überfällig = deutlich hängend + blass
+function thirstOf(p) {
+  if (!state.plants.includes(p)) return 0;
+  const due = dueInfo(p, compute(p).r);
+  if (!due.due) return 0;
+  if (due.days === 0) return 0.3;
+  return clamp(0.5 + (-due.days) / Math.max(2, due.iv) * 0.9, 0.5, 1);
+}
+function setThirst(p) {
+  const L = live.get(p.uid); if (!L || L.anim) return;
+  const t = thirstOf(p);
+  L.u.uDroop.value = t;
+  L.u.uPale.value = t > 0.4 ? (t - 0.3) * 0.9 : 0;
 }
 const plantObjs = new Map(); // uid -> group
 // Geometrien pro Pflanze freigeben (geteilte Geometrien + Material-Cache bleiben)
@@ -1358,6 +1443,7 @@ function syncPlantObj(p) {
   shadowsDirty();
 }
 function removePlantObj(id) {
+  if (!state.plants.some((q) => q.uid === id) && draft?.uid !== id) dropLive(id);
   const old = plantObjs.get(id);
   if (old) { scene.remove(old); disposePlantGroup(old); plantObjs.delete(id); }
   shadowsDirty();
@@ -1753,6 +1839,64 @@ function updateOverlay() {
 
 const PULSE_MS = 1500;
 let last = performance.now();
+let lastWind = 0;
+const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+const motionOn = () => state.motion !== false && !(reduceMotion && reduceMotion.matches) && !orient.on;
+/* Effekte (Gieß-Animation) */
+const fx = []; // { t0, dur, step(k, now) }
+let fxSlow = 1; // nur für Tests (Zeitlupe)
+function runFx(now) {
+  for (let i = fx.length - 1; i >= 0; i--) {
+    const f = fx[i];
+    if (now < f.t0) continue;
+    const k = clamp((now - f.t0) / (f.dur * fxSlow), 0, 1);
+    f.step(k, now);
+    if (k >= 1) { fx.splice(i, 1); f.end && f.end(); }
+  }
+}
+const dropGeo = new THREE.SphereGeometry(1, 10, 8);
+const dropMat = new THREE.MeshStandardMaterial({ color: 0x7cc0f0, roughness: 0.12, metalness: 0, transparent: true, opacity: 0.88 });
+const rippleGeo = new THREE.RingGeometry(0.82, 1, 40);
+const easeOutBack = (k) => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+// Wassertropfen fallen in den Topf, Ringe auf der Erde, die Pflanze richtet sich auf
+function waterFx(p, delay = 0) {
+  const g = plantObjs.get(p.uid); if (!g) return;
+  const t0 = performance.now() + delay;
+  const standY = g.userData.standY || 0, potH = g.userData.potH || 0.15, potR = g.userData.potR || 0.1;
+  const soilY = g.position.y + standY + potH * 0.86;
+  const startY = Math.max(g.position.y + g.userData.topY + 0.1, soilY + 0.3);
+  const sc = clamp(potR / 0.1, 0.8, 1.5);
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * potR * 0.6;
+    const x = g.position.x + Math.cos(a) * r, z = g.position.z + Math.sin(a) * r;
+    const y0 = startY + Math.random() * 0.12;
+    const m = new THREE.Mesh(dropGeo, dropMat);
+    m.scale.set(0.011 * sc, 0.02 * sc, 0.011 * sc); m.visible = false;
+    m.position.set(x, y0, z);
+    scene.add(m);
+    const fall = Math.sqrt(2 * (y0 - soilY) / 3) * 1000; // langsamer als echte Schwerkraft, damit man es sieht
+    fx.push({ t0: t0 + i * 55 + Math.random() * 40, dur: fall,
+      step: (k) => { m.visible = true; m.position.y = y0 - (y0 - soilY) * k * k; },
+      end: () => {
+        scene.remove(m);
+        if (i % 2) return;
+        const rp = new THREE.Mesh(rippleGeo, new THREE.MeshBasicMaterial({ color: 0x8ccaff, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide }));
+        rp.rotation.x = -Math.PI / 2; rp.position.set(x, soilY + 0.004, z); rp.scale.setScalar(potR * 0.12);
+        scene.add(rp);
+        fx.push({ t0: performance.now(), dur: 650, step: (q) => { const s2 = potR * (0.12 + 0.55 * q); rp.scale.set(s2, s2, s2); rp.material.opacity = 0.8 * (1 - q); },
+          end: () => { scene.remove(rp); rp.material.dispose(); } });
+      } });
+  }
+  // Pflanze richtet sich auf (mit kleinem Überschwingen), Farbe kommt zurück
+  const L = liveOf(p.uid);
+  const d0 = L.u.uDroop.value, p0 = L.u.uPale.value;
+  L.anim = true;
+  fx.push({ t0: t0 + 380, dur: 1300,
+    step: (k) => { const e = easeOutBack(k); L.u.uDroop.value = d0 + (0 - d0 - 0.18) * e + 0.18 * (k * k); L.u.uPale.value = p0 * (1 - k); },
+    end: () => { L.anim = false; setThirst(p); } });
+  requestRender();
+}
 function loop(now) {
   requestAnimationFrame(loop);
   const dt = Math.min(64, now - last); last = now;
@@ -1776,6 +1920,13 @@ function loop(now) {
     const t = now - ring.userData.t0;
     if (t < PULSE_MS) ring.scale.setScalar(ring.userData.r * (1 + Math.sin((t / PULSE_MS) * Math.PI * 3) * 0.06 * (1 - t / PULSE_MS)));
     else { ring.scale.setScalar(ring.userData.r); ring.userData.t0 = null; }
+    dirty = true;
+  }
+  if (fx.length) { runFx(now); dirty = true; }
+  // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist
+  if (motionOn() && (state.plants.length || draft) && now - lastWind >= 33) {
+    lastWind = now;
+    PM.windUniforms.uTime.value = now / 1000;
     dirty = true;
   }
   if (dirty) {
@@ -1965,7 +2116,6 @@ function pct(input) {
 }
 function renderSheet(isNew) {
   const p = selected;
-  const opts = plantOptionsHTML(p.plantId);
   sheetBody.innerHTML = `<div class="pf-grab"><i></i></div><div class="pf-sheet-body">
     <div class="pf-head">
       <div class="pf-emoji" id="s-emoji"></div>
@@ -1985,7 +2135,7 @@ function renderSheet(isNew) {
       <input type="range" class="compact" id="s-stand" min="0" max="150" step="5" value="${p.standCm || 0}" aria-label="Standhöhe">
     </div>
     <div class="pf-field pf-two">
-      <div class="pf-select"><select id="s-plant" aria-label="Pflanze">${opts}</select></div>
+      <div class="pf-select"><button type="button" class="pf-pickbtn" id="s-plant" aria-label="Pflanze wählen"><span class="ic" id="s-plant-ic"></span><span class="n" id="s-plant-n"></span></button></div>
       <input class="pf-input" id="s-nick" type="text" maxlength="30" placeholder="Spitzname" aria-label="Spitzname (optional)" autocomplete="off" value="${esc(p.nick || '')}">
     </div>
     <div class="pf-field pf-sl">
@@ -2014,7 +2164,7 @@ function renderSheet(isNew) {
     syncPlantObj(p); updateSelection(); refreshSheet();
     focusPlant(p);
   });
-  sel.addEventListener('change', () => { p.plantId = sel.value; syncPlantObj(p); updateSelection(); refreshSheet(); });
+  sel.addEventListener('click', () => openPicker(p.plantId, (id) => { if (id === p.plantId) return; p.plantId = id; syncPlantObj(p); updateSelection(); refreshSheet(); }));
   pot.addEventListener('input', () => { p.potDiameterCm = +pot.value; pct(pot); syncPlantObj(p); updateSelection(); refreshSheet(); });
   hh.addEventListener('input', () => { p.plantHeightCm = +hh.value; pct(hh); syncPlantObj(p); refreshSheet(); });
   $('s-close').addEventListener('click', () => closeSheet());
@@ -2104,7 +2254,9 @@ function refreshSheet() {
   const p = selected; if (!p) return;
   const def = plantDef(p.plantId);
   const { a, r } = compute(p);
-  $('s-emoji').textContent = def.emoji || '🪴';
+  $('s-emoji').innerHTML = plantIcon(def);
+  $('s-plant-ic').innerHTML = plantIcon(def);
+  $('s-plant-n').textContent = def.name;
   $('s-name').textContent = p.nick || def.name;
   $('s-latin').textContent = p.nick ? def.name : (def.latin || '');
   $('s-note').textContent = def.note || '';
@@ -2125,7 +2277,8 @@ function refreshSheet() {
   renderFeedback(p, r, !!justNow);
   const rs = $('s-adj-reset');
   if (rs) rs.addEventListener('click', () => setAdj(p, 1, 'Anpassung zurückgesetzt'));
-  badge.textContent = r ? (isDip(r) ? `${def.emoji || ''} Tauchen · ${intervalText(r.intervalDays)}` : `${def.emoji || ''} ${fmtInt(r.mlPerWatering)} ml · ${intervalText(r.intervalDays)}`) : def.name;
+  const bi = `<span class="bi">${plantIcon(def)}</span>`;
+  badge.innerHTML = r ? (isDip(r) ? `${bi}Tauchen · ${esc(intervalText(r.intervalDays))}` : `${bi}${fmtInt(r.mlPerWatering)} ml · ${esc(intervalText(r.intervalDays))}`) : esc(def.name);
   updateDistLine(p);
   requestRender();
 }
@@ -2182,6 +2335,7 @@ function waterPlants(list) {
     p.waterLog = [...(p.waterLog || []), now].slice(-10);
   }
   if (list.some((p) => state.plants.includes(p))) save();
+  list.forEach((p, i) => waterFx(p, i * 140));
   afterWaterChange();
   toast(list.length > 1 ? `${list.length} gegossen` : 'Gegossen', () => {
     for (const b of before) { b.p.lastWateredAt = b.last; b.p.waterLog = b.log; }
@@ -2504,7 +2658,7 @@ const LIGHT_NEED_TEXT = { low: 'kommt mit wenig Licht aus', medium: 'mag es hell
 function updateBestBar() {
   const p = light.best && light.best.p; if (!p) return;
   const def = plantDef(p.plantId);
-  $('pf-bb-e').textContent = def.emoji || '🪴';
+  $('pf-bb-e').innerHTML = plantIcon(def);
   $('pf-bb-t').textContent = `Beste Plätze für ${p.nick || def.name.replace(/\s*\(.*\)\s*$/, '')}`;
   const m2 = light.stats && light.stats.goodM2;
   $('pf-bb-s').textContent = m2 == null ? 'Tippe zum Verschieben' : m2 < 0.05 ? 'Kein passender Platz · Tippe zum Verschieben' : `Tippe zum Verschieben · ≈ ${fmt1(m2)} m² passen`;
@@ -2538,6 +2692,15 @@ $('pf-lm').addEventListener('click', (e) => { const b = e.target.closest('button
 $('pf-lh').addEventListener('click', (e) => { const b = e.target.closest('button[data-k]'); if (!b || b.dataset.k === light.height) return; light.height = b.dataset.k; renderLightPanel(); refreshLight(); });
 $('pf-bb-x').addEventListener('click', () => cancelMove());
 $('pf-recs-btn').addEventListener('click', () => openRecs());
+$('pk-close').addEventListener('click', closePicker);
+$('pk-bg').addEventListener('click', closePicker);
+$('pk-q').addEventListener('input', () => { picker.q = $('pk-q').value; renderPicker(); });
+$('pk-body').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-id]'); if (!b) return;
+  const id = b.dataset.id, cb = picker.onPick;
+  closePicker();
+  if (cb) cb(id);
+});
 
 /* ------------------------------------------------------------------ */
 /* List sheet                                                          */
@@ -2567,7 +2730,7 @@ function renderList() {
     const w0 = (r?.warnings || [])[0];
     return `<div class="pf-lrow" data-uid="${esc(p.uid)}">
       <button class="open" data-uid="${esc(p.uid)}">
-        <div class="pf-emoji">${def.emoji || '🪴'}</div>
+        <div class="pf-emoji">${plantIcon(def)}</div>
         <div class="t"><b>${plantTitle(p, def)}</b><span>${esc(a.roomName || '–')}${a.outdoor ? '' : a.windowDistanceM != null ? ` · ${compassName(a.windowCompassDeg)}fenster ${fmt1(a.windowDistanceM)} m` : ' · ohne Fenster'}</span>${w0 ? `<span class="wn">⚠ ${esc(w0)}</span>` : ''}</div>
         <div class="w">${r ? `<b>${isDip(r) ? 'Tauchen' : fmtInt(r.mlPerWatering) + ' ml'}</b>` : ''}<span class="${due.cls || (due.due ? 'due' : '')}">${esc(due.text)}</span></div>
       </button>
@@ -2619,6 +2782,8 @@ function openSettings() {
       </div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
         <button class="pf-switch" id="st-names" role="switch" aria-checked="${state.showRoomNames}" aria-label="Raumnamen anzeigen"></button></div>
+      <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzen bewegen sich</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichtes Wiegen im Luftzug · aus spart Akku</p></div>
+        <button class="pf-switch" id="st-motion" role="switch" aria-checked="${state.motion}" aria-label="Bewegung an/aus"></button></div>
       <button class="pf-rlink" id="st-rem"><span class="ic">${ICONS.bell}</span><span class="t"><b>Erinnerung</b><span>${esc(reminderSummary())}</span></span></button>
     </div>`;
   void def;
@@ -2626,6 +2791,10 @@ function openSettings() {
   $('st-orient').addEventListener('click', () => { save(); startOrient(); });
   $('st-close').addEventListener('click', () => { save(); closeAux(); });
   $('st-rem').addEventListener('click', () => { save(); openReminder('settings'); });
+  $('st-motion').addEventListener('click', () => {
+    state.motion = !state.motion; save();
+    $('st-motion').setAttribute('aria-checked', String(state.motion)); requestRender();
+  });
   $('st-names').addEventListener('click', () => {
     state.showRoomNames = !state.showRoomNames; save();
     $('st-names').setAttribute('aria-checked', String(state.showRoomNames)); requestRender();
@@ -2813,6 +2982,97 @@ function stopSensor() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Pflanzenbilder rendern                                              */
+/* ------------------------------------------------------------------ */
+const THUMB_SIZE = { gruen: [24, 110], palme: [24, 110], robust: [18, 60], haenge: [16, 40], blatt: [16, 40], kraut: [14, 30], sukk: [13, 18] };
+function loadThumbs() {
+  try {
+    const d = JSON.parse(localStorage.getItem(THUMB_KEY) || 'null');
+    if (d && d.ver === THUMB_VER && d.map) for (const k of Object.keys(d.map)) thumbs.set(k, d.map[k]);
+  } catch (e) { /* ignore */ }
+}
+function genThumbs() {
+  const todo = PLANTS.filter((d) => !thumbs.has(d.id));
+  if (!todo.length) return;
+  let R;
+  try {
+    R = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  } catch (e) { return; }
+  const S = 160;
+  R.setPixelRatio(1); R.setSize(S, S, false);
+  R.outputColorSpace = THREE.SRGBColorSpace;
+  R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.15;
+  const sc = new THREE.Scene();
+  sc.add(new THREE.HemisphereLight(0xfff6e8, 0x9c8a74, 1.5));
+  const dl = new THREE.DirectionalLight(0xfff1dc, 2.1); dl.position.set(-1.2, 2.2, 1.6); sc.add(dl);
+  const cam = new THREE.PerspectiveCamera(26, 1, 0.01, 50);
+  const box = new THREE.Box3(), ctr = new THREE.Vector3(), size = new THREE.Vector3();
+  const one = (def) => {
+    const sz = THUMB_SIZE[def.cat] || [18, 50];
+    const m = PM.buildPlant(def.id, { potDiameterCm: sz[0], plantHeightCm: sz[1], color: def.color, shape: def.shape, seed: 'thumb', lod: 1 });
+    sc.add(m);
+    box.setFromObject(m); box.getCenter(ctr); box.getSize(size);
+    const rad = Math.max(size.y * 0.55, Math.hypot(size.x, size.z) * 0.5);
+    const dist = rad / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * 1.02;
+    const dir = new THREE.Vector3(0.35, 0.42, 1).normalize();
+    cam.position.copy(ctr).addScaledVector(dir, dist);
+    cam.lookAt(ctr);
+    R.render(sc, cam);
+    let url = R.domElement.toDataURL('image/webp', 0.88);
+    if (!url.startsWith('data:image/webp')) url = R.domElement.toDataURL('image/png');
+    thumbs.set(def.id, url);
+    sc.remove(m); PM.disposePlant(m);
+  };
+  let i = 0;
+  const step = () => {
+    const t0 = performance.now();
+    while (i < todo.length && performance.now() - t0 < 24) one(todo[i++]);
+    if (i < todo.length) { setTimeout(step, 16); return; }
+    R.dispose(); R.forceContextLoss();
+    try { localStorage.setItem(THUMB_KEY, JSON.stringify({ ver: THUMB_VER, map: Object.fromEntries(thumbs) })); } catch (e) { /* voll */ }
+    refreshThumbUI();
+  };
+  setTimeout(step, 400);
+}
+function refreshThumbUI() {
+  renderMiniBadges();
+  if (selected) refreshSheet();
+  if (listSheet.classList.contains('open')) renderList();
+  if ($('rc-body') && recsCache && setSheet.classList.contains('open')) renderRecs();
+  if (light.best) updateBestBar();
+  if ($('pf-pick') && !$('pf-pick').classList.contains('hide')) renderPicker();
+}
+
+/* ------------------------------------------------------------------ */
+/* Pflanzen-Auswahl (Bilder, nach Kategorien, mit Suche)               */
+/* ------------------------------------------------------------------ */
+const picker = { cur: null, onPick: null, q: '' };
+function openPicker(cur, onPick) {
+  picker.cur = cur; picker.onPick = onPick; picker.q = '';
+  const el = $('pf-pick');
+  el.classList.remove('hide');
+  $('pk-q').value = '';
+  renderPicker();
+  requestAnimationFrame(() => { el.classList.add('open'); const on = el.querySelector('.pf-pt.on'); if (on) on.scrollIntoView({ block: 'center' }); });
+}
+function closePicker() {
+  const el = $('pf-pick');
+  el.classList.remove('open');
+  setTimeout(() => el.classList.add('hide'), 220);
+}
+function renderPicker() {
+  const q = picker.q.trim().toLowerCase();
+  const match = (d) => !q || d.name.toLowerCase().includes(q) || (d.latin || '').toLowerCase().includes(q);
+  const byName = (a, b) => a.name.localeCompare(b.name, 'de');
+  const known = new Set(CATS.map((c) => c.id));
+  const groups = CATS.map((c) => ({ name: c.name, list: PLANTS.filter((d) => d.cat === c.id && match(d)).sort(byName) }));
+  groups.push({ name: 'Weitere', list: PLANTS.filter((d) => !known.has(d.cat) && match(d)).sort(byName) });
+  const html = groups.filter((g) => g.list.length).map((g) => `<div class="pf-pg">${esc(g.name)}</div><div class="pf-pgrid">${g.list.map((d) =>
+    `<button type="button" class="pf-pt${d.id === picker.cur ? ' on' : ''}" data-id="${esc(d.id)}"><span class="im">${plantIcon(d)}</span><b>${esc(d.name.replace(/\s*\(.*\)\s*$/, ''))}</b></button>`).join('')}</div>`).join('');
+  $('pk-body').innerHTML = html || '<div class="pf-list-empty">Keine Pflanze gefunden.</div>';
+}
+
+/* ------------------------------------------------------------------ */
 /* Was passt wohin? Freie Plätze + passende Pflanzen je Raum           */
 /* ------------------------------------------------------------------ */
 // Wo steht eine Pflanzenart typischerweise? floor = Boden, table = Tisch/Regal (75 cm), sill = Fensterbank
@@ -2946,7 +3206,7 @@ function renderRecs(expanded = new Set()) {
       const idx = R.list.map((x, i) => [x, i]).filter(([x]) => x.where === wh);
       if (!idx.length) return '';
       const key = ri + ':' + wh, all = expanded.has(key), shown = all ? idx : idx.slice(0, MAX);
-      return `<div class="pf-rg">${R.outdoor ? 'Gerade passend' : PLACE_NAME[wh]}</div><div class="pf-rp">${shown.map(([x, i]) => `<button type="button" data-r="${ri}" data-i="${i}">${x.def.emoji || '🪴'} ${esc(x.def.name.replace(/\s*\(.*\)\s*$/, ''))}</button>`).join('')}${!all && idx.length > MAX ? `<button type="button" class="more" data-more="${key}">+ ${idx.length - MAX} weitere</button>` : ''}</div>`;
+      return `<div class="pf-rg">${R.outdoor ? 'Gerade passend' : PLACE_NAME[wh]}</div><div class="pf-rp">${shown.map(([x, i]) => `<button type="button" data-r="${ri}" data-i="${i}">${plantIcon(x.def)} ${esc(x.def.name.replace(/\s*\(.*\)\s*$/, ''))}</button>`).join('')}${!all && idx.length > MAX ? `<button type="button" class="more" data-more="${key}">+ ${idx.length - MAX} weitere</button>` : ''}</div>`;
     }).join('');
     return `<div class="pf-rc"><h3>${esc(R.room.name)}<small>${fmt1(R.area)} m²${R.count ? ` · ${R.count} ${R.count === 1 ? 'Pflanze' : 'Pflanzen'}` : ''}</small></h3>
       <div class="m">${meta}</div>${bar}
@@ -3215,8 +3475,9 @@ function renderMiniBadges() {
     const el = document.createElement('div');
     el.className = 'pf-badge mini' + (due.due ? ' due' : '') + (due.days < 0 ? ' over' : '');
     const st = due.due ? (due.days < 0 ? due.text : 'heute') : due.text;
-    el.innerHTML = `<span class="e">${due.due ? ICONS.dropW : (def.emoji || '🪴')}</span><b>${esc(p.nick || def.name)}</b><span class="s">${esc(st)}</span>`;
+    el.innerHTML = `<span class="e">${due.due ? ICONS.dropW : plantIcon(def)}</span><b>${esc(p.nick || def.name)}</b><span class="s">${esc(st)}</span>`;
     el.dataset.uid = p.uid; el.dataset.prio = due.due ? 1 : 2;
+    setThirst(p);
     el.addEventListener('click', (e) => { e.stopPropagation(); if (moveMode) return; openPlant(p, { focus: true }); });
     labelLayer.appendChild(el);
     miniBadges.set(p.uid, el);
@@ -3262,6 +3523,7 @@ resize();
 }
 updateCount(); updateHint();
 requestAnimationFrame(loop);
+genThumbs();
 initNativeReminders();
 showDueBanner();
 if (!PLANTS.length) toast('Pflanzendaten fehlen');
@@ -3311,5 +3573,11 @@ window.__plantflat = {
   cam: (pos, tgt) => { tween = null; camera.position.set(...pos); controls.target.set(...tgt); controls.update(); requestRender(); },
   recs: () => computeRecs().map((R) => ({ room: R.room.id, n: R.list.length, top: R.list.slice(0, 6).map((x) => x.def.id + '@' + x.where) })),
   orient: (on) => (on ? startOrient() : endOrient(true)),
+  thumbs: () => thumbs.size,
+  thumb: (id) => thumbs.get(id),
+  live: (id) => { const L = live.get(id); return L && { droop: L.u.uDroop.value, pale: L.u.uPale.value, anim: L.anim }; },
+  water: (id) => { const p = state.plants.find((q) => q.uid === id); if (p) waterPlants([p]); },
+  fx: () => fx.length,
+  fxSlow: (v) => { fxSlow = v; },
   dbg: () => ({ cam: camera.position.toArray().map((v) => +v.toFixed(2)), tgt: controls.target.toArray().map((v) => +v.toFixed(2)), dist: +camera.position.distanceTo(controls.target).toFixed(2), off: sheetOffset, tween: !!tween }),
 };
