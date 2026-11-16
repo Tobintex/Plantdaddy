@@ -28,7 +28,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe U
   color:var(--ink);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.35;
   user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
-#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#26384c 0%,#1c2a3b 52%,#141f2b 100%)}
+#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#f6f8fa 0%,#eaeef2 55%,#dde3e9 100%)}
+#pf.pf-night{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
+#pf.pf-night .pf-title b{color:#f3e7d3}
+#pf.pf-night .pf-title span{color:#a9b6c4}
 #pf canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .pf-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .pf-room{position:absolute;left:0;top:0;transform:translate(-50%,-50%);text-align:center;white-space:nowrap;
@@ -60,8 +63,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   display:flex;align-items:center;gap:10px;pointer-events:none}
 .pf-top > *{pointer-events:auto}
 .pf-title{flex:1;min-width:0;pointer-events:none}
-.pf-title b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em;color:#f3e7d3}
-.pf-title span{display:block;font-size:11.5px;color:#9fb0c3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-title b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.pf-title span{display:block;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-btn{height:40px;min-width:40px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.94);
   box-shadow:var(--shadow);display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:14px;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .12s}
@@ -305,7 +308,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button{width:36px;height:36px;border-radius:50%;background:#f1efeb;font-size:15px;flex:none}
 .pf-sp .tm button.on{background:var(--ink);color:#fff}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
-.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(8,14,22,.28) 100%)}
+.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(40,56,74,.10) 100%)}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:#f1efeb;border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -603,6 +606,7 @@ const state = {
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
+  lamps: 'auto', // Lampen: 'auto' (ab Sonnenuntergang) | 'on' | 'off'
   wallMode: 'diorama', // 'diorama' = hintere Außenwände in voller Höhe, 'cut' = alle Wände auf Schnitthöhe (Grundriss-Schnitt)
   showPlantNames: true, // Namen an den Pflanzen-Markern (aus: nur Symbol)
   design: null, // Wohnung gestalten: { rooms: {id: {floor, wall}}, items: [...] }
@@ -682,6 +686,7 @@ function load() {
     state.showRoomNames = d.showRoomNames === true;
     state.motion = d.motion !== false;
     state.wallMode = d.wallMode === 'cut' ? 'cut' : 'diorama';
+    state.lamps = ['on', 'off'].includes(d.lamps) ? d.lamps : 'auto';
     state.showPlantNames = d.showPlantNames !== false;
     state.design = cleanDesign(d.design);
     if (d.building && typeof d.building === 'object') {
@@ -697,7 +702,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, motion: state.motion, design: state.design, building: state.building,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, lamps: state.lamps, motion: state.motion, design: state.design, building: state.building,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -919,12 +924,28 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
 
 // „Cozy“-Licht: warme Himmelsfüllung, warmer Bodenreflex, warmes Grundlicht hebt die Schatten (nicht grau)
-const hemi = new THREE.HemisphereLight(0xfff1e0, 0x8a6a4e, 0.9);
-const amb = new THREE.AmbientLight(0xffe2c4, 0.45);
+const hemi = new THREE.HemisphereLight(0xeef3f8, 0x8a6a4e, 0.82); // kühler Himmel → warme Sonne hebt sich ab
+const amb = new THREE.AmbientLight(0xf1ece6, 0.4);
+/* Lampen: je Raum eine warme Pendelleuchte; die Lichter bleiben immer in der Szene (Intensität 0 = aus),
+ * damit beim Umschalten keine Shader neu kompiliert werden */
+const lamps = [];
+let lampsReady = false, lampsLit = null;
+const lampShadeMat = new THREE.MeshStandardMaterial({ color: 0xfff3dc, emissive: 0xffb866, emissiveIntensity: 2.2, roughness: 0.6 });
+function applyLamps(on) {
+  if (!lampsReady || on === lampsLit) return;
+  lampsLit = on;
+  for (const l of lamps) { l.light.intensity = on ? l.power : 0; l.shade.visible = on; }
+  const glow = on ? 0.55 : 0;
+  for (const wg of wallGroups) if (wg.glass) { wg.glass.emissive.set(0xffb15e); wg.glass.emissiveIntensity = glow; }
+  glassMat.emissive.set(0xffb15e); glassMat.emissiveIntensity = glow;
+  for (const m of facadeWinMats) m.emissiveIntensity = on ? 0.35 : 0;
+  appEl.classList.toggle('pf-night', isNight());
+  dirty = true;
+}
 scene.add(hemi, amb);
 // Nachmittagssonne aus Westen (kompassrichtig über planUpDeg), golden, eher flach
 const sun = new THREE.DirectionalLight(0xffd9a8, 2.2);
-const SUN_COMPASS = 262, SUN_ELEV = 42;
+const SUN_COMPASS = 250, SUN_ELEV = 33; // flachere Nachmittagssonne → längere, sichtbare Schatten
 /* Sonnenstand Hamburg (53,55° N, 9,99° O) für ein Datum – vereinfachte NOAA-Formeln, auf ~1° genau */
 function solarPos(date) {
   const rad = Math.PI / 180, lat = 53.55 * rad, lon = 9.99;
@@ -939,18 +960,24 @@ function solarPos(date) {
   return { az: ((az / rad) % 360 + 360) % 360, el: el / rad };
 }
 const sunMode = { on: false, month: new Date().getMonth(), hour: 17, play: false, last: 0 };
+let realSunEl = 30; // aktueller echter Sonnenstand (für die automatische Nacht im Normalmodus)
+// Nacht = Sonne unter dem Horizont: im Sonnenlauf zur gewählten Uhrzeit, sonst jetzt gerade
+function isNight() { return sunMode.on ? solarPos(sunDate()).el < -0.8 : realSunEl < -0.8; }
+function lampsOn() { const m = state.lamps || 'auto'; return m === 'on' || (m === 'auto' && isNight()); }
 function sunDate() { const n = new Date(); const h = Math.floor(sunMode.hour), mi = Math.round((sunMode.hour - h) * 60); return new Date(n.getFullYear(), sunMode.month, 15, h, mi); }
 function placeSun() {
   let az = SUN_COMPASS, elev = SUN_ELEV;
   if (sunMode.on) { const sp = solarPos(sunDate()); az = sp.az; elev = sp.el; }
-  const night = sunMode.on && elev < 0;
+  if (!sunMode.on) { const now = solarPos(new Date()); realSunEl = now.el; }
+  const night = isNight();
   // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
   const low = clamp(elev / 12, 0, 1);
-  sun.intensity = sunMode.on ? (night ? 0 : 3.1 * (0.35 + 0.65 * low)) : 2.9;
-  sun.color.setHSL(0.09, 1, sunMode.on ? 0.62 + 0.18 * low : 0.78);
-  hemi.intensity = sunMode.on ? (night ? 0.55 : 0.85) : 0.9;
-  hemi.color.set(night ? 0xbcc8e0 : 0xfff4e6);
-  amb.intensity = sunMode.on ? 0.3 : 0.45;
+  sun.intensity = night ? 0.35 : sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
+  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74); // nachts: kühles Mondlicht
+  hemi.intensity = night ? 0.32 : sunMode.on ? 0.85 : 0.62;
+  hemi.color.set(night ? 0xa9b8d4 : 0xeef3f8);
+  amb.intensity = night ? 0.12 : sunMode.on ? 0.3 : 0.3;
+  applyLamps(lampsOn());
   const d = THREE.MathUtils.degToRad(az - planUpDeg());
   const vx = Math.sin(d), vy = -Math.cos(d); // Plan-Vektor zur Sonne
   const el = THREE.MathUtils.degToRad(Math.max(2, elev)), R = span * 1.6;
@@ -1236,6 +1263,24 @@ if (balcony) {
 }
 
 buildSlab();
+function buildLamps() {
+  for (const r of rooms) {
+    const b = polyBox(r.polygon), area = (b.maxX - b.minX) * (b.maxY - b.minY);
+    if (area < 1.5) continue;
+    // Schwerpunkt des Raums (liegt er außerhalb, Mitte der Box)
+    let ax = 0, ay = 0, A = 0;
+    r.polygon.forEach((p, i) => { const q = r.polygon[(i + 1) % r.polygon.length], c = p[0] * q[1] - q[0] * p[1]; A += c; ax += (p[0] + q[0]) * c; ay += (p[1] + q[1]) * c; });
+    let x = A ? ax / (3 * A) : (b.minX + b.maxX) / 2, y = A ? ay / (3 * A) : (b.minY + b.maxY) / 2;
+    if (!pointInPoly(x, y, r.polygon)) { x = (b.minX + b.maxX) / 2; y = (b.minY + b.maxY) / 2; }
+    const power = clamp(area * 0.9, 3.5, 12);
+    const light = new THREE.PointLight(0xffb468, 0, Math.max(4, Math.sqrt(area) * 2.4), 1.6);
+    light.position.set(x, 2.0, y); scene.add(light);
+    const shade = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 10), lampShadeMat);
+    shade.position.set(x, 2.08, y); shade.visible = false; shade.raycast = () => {}; scene.add(shade);
+    lamps.push({ light, shade, power });
+  }
+}
+buildLamps();
 
 // Vorschlag für den Teppich im Wohnzimmer (wird beim ersten Start als Möbel-Element angelegt):
 // frei von Fenstern, Balkontür und Türaufschlägen, möglichst mittig
@@ -2186,7 +2231,8 @@ function clampTarget() {
 let topShadowOff = null;
 function applyWallShadows() {
   for (const wg of wallGroups) {
-    const cs = !topShadowOff && (!wg.exterior || wg.fade > 0.5);
+    // halbtransparente Vorderwände werfen weiter Schatten – sie existieren ja noch
+    const cs = !topShadowOff;
     wg.group.children.forEach((c) => { if (c.userData.kind === 'wall' && c.castShadow !== cs) { c.castShadow = cs; renderer.shadowMap.needsUpdate = true; } });
   }
   dirty = true;
@@ -2251,8 +2297,10 @@ function updateWallFade() {
  * darüber nur als feine Umrisslinien (verdecken nichts) */
 const SH = 3.0; // Geschosshöhe
 const bldg = { group: null, above: null };
+const facadeWinMats = []; // Fensterflächen der Fassade (leuchten nachts)
 const bldgMat = new THREE.MeshStandardMaterial({ color: 0xb8c7d6, roughness: 0.95, transparent: true, opacity: 0.5, depthWrite: false });
 function buildBuilding() {
+  facadeWinMats.length = 0;
   if (bldg.group) { scene.remove(bldg.group); bldg.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material !== bldgMat) o.material.dispose(); }); }
   const g = new THREE.Group(); g.raycast = () => {};
   const above = new THREE.Group();
@@ -2285,7 +2333,7 @@ function buildBuilding() {
     const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
     return { x: (o.a[0] + o.b[0]) / 2 + n[0] * off, y: (o.a[1] + o.b[1]) / 2 + n[1] * off, rot: Math.atan2(n[0], n[1]), w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
   });
-  const FAC = new THREE.Color(0xe9dfd0), BGC = new THREE.Color(0x1c2a3b);
+  const FAC = new THREE.Color(0xeee6da), BGC = new THREE.Color(0xd3dbe3); // Fassade → kühles Offwhite des Hintergrunds
   const SLAB_BOT = -0.19, GAP = 0.035; // Unterkante Bodenplatte der Wohnung; feine Geschossfuge
   const floorH = SH - GAP;
   const geoF = nBelow ? fpGeo(floorH) : null;
@@ -2296,7 +2344,8 @@ function buildBuilding() {
     const box = new THREE.Mesh(geoF, mat);
     box.position.y = yBot; box.receiveShadow = true; box.userData.shared = true; g.add(box);
     const fl = yTop - floorH + 0.2; // Fußboden dieses Geschosses (≈)
-    const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x8fa9bb).lerp(BGC, mix * 0.8), side: THREE.DoubleSide });
+    const winM = new THREE.MeshStandardMaterial({ color: new THREE.Color(0x9fb6c6).lerp(BGC, mix * 0.6), roughness: 0.3, emissive: 0xffb15e, emissiveIntensity: 0, side: THREE.DoubleSide });
+    facadeWinMats.push(winM);
     for (const wv of facWins2) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(wv.w, wv.h), winM);
       pl.position.set(wv.x, fl + wv.sill + wv.h / 2, wv.y); pl.rotation.y = wv.rot; g.add(pl);
@@ -3454,6 +3503,8 @@ function openSettings() {
           <span>von</span><button id="st-t-" aria-label="weniger Geschosse">−</button><b id="st-t">${state.building.total}</b><button id="st-t+" aria-label="mehr Geschosse">+</button></div></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div style="min-width:0"><b>Wände</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)" id="st-wm-h">${state.wallMode === 'cut' ? 'Alle Wände auf 1,2 m geschnitten' : 'Hintere Außenwände in voller Höhe'}</p></div>
         <div class="pf-segs" id="st-wm"><button data-m="diorama" class="${state.wallMode !== 'cut' ? 'on' : ''}">Diorama</button><button data-m="cut" class="${state.wallMode === 'cut' ? 'on' : ''}">Schnitt</button></div></div>
+      <div class="pf-tg" style="border-top:1px solid #efede9"><div style="min-width:0"><b>Lampen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Auto: an ab Sonnenuntergang</p></div>
+        <div class="pf-segs" id="st-lamps">${[['auto', 'Auto'], ['on', 'An'], ['off', 'Aus']].map(([k, t]) => `<button data-m="${k}" class="${state.lamps === k ? 'on' : ''}">${t}</button>`).join('')}</div></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzennamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Aus: nur kleine Symbole an den Pflanzen</p></div>
         <button class="pf-switch" id="st-pnames" role="switch" aria-checked="${state.showPlantNames}" aria-label="Pflanzennamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
@@ -3486,6 +3537,11 @@ function openSettings() {
     $('st-wm').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
     $('st-wm-h').textContent = state.wallMode === 'cut' ? 'Alle Wände auf 1,2 m geschnitten' : 'Hintere Außenwände in voller Höhe';
     requestRender();
+  }));
+  $('st-lamps').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    state.lamps = b.dataset.m; save();
+    $('st-lamps').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    placeSun(); shadowsDirty();
   }));
   $('st-pnames').addEventListener('click', () => {
     state.showPlantNames = !state.showPlantNames; save();
@@ -4609,6 +4665,9 @@ function updateCount() {
 }
 // Tageswechsel: Fälligkeiten neu berechnen
 let lastDay = dayNum(nowDate());
+// Echte Uhrzeit: bei Sonnenuntergang/-aufgang Licht umschalten (Lampen „Auto“)
+let lastNight = null;
+setInterval(() => { if (sunMode.on) return; const was = lastNight; placeSun(); lastNight = isNight(); if (was !== null && was !== lastNight) shadowsDirty(); }, 60000);
 setInterval(() => { const d = dayNum(nowDate()); if (d !== lastDay) { lastDay = d; updateCount(); if (selected) refreshSheet(); queueReminderSync(); } }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastDay = dayNum(nowDate()); updateCount(); queueReminderSync(); } });
 function updateHint() {
@@ -4671,6 +4730,7 @@ if (!state.design) { state.design = { rooms: {}, items: [] }; const r0 = default
 applyRoomLooks();
 syncAllItems();
 buildBuilding();
+lampsReady = true;
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
 applyPlantNames();
