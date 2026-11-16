@@ -345,6 +345,41 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-set-or .v b{display:block;font-size:20px;font-weight:750;font-variant-numeric:tabular-nums}
 .pf-set-or .v span{font-size:12.5px;color:var(--ink3)}
 .pf-set-or button{height:40px;padding:0 14px;border-radius:12px;background:var(--green);color:#fff;font-weight:700;font-size:14px;flex:none}
+/* Wohnung gestalten */
+.pf-dsb{position:absolute;left:12px;right:12px;top:calc(var(--sat) + 10px);margin:0 auto;max-width:440px;background:var(--ink);color:#fff;border-radius:16px;
+  padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.pf-dsb.hide,.pf-ds.hide{display:none}
+.pf-dsb .t{flex:1;min-width:0}
+.pf-dsb .t b{display:block;font-size:15px;font-weight:700}
+.pf-dsb .t span{display:block;font-size:12px;color:#d6d4cc;line-height:1.3}
+.pf-dsb button{flex:none;height:36px;padding:0 15px;border-radius:999px;font-weight:700;font-size:13.5px;background:#fff;color:var(--ink)}
+.pf-ds{position:absolute;left:10px;right:10px;bottom:calc(var(--sab) + 10px);margin:0 auto;max-width:520px;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:10px 12px 12px}
+.pf-ds .seg{display:flex;background:#f1efeb;border-radius:999px;padding:3px;margin-bottom:9px}
+.pf-ds .seg button{flex:1;height:32px;border-radius:999px;font-weight:650;font-size:13.5px;color:var(--ink2)}
+.pf-ds .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.pf-ds .hint{font-size:12.5px;color:var(--ink2);margin:2px 2px 8px;line-height:1.35}
+.pf-ds .types{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.pf-ds .types::-webkit-scrollbar{display:none}
+.pf-ds .types button{flex:none;width:72px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px 7px;border-radius:12px;background:#f7f5f1;border:2px solid transparent;font-size:11.5px;font-weight:650;color:var(--ink2)}
+.pf-ds .types button.on{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
+.pf-ds .types img{width:52px;height:36px;object-fit:contain}
+.pf-ds .row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+.pf-ds .row .lab{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);width:100%}
+.pf-ds .chip{height:32px;padding:0 12px;border-radius:999px;background:#f1efeb;font-weight:650;font-size:13px;color:var(--ink2)}
+.pf-ds .chip.on{background:var(--green);color:#fff}
+.pf-ds .sw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(0,0,0,.08);flex:none}
+.pf-ds .sw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--green)}
+.pf-ds .fl{width:54px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:650;color:var(--ink2)}
+.pf-ds .fl i{width:46px;height:30px;border-radius:8px;display:block;background-size:cover;border:2px solid rgba(0,0,0,.06)}
+.pf-ds .fl.on i{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--green)}
+.pf-ds .acts{display:flex;gap:8px;margin-top:9px}
+.pf-ds .acts button{flex:1;height:38px;border-radius:12px;background:#f1efeb;font-weight:650;font-size:13.5px}
+.pf-ds .acts button.del{color:var(--red,#b5483a)}
+.pf-ds .ttl{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:15px;margin:0 2px}
+.pf-ds .ttl small{font-weight:600;font-size:12px;color:var(--ink3)}
+.pf-design .pf-top,.pf-design .pf-bottom,.pf-design .pf-lp,.pf-design .pf-dbn,.pf-design .pf-hint{opacity:0;pointer-events:none!important}
+.pf-design .pf-top > *,.pf-design .pf-bottom > *{pointer-events:none!important}
+.pf-design .pf-badge.mini{visibility:hidden}
 /* Pflanzenbilder + Auswahl */
 .pf-th{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
 .pf-emoji .pf-th{width:118%;height:118%;margin:-9%}
@@ -449,6 +484,8 @@ root.innerHTML = `
     <div class="msg" id="or-msg"></div>
     <div class="a"><button id="or-reset">Zurücksetzen</button><button class="sens" id="or-sens">📱 Handy-Kompass</button></div>
   </div>
+  <div class="pf-dsb hide" id="pf-dsb"><div class="t"><b>Wohnung gestalten</b><span id="ds-sub">Möbel antippen und ziehen zum Verschieben</span></div><button id="ds-done">Fertig</button></div>
+  <div class="pf-ds hide" id="pf-ds"></div>
   <div class="pf-scrim" id="pf-scrim"></div>
   <div class="pf-pick hide" id="pf-pick" role="dialog" aria-label="Pflanze wählen">
     <div class="pf-pick-bg" id="pk-bg"></div>
@@ -531,6 +568,7 @@ const state = {
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
+  design: null, // Wohnung gestalten: { rooms: {id: {floor, wall}}, items: [...] }
 };
 // Gießen: lastWateredAt (ISO) + kurze Historie (max. 10 Einträge)
 const nowDate = () => new Date();
@@ -604,6 +642,7 @@ function load() {
     state.seenHint = d.seenHint === true;
     state.showRoomNames = d.showRoomNames === true;
     state.motion = d.motion !== false;
+    state.design = cleanDesign(d.design);
     if (d.reminder && typeof d.reminder === 'object') {
       state.reminder = { on: d.reminder.on === true, h: Math.round(num(d.reminder.h, 8, 0, 23)), m: Math.round(num(d.reminder.m, 0, 0, 59)) };
     }
@@ -613,7 +652,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion, design: state.design,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -921,6 +960,28 @@ const deckTex = () => canvasTex('deck', 256, 1.12, (c, S, R) => {
   }
 });
 
+// Fischgrät-Parkett (typisch Altbau): Stäbe 7 × 42 cm im Zickzack (kachelbar: 4 Spalten × 12 Stäbe)
+const herringTex = () => canvasTex('herring', 512, 1.188, (c, S, R) => {
+  const k = S / 1.188, cw = 0.297 * k, h = 0.099 * k;
+  c.fillStyle = '#7d5a3c'; c.fillRect(0, 0, S, S);
+  for (let col = 0; col < 4; col++) {
+    const x0 = col * cw, up = col % 2 === 0;
+    for (let j = -4; j < 16; j++) {
+      const y = j * h;
+      c.fillStyle = hsl(29 + R() * 6, 42 + R() * 8, 56 + R() * 10);
+      c.beginPath();
+      if (up) { c.moveTo(x0, y + cw); c.lineTo(x0 + cw, y); c.lineTo(x0 + cw, y + h); c.lineTo(x0, y + cw + h); }
+      else { c.moveTo(x0, y); c.lineTo(x0 + cw, y + cw); c.lineTo(x0 + cw, y + cw + h); c.lineTo(x0, y + h); }
+      c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(92,60,34,.5)'; c.lineWidth = 1.1; c.stroke();
+    }
+  }
+});
+const concreteTex = () => canvasTex('concrete', 256, 2.0, (c, S, R) => {
+  c.fillStyle = '#c9c4bc'; c.fillRect(0, 0, S, S);
+  for (let i = 0; i < 1600; i++) { c.fillStyle = `rgba(${R() < 0.5 ? '255,255,255' : '90,84,76'},${(0.03 + R() * 0.07).toFixed(3)})`; const r = 1 + R() * 5; c.beginPath(); c.arc(R() * S, R() * S, r, 0, 7); c.fill(); }
+});
+
 /* --- Diorama-Insel: schwebende Bodenplatte + vorgerenderter weicher Kontaktschatten --- */
 const PLATE_TOP = -0.175, PLATE_H = 0.25, PLATE_PAD = 0.32;
 // Umriss als Vereinigung abgerundeter Rechtecke um Räume/Balkon (inkl. Wanddicke + Rand)
@@ -1021,6 +1082,45 @@ function floorKind(r) {
   const c = new THREE.Color(r.floorColor || '#c4a27e'), h = {}; c.getHSL(h);
   return h.s < 0.12 ? 'tile' : 'wood';
 }
+/* Wohnung gestalten: Böden und Wandfarben je Raum */
+const FLOOR_OPTS = [
+  { id: 'oak', name: 'Eiche hell', tex: () => oakTex(), color: 0xf6eee4, rough: 0.85 },
+  { id: 'oakdark', name: 'Eiche dunkel', tex: () => oakTex(), color: 0x9c7c62, rough: 0.8 },
+  { id: 'herring', name: 'Fischgrät', tex: () => herringTex(), color: 0xffffff, rough: 0.75 },
+  { id: 'tile', name: 'Fliesen hell', tex: () => tileTex(), color: 0xffffff, rough: 0.7 },
+  { id: 'tiledark', name: 'Fliesen grau', tex: () => tileTex(), color: 0x9e9a94, rough: 0.7 },
+  { id: 'concrete', name: 'Estrich', tex: () => concreteTex(), color: 0xffffff, rough: 0.9 },
+];
+const WALL_OPTS = [
+  { id: 'alt', name: 'Altweiß', c: '#f6efe4' }, { id: 'kalk', name: 'Kalkweiß', c: '#eeeeea' }, { id: 'grau', name: 'Hellgrau', c: '#d9d6d0' },
+  { id: 'sand', name: 'Sand', c: '#ead6b4' }, { id: 'salbei', name: 'Salbei', c: '#c6d0b8' }, { id: 'rose', name: 'Rosé', c: '#ebcfc4' },
+  { id: 'blau', name: 'Taubenblau', c: '#c2ccd6' }, { id: 'tanne', name: 'Tannengrün', c: '#8a9c8b' },
+];
+const floorOptMats = new Map();
+function floorOptMat(id) {
+  const o = FLOOR_OPTS.find((f) => f.id === id) || FLOOR_OPTS[0];
+  if (!floorOptMats.has(o.id)) floorOptMats.set(o.id, new THREE.MeshStandardMaterial({ map: o.tex(), color: o.color, roughness: o.rough }));
+  return floorOptMats.get(o.id);
+}
+const roomDesign = (r) => (state.design && state.design.rooms && state.design.rooms[r.id]) || {};
+const defaultFloor = (r) => (floorKind(r) === 'tile' ? 'tile' : 'oak');
+const roomWallMats = new Map(); // roomId -> Material (Innenwände, geteilt)
+const extRoomMats = [];         // { m, roomId } Kopien für ausblendbare Außenwände
+function wallColorOf(roomId) {
+  const r = rooms.find((q) => q.id === roomId);
+  const id = r ? roomDesign(r).wall : null;
+  return (WALL_OPTS.find((w) => w.id === id) || WALL_OPTS[0]).c;
+}
+function roomWallMat(roomId) {
+  if (!roomWallMats.has(roomId)) roomWallMats.set(roomId, new THREE.MeshStandardMaterial({ color: wallColorOf(roomId), roughness: 0.9 }));
+  return roomWallMats.get(roomId);
+}
+function applyRoomLooks() {
+  floorMeshes.forEach((m) => { const r = m.userData.room; if (r && r.id !== 'balkon' && rooms.includes(r)) m.material = floorOptMat(roomDesign(r).floor || defaultFloor(r)); });
+  roomWallMats.forEach((m, id) => m.color.set(wallColorOf(id)));
+  extRoomMats.forEach(({ m, roomId }) => m.color.set(wallColorOf(roomId)));
+  shadowsDirty();
+}
 const floorMatCache = new Map();
 function floorMat(r) {
   const kind = floorKind(r);
@@ -1064,53 +1164,203 @@ if (balcony) {
 
 buildSlab();
 
-// Ein weicher Teppich im Wohnzimmer: frei von Fenstern, Balkontür und Türaufschlägen, möglichst mittig
-let rug = null;
-{
+// Vorschlag für den Teppich im Wohnzimmer (wird beim ersten Start als Möbel-Element angelegt):
+// frei von Fenstern, Balkontür und Türaufschlägen, möglichst mittig
+function defaultRug() {
   const room = rooms.find((r) => r.id === 'wohnen') || rooms.filter((r) => floorKind(r) === 'wood').sort((a, b) => polyArea(b.polygon) - polyArea(a.polygon))[0];
-  if (room) {
-    const b = polyBox(room.polygon), along = (b.maxX - b.minX) >= (b.maxY - b.minY); // lange Seite entlang x?
-    const RL = clamp(Math.min(b.maxX - b.minX, b.maxY - b.minY) * 0.62, 1.2, 2.2), RW = RL * 0.68;
-    const hx = (along ? RL : RW) / 2, hy = (along ? RW : RL) / 2;
-    const ops = openings.filter((o) => {
-      if (o.roomId === room.id) return true;
-      const m = [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2];
-      return distToPolyEdge(m[0], m[1], room.polygon) < 0.4;
-    });
-    const c = centroid(room.polygon);
-    const ok = (x, y) => {
-      const pts = [[x - hx, y - hy], [x + hx, y - hy], [x + hx, y + hy], [x - hx, y + hy], [x, y - hy], [x, y + hy], [x - hx, y], [x + hx, y]];
-      if (!pts.every((q) => pointInPoly(q[0], q[1], room.polygon) && distToPolyEdge(q[0], q[1], room.polygon) > 0.3)) return false;
-      // Abstand Teppichrand ↔ Öffnung (Rechteck-Punkt-Distanz)
-      return ops.every((o) => [o.a, o.b, [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2]].every((q) => Math.hypot(Math.max(0, Math.abs(q[0] - x) - hx), Math.max(0, Math.abs(q[1] - y) - hy)) > (o.type === 'door' ? segLen(o) + 0.1 : 0.9)));
-    };
-    let best = null;
-    for (let dy = -2; dy <= 2.001; dy += 0.1) for (let dx = -2; dx <= 2.001; dx += 0.1) {
-      const x = c[0] + dx, y = c[1] + dy, d = Math.hypot(dx, dy);
-      if ((!best || d < best.d) && ok(x, y)) best = { x, y, d };
-    }
-    if (best) {
-      const PX = 256, py = Math.round(PX * RW / RL);
-      const cv = document.createElement('canvas'); cv.width = PX; cv.height = py;
-      const g = cv.getContext('2d'), rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
-      const m0 = 6;
-      rr(m0, m0, PX - 2 * m0, py - 2 * m0, 22); g.fillStyle = '#c99274'; g.fill();          // Terrakotta-Rand
-      rr(m0 + 9, m0 + 9, PX - 2 * m0 - 18, py - 2 * m0 - 18, 15); g.fillStyle = '#f1e4d0'; g.fill(); // Cremeband
-      rr(m0 + 16, m0 + 16, PX - 2 * m0 - 32, py - 2 * m0 - 32, 10); g.fillStyle = '#b3bf9f'; g.fill(); // Salbei-Feld
+  if (!room) return null;
+  const b = polyBox(room.polygon), along = (b.maxX - b.minX) >= (b.maxY - b.minY);
+  const RL = clamp(Math.min(b.maxX - b.minX, b.maxY - b.minY) * 0.62, 1.2, 2.2), RW = RL * 0.68;
+  const hx = (along ? RL : RW) / 2, hy = (along ? RW : RL) / 2;
+  const ops = openings.filter((o) => {
+    if (o.roomId === room.id) return true;
+    const m = [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2];
+    return distToPolyEdge(m[0], m[1], room.polygon) < 0.4;
+  });
+  const c = centroid(room.polygon);
+  const ok = (x, y) => {
+    const pts = [[x - hx, y - hy], [x + hx, y - hy], [x + hx, y + hy], [x - hx, y + hy], [x, y - hy], [x, y + hy], [x - hx, y], [x + hx, y]];
+    if (!pts.every((q) => pointInPoly(q[0], q[1], room.polygon) && distToPolyEdge(q[0], q[1], room.polygon) > 0.3)) return false;
+    return ops.every((o) => [o.a, o.b, [(o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2]].every((q) => Math.hypot(Math.max(0, Math.abs(q[0] - x) - hx), Math.max(0, Math.abs(q[1] - y) - hy)) > (o.type === 'door' ? segLen(o) + 0.1 : 0.9)));
+  };
+  let best = null;
+  for (let dy = -2; dy <= 2.001; dy += 0.1) for (let dx = -2; dx <= 2.001; dx += 0.1) {
+    const x = c[0] + dx, y = c[1] + dy, d = Math.hypot(dx, dy);
+    if ((!best || d < best.d) && ok(x, y)) best = { x, y, d };
+  }
+  return best ? { type: 'teppich', style: 'muster', x: +best.x.toFixed(3), y: +best.y.toFixed(3), w: +RL.toFixed(2), d: +RW.toFixed(2), rot: along ? 0 : Math.PI / 2 } : null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Möbel als Planzeichen + Teppiche (flach auf dem Boden)              */
+/* ------------------------------------------------------------------ */
+// sizes: [Breite, Tiefe] in m; Rückseite = obere Kante (an die Wand)
+const FURN = {
+  sofa: { name: 'Sofa', sizes: [[1.9, 0.9, '2er'], [2.4, 0.95, '3er'], [2.8, 1.65, 'Ecke']] },
+  sessel: { name: 'Sessel', sizes: [[0.85, 0.85, '']] },
+  bett: { name: 'Bett', sizes: [[0.95, 2.05, '90'], [1.45, 2.05, '140'], [1.65, 2.05, '160'], [1.85, 2.05, '180']] },
+  tisch: { name: 'Esstisch', sizes: [[0.8, 0.8, '2'], [1.4, 0.85, '4'], [1.9, 0.95, '6']] },
+  rund: { name: 'Tisch rund', sizes: [[0.8, 0.8, 'Ø 80'], [1.1, 1.1, 'Ø 110']] },
+  couchtisch: { name: 'Couchtisch', sizes: [[0.9, 0.5, ''], [1.2, 0.6, '']] },
+  schreib: { name: 'Schreibtisch', sizes: [[1.2, 0.65, '120'], [1.6, 0.75, '160']] },
+  regal: { name: 'Regal', sizes: [[0.8, 0.35, '80'], [1.6, 0.35, '160'], [2.4, 0.35, '240']] },
+  schrank: { name: 'Schrank', sizes: [[1.0, 0.6, '100'], [1.5, 0.6, '150'], [2.0, 0.6, '200']] },
+  kommode: { name: 'Kommode', sizes: [[0.8, 0.45, '80'], [1.2, 0.45, '120']] },
+  teppich: { name: 'Teppich', rug: true, sizes: [[1.6, 1.0, 'S'], [2.0, 1.4, 'M'], [2.4, 1.7, 'L']] },
+  teppichrund: { name: 'Teppich rund', rug: true, sizes: [[1.2, 1.2, 'Ø 120'], [1.6, 1.6, 'Ø 160']] },
+};
+const RUG_STYLES = [
+  { id: 'muster', name: 'Muster', c: '#b3bf9f' }, { id: 'salbei', c: '#b3bf9f' }, { id: 'terra', c: '#c99274' }, { id: 'creme', c: '#ecdcc2' },
+  { id: 'senf', c: '#d9b26a' }, { id: 'grau', c: '#b9b4ab' }, { id: 'blau', c: '#9fb3c4' }, { id: 'rosa', c: '#e3b9ad' },
+];
+const ITEM_PX = 120; // Pixel pro Meter in der Zeichnung
+const LINE = '#7a6450';
+function drawItem(g, it, k) {
+  const w = it.w * k, d = it.d * k, lw = Math.max(1.6, k * 0.018);
+  const rr = (x, y, ww, hh, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + ww, y, x + ww, y + hh, r); g.arcTo(x + ww, y + hh, x, y + hh, r); g.arcTo(x, y + hh, x, y, r); g.arcTo(x, y, x + ww, y, r); g.closePath(); };
+  const body = 'rgba(255,252,247,.42)';
+  g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = LINE; g.lineWidth = lw;
+  const box = (x, y, ww, hh, r = 0.03 * k, fill = body) => { rr(x, y, ww, hh, r); if (fill) { g.fillStyle = fill; g.fill(); } g.stroke(); };
+  const line = (x0, y0, x1, y1) => { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
+  const chair = (cx, cy, rot) => { g.save(); g.translate(cx, cy); g.rotate(rot); const c = 0.42 * k; box(-c / 2, -c / 2, c, c, 0.06 * k); line(-c / 2 + 0.05 * k, -c / 2 + 0.07 * k, c / 2 - 0.05 * k, -c / 2 + 0.07 * k); g.restore(); };
+  const t = it.type;
+  if (FURN[t] && FURN[t].rug) {
+    const st = RUG_STYLES.find((q) => q.id === it.style) || RUG_STYLES[1];
+    const round = t === 'teppichrund';
+    const shape = (inset, r) => { if (round) { g.beginPath(); g.ellipse(w / 2, d / 2, w / 2 - inset, d / 2 - inset, 0, 0, 7); } else rr(inset, inset, w - 2 * inset, d - 2 * inset, r); };
+    if (st.id === 'muster') {
+      shape(0, 0.1 * k); g.fillStyle = '#c99274'; g.fill();
+      shape(0.075 * k, 0.07 * k); g.fillStyle = '#f1e4d0'; g.fill();
+      shape(0.13 * k, 0.05 * k); g.fillStyle = '#b3bf9f'; g.fill();
       g.save(); g.clip();
       g.strokeStyle = 'rgba(244,234,216,.55)'; g.lineWidth = 2;
-      for (let k = -py; k < PX + py; k += 22) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + py, py); g.moveTo(k + py, 0); g.lineTo(k, py); g.stroke(); }
+      const st2 = 0.18 * k;
+      for (let q = -d; q < w + d; q += st2) { g.beginPath(); g.moveTo(q, 0); g.lineTo(q + d, d); g.moveTo(q + d, 0); g.lineTo(q, d); g.stroke(); }
       g.fillStyle = 'rgba(201,146,116,.65)';
-      for (let k = -py; k < PX + py; k += 22) for (let j = 0; j < py; j += 22) { g.beginPath(); g.arc(k + 11, j + 11 + 0.5, 2.2, 0, Math.PI * 2); g.fill(); }
+      for (let q = -d; q < w + d; q += st2) for (let j = 0; j < d; j += st2) { g.beginPath(); g.arc(q + st2 / 2, j + st2 / 2, 0.018 * k, 0, 7); g.fill(); }
       g.restore();
-      const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso; t.premultiplyAlpha = true;
-      rug = new THREE.Mesh(new THREE.PlaneGeometry(RL, RW), new THREE.MeshStandardMaterial({ map: t, roughness: 1, transparent: true, premultipliedAlpha: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
-      rug.rotation.set(-Math.PI / 2, 0, along ? 0 : Math.PI / 2);
-      rug.position.set(best.x, 0.0028, best.y);
-      rug.receiveShadow = true; rug.userData.kind = 'rug'; rug.raycast = () => {};
-      scene.add(rug);
+    } else {
+      shape(0, 0.08 * k); g.fillStyle = st.c; g.fill();
+      shape(0.07 * k, 0.05 * k); g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = Math.max(1.5, 0.012 * k); g.stroke();
     }
+    return;
   }
+  if (t === 'sofa' || t === 'sessel') {
+    const back = 0.2 * k, arm = Math.min(0.2 * k, w * 0.18);
+    if (t === 'sofa' && it.sizeIdx === 2) {
+      // Ecksofa: Rücken oben, Récamiere rechts
+      const dd = 0.95 * k;
+      g.beginPath(); g.moveTo(0.04 * k, 0); g.lineTo(w - 0.04 * k, 0); g.arcTo(w, 0, w, 0.04 * k, 0.04 * k); g.lineTo(w, d - 0.04 * k); g.arcTo(w, d, w - 0.04 * k, d, 0.04 * k);
+      g.lineTo(w - dd + 0.04 * k, d); g.arcTo(w - dd, d, w - dd, d - 0.04 * k, 0.04 * k); g.lineTo(w - dd, dd); g.lineTo(0.04 * k, dd); g.arcTo(0, dd, 0, dd - 0.04 * k, 0.04 * k); g.lineTo(0, 0.04 * k); g.arcTo(0, 0, 0.04 * k, 0, 0.04 * k); g.closePath();
+      g.fillStyle = body; g.fill(); g.stroke();
+      line(arm, back, w - back, back); line(arm, back, arm, dd); line(w - back, back, w - back, d - arm);
+      const n = 2, sw = (w - dd - arm) / n; for (let i = 1; i <= n; i++) line(arm + sw * i, back, arm + sw * i, dd);
+      line(w - dd, d - arm, w - back, d - arm);
+      return;
+    }
+    box(0, 0, w, d, 0.05 * k);
+    line(arm, back, w - arm, back); line(arm, back, arm, d); line(w - arm, back, w - arm, d);
+    const n = t === 'sessel' ? 1 : Math.max(2, Math.round((w - 2 * arm) / (0.65 * k)));
+    for (let i = 1; i < n; i++) { const x = arm + (w - 2 * arm) * i / n; line(x, back + 0.03 * k, x, d - 0.04 * k); }
+    return;
+  }
+  if (t === 'bett') {
+    box(0, 0, w, d, 0.04 * k);
+    const pw = w > 1.2 * k ? (w - 0.3 * k) / 2 : w - 0.2 * k;
+    const np = w > 1.2 * k ? 2 : 1;
+    for (let i = 0; i < np; i++) box(0.1 * k + i * (pw + 0.1 * k), 0.08 * k, pw, 0.36 * k, 0.07 * k, 'rgba(255,255,255,.85)');
+    line(0, 0.55 * k, w, 0.55 * k);
+    // umgeschlagene Decke
+    g.beginPath(); g.moveTo(w, d - 0.55 * k); g.lineTo(w - 0.55 * k, d); g.stroke();
+    g.beginPath(); g.moveTo(w, d - 0.55 * k); g.lineTo(w - 0.45 * k, d - 0.45 * k); g.lineTo(w - 0.55 * k, d); g.stroke();
+    return;
+  }
+  if (t === 'tisch' || t === 'couchtisch' || t === 'schreib') {
+    if (t === 'tisch') {
+      const n = Math.max(1, Math.round(w / (0.65 * k)));
+      for (let i = 0; i < n; i++) { const x = w * (i + 0.5) / n; chair(x, -0.12 * k, 0); chair(x, d + 0.12 * k, Math.PI); }
+      if (w / k < 1.0) { /* klein: nur zwei Stühle */ }
+    }
+    if (t === 'schreib') chair(w / 2, d + 0.16 * k, Math.PI);
+    box(0, 0, w, d, 0.03 * k);
+    if (t === 'couchtisch') box(0.06 * k, 0.06 * k, w - 0.12 * k, d - 0.12 * k, 0.02 * k, null);
+    return;
+  }
+  if (t === 'rund') {
+    const n = w > 1.0 * k ? 5 : 4, R2 = w / 2;
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 - Math.PI / 2; chair(w / 2 + Math.cos(a) * (R2 + 0.14 * k), d / 2 + Math.sin(a) * (R2 + 0.14 * k), a + Math.PI / 2); }
+    g.beginPath(); g.ellipse(w / 2, d / 2, w / 2, d / 2, 0, 0, 7); g.fillStyle = body; g.fill(); g.stroke();
+    return;
+  }
+  if (t === 'regal') {
+    box(0, 0, w, d, 0.015 * k);
+    const n = Math.max(1, Math.round(w / (0.4 * k)));
+    for (let i = 1; i < n; i++) line(w * i / n, 0, w * i / n, d);
+    return;
+  }
+  if (t === 'schrank' || t === 'kommode') {
+    box(0, 0, w, d, 0.015 * k);
+    line(0, d - 0.05 * k, w, d - 0.05 * k);
+    if (t === 'schrank') { line(0.04 * k, 0.04 * k, w - 0.04 * k, d - 0.09 * k); }
+    else { const n = Math.max(2, Math.round(w / (0.4 * k))); for (let i = 1; i < n; i++) line(w * i / n, d - 0.05 * k, w * i / n, d); }
+    return;
+  }
+  box(0, 0, w, d);
+}
+const PAD_M = 0.3; // Rand für Stühle über die Tischkante hinaus
+function itemCanvas(it, k = ITEM_PX) {
+  const pad = FURN[it.type] && FURN[it.type].rug ? 0.02 : PAD_M;
+  const cw = Math.ceil((it.w + 2 * pad) * k), ch = Math.ceil((it.d + 2 * pad) * k);
+  const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  const g = cv.getContext('2d');
+  g.translate(pad * k, pad * k);
+  drawItem(g, it, k);
+  return { cv, pad };
+}
+const itemObjs = new Map(); // id -> mesh
+function buildItemMesh(it) {
+  const k = Math.min(ITEM_PX, 900 / Math.max(it.w, it.d));
+  const { cv, pad } = itemCanvas(it, k);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso; t.premultiplyAlpha = true;
+  const rug = FURN[it.type] && FURN[it.type].rug;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(it.w + 2 * pad, it.d + 2 * pad), new THREE.MeshStandardMaterial({
+    map: t, roughness: 1, transparent: true, premultipliedAlpha: true, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: rug ? -1 : -2, polygonOffsetUnits: rug ? -1 : -2 }));
+  m.geometry.rotateX(-Math.PI / 2);
+  m.position.set(it.x, rug ? 0.0028 : 0.0036, it.y);
+  m.rotation.y = -(it.rot || 0);
+  m.renderOrder = rug ? 0 : 1;
+  m.receiveShadow = true; m.userData.kind = 'item'; m.userData.itemId = it.id;
+  return m;
+}
+function syncItem(it) {
+  const old = itemObjs.get(it.id);
+  if (old) { scene.remove(old); old.geometry.dispose(); old.material.map.dispose(); old.material.dispose(); }
+  if (!it._gone) { const m = buildItemMesh(it); m.visible = !light.on; scene.add(m); itemObjs.set(it.id, m); } else itemObjs.delete(it.id);
+  shadowsDirty();
+}
+function syncAllItems() {
+  for (const id of [...itemObjs.keys()]) syncItem({ id, _gone: true });
+  (state.design ? state.design.items : []).forEach(syncItem);
+}
+function cleanDesign(d) {
+  const out = { rooms: {}, items: [] };
+  if (!d || typeof d !== 'object') return null;
+  const fl = new Set(['oak', 'oakdark', 'herring', 'tile', 'tiledark', 'concrete']);
+  const wl = new Set(['alt', 'kalk', 'grau', 'sand', 'salbei', 'rose', 'blau', 'tanne']);
+  if (d.rooms && typeof d.rooms === 'object') for (const [id, v] of Object.entries(d.rooms)) {
+    if (!v || typeof v !== 'object') continue;
+    out.rooms[String(id).slice(0, 40)] = { floor: fl.has(v.floor) ? v.floor : undefined, wall: wl.has(v.wall) ? v.wall : undefined };
+  }
+  const types = new Set(['sofa', 'sessel', 'bett', 'tisch', 'rund', 'couchtisch', 'schreib', 'regal', 'schrank', 'kommode', 'teppich', 'teppichrund']);
+  if (Array.isArray(d.items)) for (const it of d.items.slice(0, 80)) {
+    if (!it || !types.has(it.type)) continue;
+    const n = (v, a, b, def) => (Number.isFinite(+v) ? clamp(+v, a, b) : def);
+    out.items.push({ id: typeof it.id === 'string' ? it.id.slice(0, 40) : uid(), type: it.type, x: n(it.x, -50, 50, 0), y: n(it.y, -50, 50, 0),
+      w: n(it.w, 0.2, 6, 1), d: n(it.d, 0.2, 6, 1), rot: n(it.rot, -7, 7, 0), sizeIdx: Math.round(n(it.sizeIdx, 0, 9, 0)),
+      style: typeof it.style === 'string' ? it.style.slice(0, 20) : undefined });
+  }
+  return out;
 }
 // Walls with openings
 // Spielzeug-Wände: warmes Off-White, Schnittkante als leicht breitere, abgerundete Kappe (keine schwarzen Kanten)
@@ -1151,6 +1401,23 @@ function addWall(w) {
   const side = ext ? wallSideMat.clone() : wallSideMat;
   const top = ext ? wallTopMat.clone() : wallTopMat;
   const mats = [side, side, top, side, side, side];
+  // Wandseiten je Raum einfärben (Box-Seite +z zeigt nach (-uy, ux), −z entgegengesetzt)
+  const roomAt = (x, y) => rooms.find((r) => pointInPoly(x, y, r.polygon));
+  const extMat = new Map();
+  const faceMat = (room) => {
+    if (!room) return side;
+    if (!ext) return roomWallMat(room.id);
+    if (!extMat.has(room.id)) { const m = roomWallMat(room.id).clone(); extMat.set(room.id, m); extRoomMats.push({ m, roomId: room.id }); }
+    return extMat.get(room.id);
+  };
+  const matsCache = new Map();
+  const matsAt = (sm) => {
+    const px = w.a[0] + ux * sm, py = w.a[1] + uy * sm, off = t / 2 + 0.1;
+    const rp = roomAt(px - uy * off, py + ux * off), rm = roomAt(px + uy * off, py - ux * off);
+    const key = (rp ? rp.id : '-') + '|' + (rm ? rm.id : '-');
+    if (!matsCache.has(key)) matsCache.set(key, [side, side, top, side, faceMat(rp), faceMat(rm)]);
+    return matsCache.get(key);
+  };
   const frame = ext ? frameMat.clone() : frameMat;
   const glass = ext ? glassMat.clone() : glassMat;
   const cap = ext ? capMat.clone() : capMat;
@@ -1162,8 +1429,8 @@ function addWall(w) {
     y1 = Math.min(y1, CUT); // oberhalb der Schnitthöhe nichts zeichnen
     const len = s1 - s0 + extend0 + extend1, h = y1 - y0;
     if (len < 0.005 || h < 0.005) return;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), mats);
     const sm = (s0 - extend0 + s1 + extend1) / 2;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), matsAt(sm));
     m.position.set(w.a[0] + ux * sm, y0 + h / 2, w.a[1] + uy * sm);
     m.rotation.y = ang; m.castShadow = true; m.receiveShadow = true; m.userData.kind = 'wall';
     group.add(m);
@@ -1225,7 +1492,7 @@ function addWall(w) {
   const mid = [(w.a[0] + w.b[0]) / 2, (w.a[1] + w.b[1]) / 2];
   let n = [uy, -ux];
   if ((mid[0] - cx0) * n[0] + (mid[1] - cy0) * n[1] < 0) n = [-n[0], -n[1]];
-  wallGroups.push({ group, mats: ext ? [side, top, frame, cap] : null, glass: ext ? glass : null, nOut: n, mid, exterior: ext, fade: 1 });
+  wallGroups.push({ group, mats: ext ? [side, top, frame, cap, ...extMat.values()] : null, glass: ext ? glass : null, nOut: n, mid, exterior: ext, fade: 1 });
 }
 (FP.walls || []).forEach(addWall);
 
@@ -1719,6 +1986,90 @@ function updateWallFade() {
     }
   }
   if (changed) applyWallShadows();
+  updateTreeFade(tilt);
+}
+
+/* Ausblick: Straßenbäume wie im Architekturmodell vor den Fensterfassaden (auf einem Gehweg-Streifen der Platte) */
+const outTrees = []; // { mats, n:[x,y], mid:[x,y], fade }
+{
+  const crownMat = new THREE.MeshStandardMaterial({ color: 0x93b07e, roughness: 0.9, flatShading: true });
+  const crownMat2 = new THREE.MeshStandardMaterial({ color: 0xa9c08f, roughness: 0.9, flatShading: true });
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x9a8068, roughness: 0.9 });
+  const walkMat = new THREE.MeshStandardMaterial({ color: 0xd8cdbd, roughness: 1 });
+  // Fassaden mit Fenstern nach Außenrichtung gruppieren
+  const sides = new Map();
+  for (const o of lightOpenings) {
+    const n = openingNormal(o); // nach außen
+    const key = Math.round(Math.atan2(n[1], n[0]) / (Math.PI / 4));
+    if (!sides.has(key)) sides.set(key, { n, ops: [] });
+    sides.get(key).ops.push(o);
+  }
+  const extW = Math.max(0.24, ...(FP.walls || []).filter((w) => w.exterior).map((w) => w.thickness || 0.24));
+  for (const { n, ops } of sides.values()) {
+    const ux = -n[1], uy = n[0]; // entlang der Fassade
+    // Fassadenlinie: äußerste Wandaußenkante (inkl. Balkon)
+    let face = -Infinity;
+    for (const o of ops) face = Math.max(face, ((o.a[0] + o.b[0]) / 2) * n[0] + ((o.a[1] + o.b[1]) / 2) * n[1] + extW / 2);
+    const wallFace = face;
+    if (balcony) for (const p of balcony.polygon) {
+      const along = p[0] * ux + p[1] * uy, on = ops.some((o) => Math.abs(((o.a[0] + o.b[0]) / 2) * ux + ((o.a[1] + o.b[1]) / 2) * uy - along) < 4);
+      if (on) face = Math.max(face, p[0] * n[0] + p[1] * n[1]);
+    }
+    const dist = face + 1.05; // Abstand Baumachse
+    // Baumstandorte vor den Fenstern, mind. 2,6 m auseinander
+    const ts = ops.map((o) => ((o.a[0] + o.b[0]) / 2) * ux + ((o.a[1] + o.b[1]) / 2) * uy).sort((a, b) => a - b);
+    const pos = [];
+    for (const t of ts) if (!pos.length || t - pos[pos.length - 1] > 2.6) pos.push(t);
+    if (!pos.length) continue;
+    const t0 = pos[0] - 1.1, t1 = pos[pos.length - 1] + 1.1;
+    // Gehweg-Streifen auf Plattenhöhe
+    const sx0 = Math.min(t0, t1), sx1 = Math.max(t0, t1);
+    const shp = new THREE.Shape(); const r = 0.35, d0 = wallFace, d1 = face + 1.65; // schließt an die Platte an
+    const P = (t, d) => [t * ux + d * n[0], t * uy + d * n[1]];
+    const corners = [P(sx0, d0), P(sx1, d0), P(sx1, d1), P(sx0, d1)];
+    const xs = corners.map((c) => c[0]), ys = corners.map((c) => c[1]);
+    const g = new THREE.ExtrudeGeometry(roundRectShape(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), r), { depth: PLATE_H - 0.08, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 2, curveSegments: 5 });
+    g.rotateX(-Math.PI / 2); g.translate(0, PLATE_TOP - PLATE_H + 0.04, 0);
+    const walk = new THREE.Mesh(g, [plateTopMat, plateSideMat]); void walkMat; walk.receiveShadow = true; walk.raycast = () => {};
+    scene.add(walk); void shp;
+    const R0 = rng('trees' + Math.round(n[0] * 10) + Math.round(n[1] * 10));
+    const mats = [crownMat.clone(), crownMat2.clone(), trunkMat.clone()];
+    const grp = new THREE.Group(); grp.raycast = () => {};
+    for (const t of pos) {
+      const [x, z] = P(t + (R0() - 0.5) * 0.4, dist);
+      const h = 0.72 + R0() * 0.22, cr = 0.36 + R0() * 0.12; // Krone bleibt etwa auf Schnitthöhe: verdeckt nichts
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, h - PLATE_TOP, 7), mats[2]);
+      trunk.position.set(x, PLATE_TOP + (h - PLATE_TOP) / 2, z); trunk.castShadow = false; grp.add(trunk);
+      // Krone aus 3 Kugeln (Modellbaum)
+      for (let k = 0; k < 3; k++) {
+        const c = new THREE.Mesh(new THREE.IcosahedronGeometry(cr * (k ? 0.72 : 1), 1), mats[k ? 1 : 0]);
+        const a = R0() * 6.28;
+        c.position.set(x + (k ? Math.cos(a) * cr * 0.55 : 0), h + (k ? cr * (0.15 + R0() * 0.35) : 0), z + (k ? Math.sin(a) * cr * 0.55 : 0));
+        c.rotation.set(R0() * 3, R0() * 3, 0);
+        grp.add(c);
+      }
+    }
+    grp.traverse((o) => { o.raycast = () => {}; });
+    scene.add(grp);
+    const mid = P((sx0 + sx1) / 2, dist);
+    outTrees.push({ mats, n, mid, fade: 1 });
+    for (const [x, z] of [P(sx0, d1), P(sx1, d1)]) fitPts.push(new THREE.Vector3(x, 0, z)); // Vorplatz mit ins Bild
+  }
+}
+// Bäume zwischen Kamera und Wohnung bzw. in der Draufsicht durchscheinend
+function updateTreeFade(tilt) {
+  for (const T of outTrees) {
+    const vx = camera.position.x - T.mid[0], vz = camera.position.z - T.mid[1];
+    const facing = (vx * T.n[0] + vz * T.n[1]) / (Math.hypot(vx, vz) || 1);
+    const want = tilt > 0.95 && facing > 0.2 ? 0.3 : 1; // nur bei flachem Blick durchscheinend (wie Außenwände)
+    if (Math.abs(T.fade - want) > 0.005) {
+      T.fade += (want - T.fade) * 0.25;
+      if (Math.abs(T.fade - want) < 0.01) T.fade = want;
+      const tr = T.fade < 0.999;
+      for (const m of T.mats) { if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = T.fade; m.depthWrite = !tr; }
+      dirty = true;
+    }
+  }
 }
 
 // overlay labels
@@ -1841,7 +2192,7 @@ const PULSE_MS = 1500;
 let last = performance.now();
 let lastWind = 0;
 const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-const motionOn = () => state.motion !== false && !(reduceMotion && reduceMotion.matches) && !orient.on;
+const motionOn = () => state.motion !== false && !(reduceMotion && reduceMotion.matches) && !orient.on && !design.on;
 /* Effekte (Gieß-Animation) */
 const fx = []; // { t0, dur, step(k, now) }
 let fxSlow = 1; // nur für Tests (Zeitlupe)
@@ -1988,6 +2339,8 @@ function pick(sx, sy) {
   return null;
 }
 function handleTap(sx, sy) {
+  if (design.on) { designTap(sx, sy); return; }
+  if (orient.on) return;
   const hit = pick(sx, sy);
   if (!hit) { if (selected && !moveMode) closeSheet(); return; }
   if (moveMode) {
@@ -2645,7 +2998,7 @@ function updateLightUI() {
   $('pf-lp').classList.toggle('hide', !panel);
   $('pf-bb').classList.toggle('hide', !light.best);
   appEl.classList.toggle('pf-lit', light.on);
-  if (rug && rug.visible === light.on) { rug.visible = !light.on; shadowsDirty(); } // Lichtkarte liegt direkt auf dem Boden
+  { let ch = false; for (const m of itemObjs.values()) if (m.visible === light.on) { m.visible = !light.on; ch = true; } if (ch) shadowsDirty(); } // Lichtkarte liegt direkt auf dem Boden
 }
 function setLight(on) {
   if (light.on === !!on) return;
@@ -2784,6 +3137,7 @@ function openSettings() {
         <button class="pf-switch" id="st-names" role="switch" aria-checked="${state.showRoomNames}" aria-label="Raumnamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzen bewegen sich</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichtes Wiegen im Luftzug · aus spart Akku</p></div>
         <button class="pf-switch" id="st-motion" role="switch" aria-checked="${state.motion}" aria-label="Bewegung an/aus"></button></div>
+      <button class="pf-rlink" id="st-design"><span class="ic">🛋️</span><span class="t"><b>Wohnung gestalten</b><span>Möbel als Planzeichen, Teppiche, Böden und Wandfarben</span></span></button>
       <button class="pf-rlink" id="st-rem"><span class="ic">${ICONS.bell}</span><span class="t"><b>Erinnerung</b><span>${esc(reminderSummary())}</span></span></button>
     </div>`;
   void def;
@@ -2791,6 +3145,7 @@ function openSettings() {
   $('st-orient').addEventListener('click', () => { save(); startOrient(); });
   $('st-close').addEventListener('click', () => { save(); closeAux(); });
   $('st-rem').addEventListener('click', () => { save(); openReminder('settings'); });
+  $('st-design').addEventListener('click', () => { save(); startDesign(); });
   $('st-motion').addEventListener('click', () => {
     state.motion = !state.motion; save();
     $('st-motion').setAttribute('aria-checked', String(state.motion)); requestRender();
@@ -2980,6 +3335,216 @@ function stopSensor() {
   window.removeEventListener('deviceorientation', onOrientEvt);
   requestRender();
 }
+
+/* ------------------------------------------------------------------ */
+/* Wohnung gestalten (Möbel-Planzeichen, Teppiche, Böden, Wandfarben)  */
+/* ------------------------------------------------------------------ */
+const design = { on: false, tab: 'moebel', pending: null, sel: null, room: null, prevView: '3d', drag: null };
+const FURN_ORDER = ['sofa', 'sessel', 'bett', 'tisch', 'rund', 'couchtisch', 'schreib', 'regal', 'schrank', 'kommode', 'teppich', 'teppichrund'];
+const typeIcons = new Map();
+function typeIcon(type) {
+  if (!typeIcons.has(type)) {
+    const sz = FURN[type].sizes[Math.min(1, FURN[type].sizes.length - 1)];
+    const it = { type, w: sz[0], d: sz[1], sizeIdx: 1, style: type === 'teppich' ? 'muster' : 'terra' };
+    const k = 46 / Math.max(it.w + 0.6, it.d + 0.6);
+    typeIcons.set(type, itemCanvas(it, k * 1.6).cv.toDataURL());
+  }
+  return typeIcons.get(type);
+}
+const floorSwatches = new Map();
+function floorSwatch(id) {
+  if (!floorSwatches.has(id)) {
+    const o = FLOOR_OPTS.find((f) => f.id === id), img = o.tex().image;
+    const cv = document.createElement('canvas'); cv.width = 92; cv.height = 60;
+    const g = cv.getContext('2d');
+    g.drawImage(img, 0, 0, img.width * 0.45, img.height * 0.45, 0, 0, 92, 60);
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = '#' + new THREE.Color(o.color).getHexString(); g.fillRect(0, 0, 92, 60);
+    floorSwatches.set(id, cv.toDataURL());
+  }
+  return floorSwatches.get(id);
+}
+const itemById = (id) => state.design.items.find((q) => q.id === id);
+const roomOfPt = (x, y) => rooms.find((r) => pointInPoly(x, y, r.polygon)) || null;
+function designPose() {
+  const top = $('pf-dsb').getBoundingClientRect().bottom + 8, bot = $('pf-ds').getBoundingClientRect().top - 8;
+  return fitPose(0.01, baseAzimuthDeg(), fitPts, { x0: -1 + 16 / W, x1: 1 - 16 / W, y0: 1 - 2 * bot / H, y1: 1 - 2 * top / H });
+}
+function startDesign() {
+  closeAux();
+  if (moveMode) cancelMove();
+  if (selected) closeSheet({ restoreView: false });
+  if (light.on) setLight(false);
+  design.on = true; design.prevView = viewMode; design.pending = null; design.sel = null; design.room = null;
+  appEl.classList.add('pf-design');
+  $('pf-dsb').classList.remove('hide'); $('pf-ds').classList.remove('hide');
+  viewMode = 'top';
+  document.querySelectorAll('#pf-viewseg button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'top'));
+  renderDesign();
+  requestAnimationFrame(() => { const r = designPose(); flyTo(r.pos, r.target, 650); shadowsDirty(); });
+}
+function endDesign() {
+  if (!design.on) return;
+  design.on = false; design.drag = null; design.sel = null; design.pending = null;
+  controls.enabled = true;
+  appEl.classList.remove('pf-design');
+  $('pf-dsb').classList.add('hide'); $('pf-ds').classList.add('hide');
+  markSelItem();
+  save();
+  setViewMode(design.prevView);
+}
+function markSelItem() {
+  for (const [id, m] of itemObjs) m.material.color.set(design.on && id === design.sel ? 0xd9ecd9 : 0xffffff);
+  requestRender();
+}
+function setDesignSub(t) { $('ds-sub').textContent = t; }
+function renderDesign() {
+  const el = $('pf-ds');
+  const seg = `<div class="seg"><button data-tab="moebel" class="${design.tab === 'moebel' ? 'on' : ''}">Möbel & Teppiche</button><button data-tab="raum" class="${design.tab === 'raum' ? 'on' : ''}">Böden & Wände</button></div>`;
+  let body = '';
+  if (design.tab === 'moebel') {
+    const it = design.sel ? itemById(design.sel) : null;
+    if (it) {
+      const F = FURN[it.type];
+      const sizes = F.sizes.length > 1 ? `<div class="row"><span class="lab">Größe</span>${F.sizes.map((z, i) => `<button class="chip${it.sizeIdx === i ? ' on' : ''}" data-size="${i}">${esc(z[2] || (z[0] + ' × ' + z[1]))}</button>`).join('')}</div>` : '';
+      const styles = F.rug ? `<div class="row"><span class="lab">Farbe</span>${RUG_STYLES.map((st) => st.id === 'muster'
+        ? `<button class="chip${it.style === 'muster' ? ' on' : ''}" data-style="muster">Muster</button>`
+        : `<button class="sw${it.style === st.id ? ' on' : ''}" data-style="${st.id}" style="background:${st.c}" aria-label="${st.id}"></button>`).join('')}</div>` : '';
+      body = `<div class="ttl">${esc(F.name)}<small><button class="chip" data-desel="1" style="height:28px;padding:0 11px">＋ Weiteres Möbel</button></small></div>${sizes}${styles}
+        <div class="acts"><button data-act="rot">↻ Drehen</button><button data-act="dup">Duplizieren</button><button data-act="del" class="del">Löschen</button></div>`;
+      setDesignSub(`${F.name} ausgewählt · ziehen zum Verschieben`);
+    } else {
+      body = `<div class="hint">${design.pending ? `Tippe in den Grundriss, um ${esc(FURN[design.pending].name.toLowerCase().startsWith('teppich') ? 'den Teppich' : 'das Möbel')} zu platzieren.` : 'Wähle ein Möbel und tippe dann in den Grundriss. Vorhandene Möbel antippen zum Bearbeiten.'}</div>
+        <div class="types">${FURN_ORDER.map((t) => `<button data-type="${t}" class="${design.pending === t ? 'on' : ''}"><img src="${typeIcon(t)}" alt="">${esc(FURN[t].name)}</button>`).join('')}</div>`;
+      setDesignSub('Möbel antippen und ziehen zum Verschieben');
+    }
+  } else {
+    const r = design.room;
+    if (!r) {
+      body = `<div class="hint">Tippe auf einen Raum im Grundriss – oder wähle ihn hier:</div><div class="row">${rooms.filter((q) => polyArea(q.polygon) > 1).map((q) => `<button class="chip" data-room="${esc(q.id)}">${esc(q.name)}</button>`).join('')}</div>`;
+      setDesignSub('Raum antippen, um Boden und Wandfarbe zu wählen');
+    } else {
+      const rd = roomDesign(r), fl = rd.floor || defaultFloor(r), wl = rd.wall || 'alt';
+      body = `<div class="ttl">${esc(r.name)}<small><button class="chip" data-room="" style="height:26px;padding:0 10px">Anderer Raum</button></small></div>
+        <div class="row"><span class="lab">Boden</span>${FLOOR_OPTS.map((f) => `<button class="fl${f.id === fl ? ' on' : ''}" data-floor="${f.id}"><i style="background-image:url(${floorSwatch(f.id)})"></i>${esc(f.name)}</button>`).join('')}</div>
+        <div class="row"><span class="lab">Wandfarbe · ${esc((WALL_OPTS.find((w) => w.id === wl) || WALL_OPTS[0]).name)}</span>${WALL_OPTS.map((w) => `<button class="sw${w.id === wl ? ' on' : ''}" data-wall="${w.id}" style="background:${w.c}" aria-label="${esc(w.name)}"></button>`).join('')}</div>`;
+      setDesignSub(`${r.name}: Boden und Wandfarbe`);
+    }
+  }
+  el.innerHTML = seg + body;
+}
+$('pf-ds').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (d.tab) { design.tab = d.tab; design.pending = null; design.sel = null; markSelItem(); renderDesign(); return; }
+  if (d.desel) { design.sel = null; markSelItem(); renderDesign(); return; }
+  if (d.type) { design.pending = design.pending === d.type ? null : d.type; renderDesign(); return; }
+  if (d.room !== undefined) { design.room = d.room ? rooms.find((q) => q.id === d.room) : null; renderDesign(); return; }
+  if (d.floor || d.wall) {
+    const r = design.room; if (!r) return;
+    const rd = (state.design.rooms[r.id] = state.design.rooms[r.id] || {});
+    if (d.floor) rd.floor = d.floor; else rd.wall = d.wall;
+    applyRoomLooks(); save(); renderDesign(); requestRender();
+    return;
+  }
+  const it = design.sel ? itemById(design.sel) : null; if (!it) return;
+  if (d.size != null) {
+    const z = FURN[it.type].sizes[+d.size]; it.sizeIdx = +d.size; it.w = z[0]; it.d = z[1];
+  } else if (d.style) it.style = d.style;
+  else if (d.act === 'rot') it.rot = ((it.rot || 0) + Math.PI / 2) % (Math.PI * 2);
+  else if (d.act === 'dup') {
+    const c = { ...it, id: uid(), x: it.x + 0.3, y: it.y + 0.3 };
+    state.design.items.push(c); syncItem(c); design.sel = c.id;
+  } else if (d.act === 'del') {
+    const i = state.design.items.indexOf(it);
+    state.design.items.splice(i, 1); syncItem({ id: it.id, _gone: true });
+    design.sel = null; save(); renderDesign(); markSelItem();
+    toast(`${FURN[it.type].name} entfernt`, () => { state.design.items.splice(i, 0, it); syncItem(it); save(); requestRender(); });
+    return;
+  }
+  syncItem(it); save(); markSelItem(); renderDesign();
+});
+$('ds-done').addEventListener('click', endDesign);
+// Treffer auf Möbel: echte Möbel vor Teppichen
+function designItemAt(sx, sy) {
+  ndc.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects([...itemObjs.values()], false);
+  if (!hits.length) return null;
+  // nur innerhalb der eigentlichen Fläche (nicht im Rand für Stühle)
+  const inside = (h) => { const it = itemById(h.object.userData.itemId); if (!it) return false; const c = Math.cos(it.rot || 0), s2 = Math.sin(it.rot || 0), dx = h.point.x - it.x, dy = h.point.z - it.y;
+    const u = dx * c + dy * s2, v = -dx * s2 + dy * c; return Math.abs(u) <= it.w / 2 + 0.08 && Math.abs(v) <= it.d / 2 + 0.08; };
+  const ok = hits.filter(inside);
+  ok.sort((a, b) => (FURN[itemById(a.object.userData.itemId).type].rug ? 1 : 0) - (FURN[itemById(b.object.userData.itemId).type].rug ? 1 : 0));
+  return ok.length ? itemById(ok[0].object.userData.itemId) : null;
+}
+const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), groundPt = new THREE.Vector3();
+function floorAtScreen(sx, sy) {
+  ndc.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  return raycaster.ray.intersectPlane(groundPlane, groundPt) ? { x: groundPt.x, y: groundPt.z } : null;
+}
+// neues Möbel: mit der Rückseite an die nächste Wand, wenn sie nah ist
+function placeItem(type, x, y) {
+  const F = FURN[type], si = Math.min(1, F.sizes.length - 1), z = F.sizes[si];
+  const it = { id: uid(), type, x, y, w: z[0], d: z[1], rot: 0, sizeIdx: si, style: F.rug ? (type === 'teppich' ? 'salbei' : 'terra') : undefined };
+  const room = roomOfPt(x, y);
+  if (room && !F.rug) {
+    const P = room.polygon; let best = null;
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length], dd = distToSeg(x, y, a, b);
+      if (!best || dd < best.dd) best = { a, b, dd };
+    }
+    if (best) {
+      const L = Math.hypot(best.b[0] - best.a[0], best.b[1] - best.a[1]) || 1;
+      let nx = -(best.b[1] - best.a[1]) / L, ny = (best.b[0] - best.a[0]) / L; // Normale
+      const mx = (best.a[0] + best.b[0]) / 2, my = (best.a[1] + best.b[1]) / 2;
+      if (!pointInPoly(mx + nx * 0.2, my + ny * 0.2, P)) { nx = -nx; ny = -ny; } // nach innen
+      it.rot = Math.atan2(-nx, ny);
+      if (best.dd < 1.0) {
+        const ex = (best.b[0] - best.a[0]) / L, ey = (best.b[1] - best.a[1]) / L;
+        const tpos = clamp((x - best.a[0]) * ex + (y - best.a[1]) * ey, 0, L);
+        it.x = best.a[0] + ex * tpos + nx * (it.d / 2 + 0.02); it.y = best.a[1] + ey * tpos + ny * (it.d / 2 + 0.02);
+      }
+    }
+  }
+  state.design.items.push(it); syncItem(it);
+  design.sel = it.id; design.pending = null;
+  save(); markSelItem(); renderDesign();
+}
+function designTap(sx, sy) {
+  if (design.tab === 'moebel') {
+    if (design.pending) { const g = floorAtScreen(sx, sy); if (g && (roomOfPt(g.x, g.y) || (balcony && pointInPoly(g.x, g.y, balcony.polygon)))) placeItem(design.pending, g.x, g.y); return; }
+    const it = designItemAt(sx, sy);
+    design.sel = it ? it.id : null; markSelItem(); renderDesign();
+    return;
+  }
+  const g = floorAtScreen(sx, sy), r = g && roomOfPt(g.x, g.y);
+  if (r) { design.room = r; renderDesign(); }
+}
+// Ziehen von Möbeln (vor OrbitControls abfangen)
+cvs.addEventListener('pointerdown', (e) => {
+  if (!design.on || design.tab !== 'moebel' || design.pending) return;
+  const rc = cvs.getBoundingClientRect(), sx = e.clientX - rc.left, sy = e.clientY - rc.top;
+  const it = designItemAt(sx, sy); if (!it) return;
+  const g = floorAtScreen(sx, sy); if (!g) return;
+  design.drag = { id: it.id, pid: e.pointerId, ox: it.x - g.x, oy: it.y - g.y, moved: false };
+  controls.enabled = false;
+  if (design.sel !== it.id) { design.sel = it.id; markSelItem(); renderDesign(); }
+}, { capture: true });
+cvs.addEventListener('pointermove', (e) => {
+  const D = design.drag; if (!D || D.pid !== e.pointerId) return;
+  const rc = cvs.getBoundingClientRect(), g = floorAtScreen(e.clientX - rc.left, e.clientY - rc.top); if (!g) return;
+  const it = itemById(D.id); if (!it) return;
+  it.x = g.x + D.ox; it.y = g.y + D.oy; D.moved = true;
+  const m = itemObjs.get(it.id); if (m) m.position.set(it.x, m.position.y, it.y);
+  requestRender();
+});
+const endDrag = (e) => {
+  const D = design.drag; if (!D || D.pid !== e.pointerId) return;
+  design.drag = null; controls.enabled = true;
+  if (D.moved) { save(); shadowsDirty(); }
+};
+cvs.addEventListener('pointerup', endDrag); cvs.addEventListener('pointercancel', endDrag);
 
 /* ------------------------------------------------------------------ */
 /* Pflanzenbilder rendern                                              */
@@ -3513,6 +4078,9 @@ bindGrab(listSheet); bindGrab(setSheet);
 /* Boot                                                                */
 /* ------------------------------------------------------------------ */
 load();
+if (!state.design) { state.design = { rooms: {}, items: [] }; const r0 = defaultRug(); if (r0) state.design.items.push({ id: uid(), sizeIdx: 1, ...r0 }); }
+applyRoomLooks();
+syncAllItems();
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
 new ResizeObserver(resize).observe(appEl);
@@ -3579,5 +4147,8 @@ window.__plantflat = {
   water: (id) => { const p = state.plants.find((q) => q.uid === id); if (p) waterPlants([p]); },
   fx: () => fx.length,
   fxSlow: (v) => { fxSlow = v; },
+  designOn: (on) => (on ? startDesign() : endDesign()),
+  designState: () => ({ d: state.design, sel: design.sel, room: design.room && design.room.id }),
+  designTap: (x, y) => designTap(x, y),
   dbg: () => ({ cam: camera.position.toArray().map((v) => +v.toFixed(2)), tgt: controls.target.toArray().map((v) => +v.toFixed(2)), dist: +camera.position.distanceTo(controls.target).toFixed(2), off: sheetOffset, tween: !!tween }),
 };
