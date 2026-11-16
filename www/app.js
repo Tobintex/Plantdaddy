@@ -291,6 +291,16 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
   transition:opacity .2s,transform .2s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .pf-lp.hide,.pf-bb.hide{opacity:0;transform:translateY(8px);pointer-events:none}
 .pf-lr{display:flex;align-items:center;gap:8px}
+.pf-sbtn{width:42px;height:42px;padding:0;justify-content:center}
+.pf-sbtn svg{width:20px;height:20px}
+.pf-sbtn.on{background:#e9a43c;color:#fff}
+.pf-sp .tm{display:flex;align-items:center;gap:8px}
+.pf-sp .tm b{font-size:20px;font-weight:750;font-variant-numeric:tabular-nums;min-width:56px}
+.pf-sp .tm span{flex:1;font-size:12px;color:var(--ink2);line-height:1.3}
+.pf-sp .tm button{width:36px;height:36px;border-radius:50%;background:#f1efeb;font-size:15px;flex:none}
+.pf-sp .tm button.on{background:var(--ink);color:#fff}
+.pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
+.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(92,66,40,.13) 100%)}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:#f1efeb;border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -345,6 +355,19 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-set-or .v b{display:block;font-size:20px;font-weight:750;font-variant-numeric:tabular-nums}
 .pf-set-or .v span{font-size:12.5px;color:var(--ink3)}
 .pf-set-or button{height:40px;padding:0 14px;border-radius:12px;background:var(--green);color:#fff;font-weight:700;font-size:14px;flex:none}
+.pf-step{display:flex;align-items:center;gap:4px;flex:none}
+.pf-step button{width:30px;height:30px;border-radius:50%;background:#f1efeb;font-size:17px;font-weight:700;color:var(--ink2)}
+.pf-step b{min-width:20px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
+.pf-step span{font-size:12px;color:var(--ink3);margin:0 3px}
+/* Gießplan teilen */
+.pf-shf{display:flex;flex-direction:column;gap:10px;padding:4px 0 6px}
+.pf-shf label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.pf-shf input,.pf-shf textarea{font:inherit;font-size:15px;font-weight:500;color:var(--ink);background:#f7f5f1;border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-transform:none;letter-spacing:0;user-select:text;-webkit-user-select:text;resize:none}
+.pf-shf .row2{display:flex;gap:10px}
+.pf-shf .row2 label{flex:1;min-width:0}
+.pf-shf .chips{display:flex;gap:6px}
+.pf-shf .chips button{flex:1;height:32px;border-radius:999px;background:#f1efeb;font-weight:650;font-size:13px;color:var(--ink2)}
+.pf-shf .sum{font-size:13px;color:var(--green-d);font-weight:650}
 /* Wohnung gestalten */
 .pf-dsb{position:absolute;left:12px;right:12px;top:calc(var(--sat) + 10px);margin:0 auto;max-width:440px;background:var(--ink);color:#fff;border-radius:16px;
   padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
@@ -445,6 +468,7 @@ document.head.appendChild(styleEl);
 
 root.innerHTML = `
 <div id="pf">
+  <div class="pf-vig"></div>
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
     <button class="pf-btn pf-compass" id="pf-compass" aria-label="Nordausrichtung einstellen">
@@ -465,10 +489,16 @@ root.innerHTML = `
     <div class="pf-leg" id="pf-leg"></div>
     <button class="pf-lpb" id="pf-recs-btn" type="button">🪴 Was passt wohin? · Ideen je Raum</button>
   </div>
+  <div class="pf-lp pf-sp hide" id="pf-sp" aria-label="Sonnenlauf">
+    <div class="tm"><b id="sp-t"></b><span id="sp-s"></span><button id="sp-play" aria-label="Tag abspielen">▶</button></div>
+    <input type="range" id="sp-h" min="4" max="22" step="0.25">
+    <div class="pf-lr"><span>Monat</span><div class="pf-ms" id="sp-m"></div></div>
+  </div>
   <div class="pf-bottom" id="pf-bottom">
     <div class="pf-bl">
       <div class="pf-seg" id="pf-viewseg"><button data-v="3d" class="on">3D</button><button data-v="top">Draufsicht</button></div>
       <button class="pf-btn pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte">${ICONS.sun}<span>Licht</span></button>
+      <button class="pf-btn pf-sbtn" id="pf-sun" aria-pressed="false" aria-label="Sonnenlauf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 6v2M5.6 9.6l1.4 1.4M18.4 9.6 17 11M2 14h2M20 14h2"/></svg></button>
     </div>
     <button class="pf-btn" id="pf-reset" aria-label="Ansicht zurücksetzen" style="padding:0 12px">${ICONS.focus}</button>
   </div>
@@ -569,6 +599,7 @@ const state = {
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
   design: null, // Wohnung gestalten: { rooms: {id: {floor, wall}}, items: [...] }
+  building: { floor: 7, total: 9 }, // Stockwerk der Wohnung / Geschosse des Hauses
 };
 // Gießen: lastWateredAt (ISO) + kurze Historie (max. 10 Einträge)
 const nowDate = () => new Date();
@@ -632,6 +663,7 @@ function load() {
             standCm: Math.round(num(p.standCm, 0, 0, 150)),
             ...wateringFields(p),
             nick: cleanNick(p.nick),
+            onItem: typeof p.onItem === 'string' ? p.onItem.slice(0, 40) : undefined,
             waterAdj: Math.round(num(p.waterAdj, 1, ADJ_MIN, ADJ_MAX) * 100) / 100,
             fbAt: validIso(p.fbAt, Date.now() + 86400000),
           };
@@ -643,6 +675,10 @@ function load() {
     state.showRoomNames = d.showRoomNames === true;
     state.motion = d.motion !== false;
     state.design = cleanDesign(d.design);
+    if (d.building && typeof d.building === 'object') {
+      const tot = Math.round(num(d.building.total, 9, 1, 30));
+      state.building = { total: tot, floor: Math.round(num(d.building.floor, Math.min(7, tot), 1, tot)) };
+    }
     if (d.reminder && typeof d.reminder === 'object') {
       state.reminder = { on: d.reminder.on === true, h: Math.round(num(d.reminder.h, 8, 0, 23)), m: Math.round(num(d.reminder.m, 0, 0, 59)) };
     }
@@ -652,7 +688,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion, design: state.design,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion, design: state.design, building: state.building,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -874,22 +910,48 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
 
 // „Cozy“-Licht: warme Himmelsfüllung, warmer Bodenreflex, warmes Grundlicht hebt die Schatten (nicht grau)
-scene.add(new THREE.HemisphereLight(0xfff4e6, 0xa8825e, 1.15));
-scene.add(new THREE.AmbientLight(0xffe2c4, 0.45));
+const hemi = new THREE.HemisphereLight(0xfff4e6, 0xa8825e, 1.15);
+const amb = new THREE.AmbientLight(0xffe2c4, 0.45);
+scene.add(hemi, amb);
 // Nachmittagssonne aus Westen (kompassrichtig über planUpDeg), golden, eher flach
 const sun = new THREE.DirectionalLight(0xffd9a8, 2.2);
 const SUN_COMPASS = 262, SUN_ELEV = 42;
+/* Sonnenstand Hamburg (53,55° N, 9,99° O) für ein Datum – vereinfachte NOAA-Formeln, auf ~1° genau */
+function solarPos(date) {
+  const rad = Math.PI / 180, lat = 53.55 * rad, lon = 9.99;
+  const d = (date.getTime() - Date.UTC(2000, 0, 1, 12)) / 864e5;
+  const g = (357.529 + 0.98560028 * d) * rad, q = 280.459 + 0.98564736 * d;
+  const L = (q + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * rad, e = (23.439 - 0.00000036 * d) * rad;
+  const RA = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)), dec = Math.asin(Math.sin(e) * Math.sin(L));
+  const gmst = ((18.697374558 + 24.06570982441908 * d) % 24 + 24) % 24;
+  const H = (gmst * 15 + lon) * rad - RA;
+  const el = Math.asin(Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(-Math.sin(H), Math.tan(dec) * Math.cos(lat) - Math.sin(lat) * Math.cos(H));
+  return { az: ((az / rad) % 360 + 360) % 360, el: el / rad };
+}
+const sunMode = { on: false, month: new Date().getMonth(), hour: 17, play: false, last: 0 };
+function sunDate() { const n = new Date(); const h = Math.floor(sunMode.hour), mi = Math.round((sunMode.hour - h) * 60); return new Date(n.getFullYear(), sunMode.month, 15, h, mi); }
 function placeSun() {
-  const d = THREE.MathUtils.degToRad(SUN_COMPASS - planUpDeg());
+  let az = SUN_COMPASS, elev = SUN_ELEV;
+  if (sunMode.on) { const sp = solarPos(sunDate()); az = sp.az; elev = sp.el; }
+  const night = sunMode.on && elev < 0;
+  // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
+  const low = clamp(elev / 12, 0, 1);
+  sun.intensity = sunMode.on ? (night ? 0 : 3.1 * (0.35 + 0.65 * low)) : 2.2;
+  sun.color.setHSL(0.09, 1, sunMode.on ? 0.62 + 0.18 * low : 0.83);
+  hemi.intensity = sunMode.on ? (night ? 0.55 : 0.85) : 1.15;
+  hemi.color.set(night ? 0xbcc8e0 : 0xfff4e6);
+  amb.intensity = sunMode.on ? 0.3 : 0.45;
+  const d = THREE.MathUtils.degToRad(az - planUpDeg());
   const vx = Math.sin(d), vy = -Math.cos(d); // Plan-Vektor zur Sonne
-  const el = THREE.MathUtils.degToRad(SUN_ELEV), R = span * 1.6;
+  const el = THREE.MathUtils.degToRad(Math.max(2, elev)), R = span * 1.6;
   sun.position.set(cx0 + vx * R * Math.cos(el), R * Math.sin(el), cy0 + vy * R * Math.cos(el));
   sun.target.position.set(cx0, 0, cy0);
   sun.target.updateMatrixWorld();
 }
 placeSun();
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.mapSize.set(2048, 2048);
 const sc = span * 0.85;
 Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.5, far: span * 4 });
 sun.shadow.bias = -0.0008;
@@ -1016,6 +1078,7 @@ function mergeGeos(list, group = null) {
   out.setAttribute('position', new THREE.BufferAttribute(pos, 3)); out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   return out;
 }
+let plateShadow = null;
 const plateTopMat = new THREE.MeshStandardMaterial({ color: 0xc9a789, roughness: 1 });
 const plateSideMat = new THREE.MeshStandardMaterial({ color: 0x9d7556, roughness: 1 });
 {
@@ -1041,7 +1104,7 @@ const plateSideMat = new THREE.MeshStandardMaterial({ color: 0x9d7556, roughness
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(cw / k, ch / k), new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false }));
   sh.rotation.x = -Math.PI / 2; sh.position.set(X0 + cw / k / 2, PLATE_TOP - PLATE_H - 0.4, Y0 + ch / k / 2); sh.renderOrder = -1;
   sh.raycast = () => {};
-  scene.add(sh);
+  scene.add(sh); plateShadow = sh;
 }
 
 // Sockel nur unter Räumen und Wänden (nicht unter dem Treppenhaus / Bounding-Box)
@@ -1196,16 +1259,16 @@ function defaultRug() {
 /* ------------------------------------------------------------------ */
 // sizes: [Breite, Tiefe] in m; Rückseite = obere Kante (an die Wand)
 const FURN = {
-  sofa: { name: 'Sofa', sizes: [[1.9, 0.9, '2er'], [2.4, 0.95, '3er'], [2.8, 1.65, 'Ecke']] },
-  sessel: { name: 'Sessel', sizes: [[0.85, 0.85, '']] },
-  bett: { name: 'Bett', sizes: [[0.95, 2.05, '90'], [1.45, 2.05, '140'], [1.65, 2.05, '160'], [1.85, 2.05, '180']] },
-  tisch: { name: 'Esstisch', sizes: [[0.8, 0.8, '2'], [1.4, 0.85, '4'], [1.9, 0.95, '6']] },
-  rund: { name: 'Tisch rund', sizes: [[0.8, 0.8, 'Ø 80'], [1.1, 1.1, 'Ø 110']] },
-  couchtisch: { name: 'Couchtisch', sizes: [[0.9, 0.5, ''], [1.2, 0.6, '']] },
-  schreib: { name: 'Schreibtisch', sizes: [[1.2, 0.65, '120'], [1.6, 0.75, '160']] },
-  regal: { name: 'Regal', sizes: [[0.8, 0.35, '80'], [1.6, 0.35, '160'], [2.4, 0.35, '240']] },
-  schrank: { name: 'Schrank', sizes: [[1.0, 0.6, '100'], [1.5, 0.6, '150'], [2.0, 0.6, '200']] },
-  kommode: { name: 'Kommode', sizes: [[0.8, 0.45, '80'], [1.2, 0.45, '120']] },
+  sofa: { name: 'Sofa', h: 0.8, sizes: [[1.9, 0.9, '2er'], [2.4, 0.95, '3er'], [2.8, 1.65, 'Ecke']] },
+  sessel: { name: 'Sessel', h: 0.8, sizes: [[0.85, 0.85, '']] },
+  bett: { name: 'Bett', h: 0.5, sizes: [[0.95, 2.05, '90'], [1.45, 2.05, '140'], [1.65, 2.05, '160'], [1.85, 2.05, '180']] },
+  tisch: { name: 'Esstisch', h: 0.75, top: 0.75, sizes: [[0.8, 0.8, '2'], [1.4, 0.85, '4'], [1.9, 0.95, '6']] },
+  rund: { name: 'Tisch rund', h: 0.75, top: 0.75, sizes: [[0.8, 0.8, 'Ø 80'], [1.1, 1.1, 'Ø 110']] },
+  couchtisch: { name: 'Couchtisch', h: 0.42, top: 0.42, sizes: [[0.9, 0.5, ''], [1.2, 0.6, '']] },
+  schreib: { name: 'Schreibtisch', h: 0.75, top: 0.75, sizes: [[1.2, 0.65, '120'], [1.6, 0.75, '160']] },
+  regal: { name: 'Regal', h: 1.1, top: 1.1, sizes: [[0.8, 0.35, '80'], [1.6, 0.35, '160'], [2.4, 0.35, '240']] },
+  schrank: { name: 'Schrank', h: 2.0, sizes: [[1.0, 0.6, '100'], [1.5, 0.6, '150'], [2.0, 0.6, '200']] },
+  kommode: { name: 'Kommode', h: 0.85, top: 0.85, sizes: [[0.8, 0.45, '80'], [1.2, 0.45, '120']] },
   teppich: { name: 'Teppich', rug: true, sizes: [[1.6, 1.0, 'S'], [2.0, 1.4, 'M'], [2.4, 1.7, 'L']] },
   teppichrund: { name: 'Teppich rund', rug: true, sizes: [[1.2, 1.2, 'Ø 120'], [1.6, 1.6, 'Ø 160']] },
 };
@@ -1317,7 +1380,79 @@ function itemCanvas(it, k = ITEM_PX) {
   drawItem(g, it, k);
   return { cv, pad };
 }
-const itemObjs = new Map(); // id -> mesh
+const itemObjs = new Map(); // id -> mesh (Planzeichen am Boden)
+const item3d = new Map();   // id -> Group (weißer, durchscheinender Baukörper wie im Architekturmodell)
+const massMat = new THREE.MeshStandardMaterial({ color: 0xfffdf9, roughness: 0.85, transparent: true, opacity: 0.8 });
+const massEdge = new THREE.LineBasicMaterial({ color: 0xa8968a, transparent: true, opacity: 0.55 });
+// Teile in lokalen Koordinaten: x = Breite, z = Tiefe (Rückseite bei −d/2), y = Höhe; [x, y, z, w, h, d]
+function itemParts(it) {
+  const w = it.w, d = it.d, P = [], t = it.type, H = (h) => Math.min(h, CUT - 0.01);
+  const leg = (x, z, h) => P.push([x, h / 2, z, 0.045, h, 0.045]);
+  const chair = (x, z, a) => { const c = 0.42, ca = Math.cos(a), sa = Math.sin(a); P.push([x, 0.23, z, c, 0.46, c]); P.push([x - sa * 0.19, 0.62, z - ca * 0.19, Math.abs(ca) > 0.5 ? c : 0.05, 0.32, Math.abs(ca) > 0.5 ? 0.05 : c]); };
+  if (t === 'sofa' || t === 'sessel') {
+    const arm = Math.min(0.2, w * 0.18);
+    if (t === 'sofa' && it.sizeIdx === 2) {
+      const dd = 0.95;
+      P.push([0, 0.21, -d / 2 + dd / 2, w, 0.42, dd]);                 // Sitzfläche oben
+      P.push([w / 2 - dd / 2, 0.21, dd / 2, dd, 0.42, d - dd]);          // Récamiere
+      P.push([0, 0.4, -d / 2 + 0.1, w, 0.8, 0.2]);
+      P.push([-w / 2 + arm / 2, 0.3, -d / 2 + dd / 2, arm, 0.6, dd]);
+      return P;
+    }
+    P.push([0, 0.21, 0, w, 0.42, d]); P.push([0, 0.4, -d / 2 + 0.1, w, 0.8, 0.2]);
+    P.push([-w / 2 + arm / 2, 0.3, 0.05, arm, 0.6, d - 0.1]); P.push([w / 2 - arm / 2, 0.3, 0.05, arm, 0.6, d - 0.1]);
+    return P;
+  }
+  if (t === 'bett') {
+    P.push([0, 0.15, 0, w, 0.3, d]); P.push([0, 0.38, 0.02, w - 0.06, 0.16, d - 0.1]); P.push([0, 0.48, -d / 2 + 0.03, w, 0.96, 0.06]);
+    return P;
+  }
+  if (t === 'tisch' || t === 'couchtisch' || t === 'schreib') {
+    const h = FURN[t].top, i = 0.06;
+    P.push([0, h - 0.02, 0, w, 0.04, d]);
+    for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) leg(sx * (w / 2 - i), sz * (d / 2 - i), h - 0.04);
+    if (t === 'tisch') { const n = Math.max(1, Math.round(w / 0.65)); for (let k = 0; k < n; k++) { const x = -w / 2 + w * (k + 0.5) / n; chair(x, -d / 2 - 0.12, 0); chair(x, d / 2 + 0.12, Math.PI); } }
+    if (t === 'schreib') chair(0, d / 2 + 0.16, Math.PI);
+    return P;
+  }
+  if (t === 'rund') {
+    P.push(['cyl', 0.73, 0, w / 2, 0.04]); P.push(['cyl', 0.36, 0, 0.06, 0.7]);
+    const n = w > 1.0 ? 5 : 4;
+    for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2 - Math.PI / 2, r = w / 2 + 0.14, ux = Math.cos(a), uz = Math.sin(a); chair(ux * r, uz * r, Math.atan2(-ux, -uz)); }
+    return P;
+  }
+  // Kastenmöbel (Regal, Schrank, Kommode): bis zur Schnitthöhe
+  P.push([0, H(FURN[t].h) / 2, 0, w, H(FURN[t].h), d]);
+  return P;
+}
+function buildItem3d(it) {
+  const F = FURN[it.type]; if (!F || F.rug) return null;
+  const g = new THREE.Group();
+  const geos = [];
+  for (const q of itemParts(it)) {
+    let geo;
+    if (q[0] === 'cyl') { geo = new THREE.CylinderGeometry(q[3], q[3], q[4], 28); geo.translate(0, q[1], 0); }
+    else { geo = new THREE.BoxGeometry(q[3], q[4], q[5]); geo.translate(q[0], q[1], q[2]); }
+    geos.push(geo);
+  }
+  for (const geo of geos) {
+    const m = new THREE.Mesh(geo, massMat); m.castShadow = true; m.receiveShadow = true; m.userData.kind = 'item3d'; m.userData.itemId = it.id; g.add(m);
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), massEdge); e.raycast = () => {}; g.add(e);
+  }
+  g.position.set(it.x, 0.004, it.y); g.rotation.y = -(it.rot || 0);
+  g.userData.itemId = it.id;
+  return g;
+}
+// Ablageflächen für Pflanzen (Tische, Regal, Kommode)
+const surfaceTop = (it) => (it && FURN[it.type] && FURN[it.type].top) || 0;
+function insideItem(it, x, y, m = 0) {
+  const c = Math.cos(it.rot || 0), s2 = Math.sin(it.rot || 0), dx = x - it.x, dy = y - it.y;
+  const u = dx * c + dy * s2, v = -dx * s2 + dy * c;
+  if (it.type === 'rund' || it.type === 'teppichrund') return Math.hypot(u / (it.w / 2 + m), v / (it.d / 2 + m)) <= 1;
+  return Math.abs(u) <= it.w / 2 + m && Math.abs(v) <= it.d / 2 + m;
+}
+// Pflanzen, die auf einem Möbel stehen
+const plantsOn = (id) => [...state.plants, ...(draft ? [draft] : [])].filter((p) => p.onItem === id);
 function buildItemMesh(it) {
   const k = Math.min(ITEM_PX, 900 / Math.max(it.w, it.d));
   const { cv, pad } = itemCanvas(it, k);
@@ -1336,6 +1471,9 @@ function buildItemMesh(it) {
 function syncItem(it) {
   const old = itemObjs.get(it.id);
   if (old) { scene.remove(old); old.geometry.dispose(); old.material.map.dispose(); old.material.dispose(); }
+  const o3 = item3d.get(it.id);
+  if (o3) { scene.remove(o3); o3.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); item3d.delete(it.id); }
+  if (!it._gone) { const g3 = buildItem3d(it); if (g3) { scene.add(g3); item3d.set(it.id, g3); } }
   if (!it._gone) { const m = buildItemMesh(it); m.visible = !light.on; scene.add(m); itemObjs.set(it.id, m); } else itemObjs.delete(it.id);
   shadowsDirty();
 }
@@ -1376,6 +1514,21 @@ const edgeMat = new THREE.MeshBasicMaterial({ color: 0xa88f76 });
 const edgeMeshes = [];
 const CUT = Math.min(1.2, WH); // Schnitthöhe: Wände werden nur bis hier gezeigt (Grundriss-Schnitt)
 const wallGroups = []; // {group, mats, nOut:[x,y], mid:[x,y], exterior}
+// Schattenwerfer für den Sonnenmodus (Wände oberhalb der Schnitthöhe, Decke, Balkon darüber): unsichtbar, nur im Schatten
+const casterMat = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+const sunCasters = [];
+function addCaster(m) { m.castShadow = true; m.receiveShadow = false; m.visible = false; m.raycast = () => {}; m.userData.kind = 'caster'; scene.add(m); sunCasters.push(m); }
+// Kontaktschatten-Streifen (Verlauf dunkel → transparent)
+const AO_W = 0.28;
+const aoGeo = (() => { const g = new THREE.PlaneGeometry(1, AO_W); g.rotateX(-Math.PI / 2); return g; })();
+const aoMat = (() => {
+  const cv = document.createElement('canvas'); cv.width = 4; cv.height = 64;
+  const g = cv.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 64);
+  gr.addColorStop(0, 'rgba(70,48,30,0.26)'); gr.addColorStop(0.35, 'rgba(70,48,30,0.09)'); gr.addColorStop(1, 'rgba(70,48,30,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 4, 64);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+})();
 
 function addWall(w) {
   const t = w.thickness || 0.2;
@@ -1426,6 +1579,29 @@ function addWall(w) {
   const ang = -Math.atan2(dy, dx);
   const ext0 = t / 2; // Ecken schließen
   const box = (s0, s1, y0, y1, extend0 = 0, extend1 = 0) => {
+    // Sonnenmodus: unsichtbarer Schattenwerfer für den Wandteil über der Schnitthöhe (Licht nur durch Fenster)
+    if (y1 > CUT + 0.01) {
+      const ya = Math.max(y0, CUT), len2 = s1 - s0 + extend0 + extend1, sm2 = (s0 - extend0 + s1 + extend1) / 2;
+      if (len2 > 0.005) {
+        const c = new THREE.Mesh(new THREE.BoxGeometry(len2, y1 - ya, t), casterMat);
+        c.position.set(w.a[0] + ux * sm2, (ya + y1) / 2, w.a[1] + uy * sm2); c.rotation.y = ang;
+        addCaster(c);
+      }
+    }
+    // weicher Kontaktschatten am Boden entlang der Wand (beide Raumseiten)
+    if (y0 === 0) {
+      const len2 = s1 - s0 + extend0 + extend1, sm2 = (s0 - extend0 + s1 + extend1) / 2;
+      for (const sg of [1, -1]) {
+        const off = t / 2 + 0.002, px = w.a[0] + ux * sm2 - uy * sg * off, py = w.a[1] + uy * sm2 + ux * sg * off;
+        if (!roomAt(px - uy * sg * 0.15, py + ux * sg * 0.15)) continue;
+        const a = new THREE.Mesh(aoGeo, aoMat);
+        a.scale.set(len2, 1, 1);
+        a.position.set(px - uy * sg * AO_W / 2, 0.0031, py + ux * sg * AO_W / 2);
+        a.rotation.y = ang + (sg > 0 ? 0 : Math.PI);
+        a.raycast = () => {}; a.renderOrder = -1;
+        group.add(a);
+      }
+    }
     y1 = Math.min(y1, CUT); // oberhalb der Schnitthöhe nichts zeichnen
     const len = s1 - s0 + extend0 + extend1, h = y1 - y0;
     if (len < 0.005 || h < 0.005) return;
@@ -1495,6 +1671,16 @@ function addWall(w) {
   wallGroups.push({ group, mats: ext ? [side, top, frame, cap, ...extMat.values()] : null, glass: ext ? glass : null, nOut: n, mid, exterior: ext, fade: 1 });
 }
 (FP.walls || []).forEach(addWall);
+{
+  // Decke als Schattenwerfer (Licht nur durch die Fenster), dazu der Balkon des Geschosses darüber
+  const c = new THREE.Mesh(new THREE.BoxGeometry(bbox.maxX - bbox.minX + 0.6, 0.3, bbox.maxY - bbox.minY + 0.6), casterMat);
+  c.position.set(cx0, WH + 0.15, cy0); addCaster(c);
+  if (balcony) {
+    const b = polyBox(balcony.polygon);
+    const bc = new THREE.Mesh(new THREE.BoxGeometry(b.maxX - b.minX, 0.18, b.maxY - b.minY), casterMat);
+    bc.position.set((b.minX + b.maxX) / 2, WH + 0.25, (b.minY + b.maxY) / 2); bc.userData.balconyAbove = true; addCaster(bc);
+  }
+}
 
 // Türaufschlag wie im Plan: Türblatt (Linie) + Viertelkreis auf dem Boden, öffnet in den Raum, Band an der Raumecke
 const doorMat = new THREE.LineBasicMaterial({ color: 0x8c7258, transparent: true, opacity: 0.55 });
@@ -1641,6 +1827,8 @@ function buildPlant(p) {
       board.rotation.y = -Math.atan2(dy, dx);
       board.castShadow = true; board.receiveShadow = true; board.userData.kind = 'stand';
       root.add(board);
+    } else if (p.onItem && state.design && itemById(p.onItem)) {
+      // steht auf einem Möbel aus „Wohnung gestalten“ – kein eigenes Möbel nötig
     } else {
       buildStand(root, standM, d, rng(p.uid));
     }
@@ -1798,7 +1986,7 @@ function poseAt(polarDeg, azDeg, dist, t) {
 // Freier Bildbereich (NDC) zwischen Kopfzeile und unterer Leiste bzw. Sheet
 function bottomUiTop() {
   let t = $('pf-bottom').getBoundingClientRect().top || H - 60;
-  for (const id of ['pf-lp', 'pf-bb']) { const e = $(id); if (e && !e.classList.contains('hide')) t = Math.min(t, e.getBoundingClientRect().top); }
+  for (const id of ['pf-lp', 'pf-bb', 'pf-sp']) { const e = $(id); if (e && !e.classList.contains('hide')) t = Math.min(t, e.getBoundingClientRect().top); }
   return t;
 }
 function freeRect(bottomPx) {
@@ -1959,6 +2147,7 @@ function updateWallFade() {
   const tilt = Math.acos(clamp(-camDir.y, -1, 1)); // 0 = von oben
   // Draufsicht: Wände werfen keine Schatten (sonst doppelte Wandkanten)
   const off = tilt < 0.3;
+  if (bldg.above && bldg.above.visible === off) { bldg.above.visible = !off; dirty = true; }
   if (off !== topShadowOff) {
     topShadowOff = off; applyWallShadows();
     // Draufsicht: Wandkappen etwas dunkler (Plan liest), 3D: helle Creme
@@ -1986,91 +2175,69 @@ function updateWallFade() {
     }
   }
   if (changed) applyWallShadows();
-  updateTreeFade(tilt);
 }
 
-/* Ausblick: Straßenbäume wie im Architekturmodell vor den Fensterfassaden (auf einem Gehweg-Streifen der Platte) */
-const outTrees = []; // { mats, n:[x,y], mid:[x,y], fade }
-{
-  const crownMat = new THREE.MeshStandardMaterial({ color: 0x93b07e, roughness: 0.9, flatShading: true });
-  const crownMat2 = new THREE.MeshStandardMaterial({ color: 0xa9c08f, roughness: 0.9, flatShading: true });
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x9a8068, roughness: 0.9 });
-  const walkMat = new THREE.MeshStandardMaterial({ color: 0xd8cdbd, roughness: 1 });
-  // Fassaden mit Fenstern nach Außenrichtung gruppieren
-  const sides = new Map();
-  for (const o of lightOpenings) {
-    const n = openingNormal(o); // nach außen
-    const key = Math.round(Math.atan2(n[1], n[0]) / (Math.PI / 4));
-    if (!sides.has(key)) sides.set(key, { n, ops: [] });
-    sides.get(key).ops.push(o);
-  }
-  const extW = Math.max(0.24, ...(FP.walls || []).filter((w) => w.exterior).map((w) => w.thickness || 0.24));
-  for (const { n, ops } of sides.values()) {
-    const ux = -n[1], uy = n[0]; // entlang der Fassade
-    // Fassadenlinie: äußerste Wandaußenkante (inkl. Balkon)
-    let face = -Infinity;
-    for (const o of ops) face = Math.max(face, ((o.a[0] + o.b[0]) / 2) * n[0] + ((o.a[1] + o.b[1]) / 2) * n[1] + extW / 2);
-    const wallFace = face;
-    if (balcony) for (const p of balcony.polygon) {
-      const along = p[0] * ux + p[1] * uy, on = ops.some((o) => Math.abs(((o.a[0] + o.b[0]) / 2) * ux + ((o.a[1] + o.b[1]) / 2) * uy - along) < 4);
-      if (on) face = Math.max(face, p[0] * n[0] + p[1] * n[1]);
+/* Gebäude: die Wohnung als Teil eines Hauses – Geschosse darunter als weiße, durchscheinende Baukörper,
+ * darüber nur als feine Umrisslinien (verdecken nichts) */
+const SH = 3.0; // Geschosshöhe
+const bldg = { group: null, above: null };
+const bldgMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, transparent: true, opacity: 0.5, depthWrite: false });
+function buildBuilding() {
+  if (bldg.group) { scene.remove(bldg.group); bldg.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material !== bldgMat) o.material.dispose(); }); }
+  const g = new THREE.Group(); g.raycast = () => {};
+  const above = new THREE.Group();
+  const B = state.building || { floor: 1, total: 1 };
+  const nBelow = Math.max(0, B.floor - 1), nAbove = Math.max(0, B.total - B.floor);
+  // Hausgrundriss: Rechteck um alle Räume inkl. Außenwände
+  const pad = Math.max(0.2, ...(FP.walls || []).filter((w) => w.exterior).map((w) => w.thickness || 0.2)) * 0.5 + 0.02;
+  const rb = rooms.reduce((b, r) => { const q = polyBox(r.polygon); return { x0: Math.min(b.x0, q.minX), x1: Math.max(b.x1, q.maxX), y0: Math.min(b.y0, q.minY), y1: Math.max(b.y1, q.maxY) }; }, { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity });
+  const X0 = rb.x0 - pad, X1 = rb.x1 + pad, Y0 = rb.y0 - pad, Y1 = rb.y1 + pad, BW = X1 - X0, BD = Y1 - Y0, CX = (X0 + X1) / 2, CY = (Y0 + Y1) / 2;
+  const glassM = (op) => new THREE.MeshBasicMaterial({ color: 0x9fb4bf, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide });
+  const lineM = (op) => new THREE.LineBasicMaterial({ color: 0xb9ab98, transparent: true, opacity: op, depthWrite: false });
+  // Fenster der Wohnung auf die Hausfassade projizieren (gleiche Achsen in jedem Geschoss)
+  const facWins = lightOpenings.map((o) => {
+    const n = openingNormal(o), L = segLen(o), mx = (o.a[0] + o.b[0]) / 2, my = (o.a[1] + o.b[1]) / 2;
+    const ax = Math.abs(n[0]) > Math.abs(n[1]);
+    const fx = ax ? (n[0] > 0 ? X1 : X0) : mx, fy = ax ? my : (n[1] > 0 ? Y1 : Y0);
+    const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
+    return { x: fx + n[0] * 0.012, y: fy + n[1] * 0.012, rot: ax ? Math.PI / 2 : 0, w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
+  });
+  const balB = balcony ? polyBox(balcony.polygon) : null;
+  for (let k = 1; k <= nBelow; k++) {
+    const fade = 1 - (k - 1) / Math.max(1, nBelow) * 0.8;
+    const yTop = -(k - 1) * SH - 0.45, yBot = -k * SH + 0.05;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(BW, yTop - yBot, BD), bldgMat.clone());
+    box.material.opacity = 0.42 * fade;
+    box.position.set(CX, (yTop + yBot) / 2, CY); box.receiveShadow = true; g.add(box);
+    const ed = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), lineM(0.55 * fade)); ed.position.copy(box.position); g.add(ed);
+    const fl = -k * SH + 0.05; // Fußboden dieses Geschosses
+    for (const wv of facWins) {
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(wv.w, wv.h), glassM(0.45 * fade));
+      pl.position.set(wv.x, fl + wv.sill + wv.h / 2, wv.y); pl.rotation.y = wv.rot; g.add(pl);
     }
-    const dist = face + 1.05; // Abstand Baumachse
-    // Baumstandorte vor den Fenstern, mind. 2,6 m auseinander
-    const ts = ops.map((o) => ((o.a[0] + o.b[0]) / 2) * ux + ((o.a[1] + o.b[1]) / 2) * uy).sort((a, b) => a - b);
-    const pos = [];
-    for (const t of ts) if (!pos.length || t - pos[pos.length - 1] > 2.6) pos.push(t);
-    if (!pos.length) continue;
-    const t0 = pos[0] - 1.1, t1 = pos[pos.length - 1] + 1.1;
-    // Gehweg-Streifen auf Plattenhöhe
-    const sx0 = Math.min(t0, t1), sx1 = Math.max(t0, t1);
-    const shp = new THREE.Shape(); const r = 0.35, d0 = wallFace, d1 = face + 1.65; // schließt an die Platte an
-    const P = (t, d) => [t * ux + d * n[0], t * uy + d * n[1]];
-    const corners = [P(sx0, d0), P(sx1, d0), P(sx1, d1), P(sx0, d1)];
-    const xs = corners.map((c) => c[0]), ys = corners.map((c) => c[1]);
-    const g = new THREE.ExtrudeGeometry(roundRectShape(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys), r), { depth: PLATE_H - 0.08, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 2, curveSegments: 5 });
-    g.rotateX(-Math.PI / 2); g.translate(0, PLATE_TOP - PLATE_H + 0.04, 0);
-    const walk = new THREE.Mesh(g, [plateTopMat, plateSideMat]); void walkMat; walk.receiveShadow = true; walk.raycast = () => {};
-    scene.add(walk); void shp;
-    const R0 = rng('trees' + Math.round(n[0] * 10) + Math.round(n[1] * 10));
-    const mats = [crownMat.clone(), crownMat2.clone(), trunkMat.clone()];
-    const grp = new THREE.Group(); grp.raycast = () => {};
-    for (const t of pos) {
-      const [x, z] = P(t + (R0() - 0.5) * 0.4, dist);
-      const h = 0.72 + R0() * 0.22, cr = 0.36 + R0() * 0.12; // Krone bleibt etwa auf Schnitthöhe: verdeckt nichts
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, h - PLATE_TOP, 7), mats[2]);
-      trunk.position.set(x, PLATE_TOP + (h - PLATE_TOP) / 2, z); trunk.castShadow = false; grp.add(trunk);
-      // Krone aus 3 Kugeln (Modellbaum)
-      for (let k = 0; k < 3; k++) {
-        const c = new THREE.Mesh(new THREE.IcosahedronGeometry(cr * (k ? 0.72 : 1), 1), mats[k ? 1 : 0]);
-        const a = R0() * 6.28;
-        c.position.set(x + (k ? Math.cos(a) * cr * 0.55 : 0), h + (k ? cr * (0.15 + R0() * 0.35) : 0), z + (k ? Math.sin(a) * cr * 0.55 : 0));
-        c.rotation.set(R0() * 3, R0() * 3, 0);
-        grp.add(c);
-      }
+    if (balB) {
+      const bb = new THREE.Mesh(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.14, balB.maxY - balB.minY), bldgMat.clone());
+      bb.material.opacity = 0.5 * fade; bb.position.set((balB.minX + balB.maxX) / 2, fl - 0.07, (balB.minY + balB.maxY) / 2); g.add(bb);
+      const be = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.9, balB.maxY - balB.minY)), lineM(0.35 * fade));
+      be.position.set(bb.position.x, fl + 0.45, bb.position.z); g.add(be);
     }
-    grp.traverse((o) => { o.raycast = () => {}; });
-    scene.add(grp);
-    const mid = P((sx0 + sx1) / 2, dist);
-    outTrees.push({ mats, n, mid, fade: 1 });
-    for (const [x, z] of [P(sx0, d1), P(sx1, d1)]) fitPts.push(new THREE.Vector3(x, 0, z)); // Vorplatz mit ins Bild
   }
+  // darüber: nur Umrisse je Geschoss
+  // nur die Innenseiten (BackSide): wirken wie eine Kulisse hinter der Wohnung, verdecken nichts
+  for (let k = 0; k < nAbove; k++) {
+    const y0 = WH + 0.25 + k * SH, y1 = y0 + SH - 0.3;
+    const m = new THREE.MeshBasicMaterial({ color: 0xfffaf2, transparent: true, opacity: 0.3 - k * 0.06, depthWrite: false, side: THREE.BackSide });
+    const none = new THREE.MeshBasicMaterial({ visible: false });
+    const bx = new THREE.Mesh(new THREE.BoxGeometry(BW, y1 - y0, BD), [m, m, none, none, m, m]); // ohne Boden/Decke
+    bx.position.set(CX, (y0 + y1) / 2, CY); above.add(bx);
+  }
+  g.add(above);
+  scene.add(g);
+  bldg.group = g; bldg.above = above;
+  if (plateShadow) plateShadow.visible = nBelow === 0;
+  shadowsDirty();
 }
-// Bäume zwischen Kamera und Wohnung bzw. in der Draufsicht durchscheinend
-function updateTreeFade(tilt) {
-  for (const T of outTrees) {
-    const vx = camera.position.x - T.mid[0], vz = camera.position.z - T.mid[1];
-    const facing = (vx * T.n[0] + vz * T.n[1]) / (Math.hypot(vx, vz) || 1);
-    const want = tilt > 0.95 && facing > 0.2 ? 0.3 : 1; // nur bei flachem Blick durchscheinend (wie Außenwände)
-    if (Math.abs(T.fade - want) > 0.005) {
-      T.fade += (want - T.fade) * 0.25;
-      if (Math.abs(T.fade - want) < 0.01) T.fade = want;
-      const tr = T.fade < 0.999;
-      for (const m of T.mats) { if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = T.fade; m.depthWrite = !tr; }
-      dirty = true;
-    }
-  }
-}
+function buildingLabel() { const B = state.building; return `${B.floor}. von ${B.total} Geschossen`; }
 
 // overlay labels
 const labelLayer = $('pf-labels');
@@ -2274,6 +2441,7 @@ function loop(now) {
     dirty = true;
   }
   if (fx.length) { runFx(now); dirty = true; }
+  stepSun(now);
   // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist
   if (motionOn() && (state.plants.length || draft) && now - lastWind >= 33) {
     lastWind = now;
@@ -2319,7 +2487,7 @@ cvs.addEventListener('pointercancel', (e) => endPointer(e, true));
 function pick(sx, sy) {
   ndc.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1);
   raycaster.setFromCamera(ndc, camera);
-  const objs = [...floorMeshes, ...plantObjs.values()];
+  const objs = [...floorMeshes, ...plantObjs.values(), ...item3d.values()];
   wallGroups.forEach((wg) => { if (!wg.exterior || wg.fade > 0.5) objs.push(wg.group); });
   const hits = raycaster.intersectObjects(objs, true);
   for (const h of hits) {
@@ -2328,6 +2496,12 @@ function pick(sx, sy) {
     if (op && op.type === 'window') return { type: 'window', o: op, x: h.point.x, y: h.point.z };
     if (h.object.userData.kind === 'glass' || h.object.userData.kind === 'door') continue;
     if (h.object.userData.uid) return { type: 'plant', uid: h.object.userData.uid };
+    if (h.object.userData.kind === 'item3d') {
+      // Tisch, Regal, Kommode: Pflanze auf die Oberfläche stellen
+      const it = itemById(h.object.userData.itemId), top = surfaceTop(it);
+      if (top && h.face && h.face.normal.y > 0.6 && Math.abs(h.point.y - top) < 0.06 && insideItem(it, h.point.x, h.point.z, 0)) return { type: 'floor', x: h.point.x, y: h.point.z, item: it };
+      continue;
+    }
     if (h.object.userData.kind === 'wall') {
       // Tipp knapp auf eine Wand: Boden direkt dahinter akzeptieren (nachsichtig), sonst ignorieren
       const f = hits.find((q) => q.object.userData.kind === 'floor' && q.distance > h.distance);
@@ -2344,8 +2518,8 @@ function handleTap(sx, sy) {
   const hit = pick(sx, sy);
   if (!hit) { if (selected && !moveMode) closeSheet(); return; }
   if (moveMode) {
-    if (hit.type === 'floor') movePlantTo(hit.x, hit.y);
-    else if (hit.type === 'window' && selected) { if (placeOnSill(selected, hit.o, hit.x, hit.y)) movePlantTo(selected.x, selected.y); }
+    if (hit.type === 'floor') movePlantTo(hit.x, hit.y, hit.item);
+    else if (hit.type === 'window' && selected) { selected.onItem = undefined; if (placeOnSill(selected, hit.o, hit.x, hit.y)) movePlantTo(selected.x, selected.y, 'keep'); }
     else if (hit.type === 'plant' && hit.uid === selected?.uid) cancelMove();
     return;
   }
@@ -2362,7 +2536,7 @@ function handleTap(sx, sy) {
   if (hit.type === 'wall') { if (selected) closeSheet(); return; }
   if (hit.type === 'floor') {
     if (selected) { closeSheet(); return; } // erster Tipp schließt nur (und speichert)
-    placeNew(hit.x, hit.y);
+    placeNew(hit.x, hit.y, hit.item);
   }
 }
 
@@ -2382,7 +2556,15 @@ function newPlant(x, y, plantId) {
   const today = nowDate().toISOString();
   return { uid: uid(), plantId: plantId || lastId, x, y, potDiameterCm: 18, plantHeightCm: 50, standCm: 0, lastWateredAt: today, waterLog: [today], nick: '', waterAdj: 1, fbAt: today }; // fbAt = heute: keine Ablauf-Frage direkt nach dem Platzieren
 }
-function placeNew(x, y) { startDraft(newPlant(x, y)); }
+function placeNew(x, y, item) {
+  const p = newPlant(x, y);
+  if (item) { setOnItem(p, item); p.potDiameterCm = 14; p.plantHeightCm = 30; }
+  startDraft(p);
+}
+function setOnItem(p, item) {
+  if (item) { p.onItem = item.id; p.standCm = Math.round(surfaceTop(item) * 100); }
+  else if (p.onItem) { p.onItem = undefined; p.standCm = 0; }
+}
 function startDraft(p) {
   if (selected) closeSheet({ restoreView: false });
   draft = p;
@@ -2410,7 +2592,7 @@ function openPlant(p, { isNew = false, focus = false } = {}) {
   });
 }
 function sheetHeight() { return Math.max(0, Math.min(sheet.offsetHeight, H * 0.7) - ($('pf-list-btn').getBoundingClientRect().bottom + 8)); }
-const PLANT_KEYS = ['plantId', 'x', 'y', 'potDiameterCm', 'plantHeightCm', 'standCm', 'nick'];
+const PLANT_KEYS = ['plantId', 'x', 'y', 'potDiameterCm', 'plantHeightCm', 'standCm', 'nick', 'onItem'];
 // Änderungen gelten live: aktuelle Pflanze übernehmen + speichern, Toast mit „Rückgängig“
 function commitSelected() {
   const p = selected; if (!p) return;
@@ -2508,9 +2690,10 @@ function renderSheet(isNew) {
   bindGrab(sheet);
   const sel = $('s-plant'), pot = $('s-pot'), hh = $('s-h'), st = $('s-stand');
   pct(pot); pct(hh); pct(st);
-  st.addEventListener('input', () => { p.standCm = +st.value; pct(st); syncPlantObj(p); updateSelection(); refreshSheet(); });
+  st.addEventListener('input', () => { p.onItem = undefined; p.standCm = +st.value; pct(st); syncPlantObj(p); updateSelection(); refreshSheet(); });
   $('s-stand-chips').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-cm]'); if (!b) return;
+    p.onItem = undefined;
     if (b.dataset.k === 'sill') snapToSill(p);
     else p.standCm = +b.dataset.cm;
     st.value = p.standCm; pct(st);
@@ -2615,7 +2798,7 @@ function refreshSheet() {
   $('s-note').textContent = def.note || '';
   $('s-pot-v').textContent = p.potDiameterCm + ' cm';
   $('s-h-v').textContent = p.plantHeightCm + ' cm';
-  $('s-stand-v').textContent = p.standCm ? p.standCm + ' cm' : 'Boden';
+  { const oi = p.onItem && state.design && itemById(p.onItem); $('s-stand-v').textContent = oi ? `${p.standCm} cm · ${FURN[oi.type].name}` : p.standCm ? p.standCm + ' cm' : 'Boden'; }
   $('s-stand-chips').innerHTML = standChips(p);
   $('s-room').textContent = a.roomName || '–';
   $('s-result').innerHTML = resultHTML(r, a);
@@ -2720,9 +2903,10 @@ function cancelMove() {
   updateLightUI();
   requestRender();
 }
-function movePlantTo(x, y) {
+function movePlantTo(x, y, item) {
   const p = selected; if (!p) return;
   p.x = x; p.y = y;
+  if (item !== 'keep') setOnItem(p, item || null);
   syncPlantObj(p);
   cancelMove();
   ring.userData.t0 = performance.now();
@@ -3000,8 +3184,51 @@ function updateLightUI() {
   appEl.classList.toggle('pf-lit', light.on);
   { let ch = false; for (const m of itemObjs.values()) if (m.visible === light.on) { m.visible = !light.on; ch = true; } if (ch) shadowsDirty(); } // Lichtkarte liegt direkt auf dem Boden
 }
+/* Sonnenlauf: echter Sonnenstand (Monat + Uhrzeit), Licht fällt nur durch die Fenster */
+const SUN_MONTHS = [{ m: 11, name: 'Dez' }, { m: 2, name: 'Mär' }, { m: 5, name: 'Jun' }, { m: 8, name: 'Sep' }];
+function setSunMode(on) {
+  on = !!on;
+  if (sunMode.on === on) return;
+  if (on) {
+    if (light.on) setLight(false);
+    if (selected) closeSheet();
+    const n = new Date(); sunMode.month = n.getMonth();
+    sunMode.hour = clamp(n.getHours() + n.getMinutes() / 60, 4, 22);
+    const sp = solarPos(sunDate()); if (sp.el < 3) sunMode.hour = 16; // abends/nachts: schöner Nachmittag
+  }
+  sunMode.on = on; sunMode.play = false;
+  const showBal = state.building && state.building.floor < state.building.total;
+  for (const c of sunCasters) c.visible = on && (!c.userData.balconyAbove || showBal);
+  $('pf-sun').classList.toggle('on', on); $('pf-sun').setAttribute('aria-pressed', String(on));
+  $('pf-sp').classList.toggle('hide', !on);
+  renderSunPanel(); placeSun(); shadowsDirty();
+  requestAnimationFrame(() => { const { pos, target } = camPose(viewMode); flyTo(pos, target, 600); });
+}
+function hhmm(h) { const hh = Math.floor(h), mm = Math.round((h - hh) * 60); return `${hh}:${String(mm).padStart(2, '0')}`; }
+function renderSunPanel() {
+  $('sp-h').value = sunMode.hour; pct($('sp-h'));
+  $('sp-t').textContent = hhmm(sunMode.hour);
+  const sp = solarPos(sunDate());
+  $('sp-s').textContent = sp.el < 0 ? 'Sonne untergegangen' : `Sonne aus ${compassName(sp.az)}, ${Math.round(sp.el)}° hoch`;
+  $('sp-m').innerHTML = SUN_MONTHS.map((x) => `<button data-m="${x.m}" class="${x.m === sunMode.month ? 'on' : ''}">${x.name}</button>`).join('') +
+    (SUN_MONTHS.some((x) => x.m === sunMode.month) ? '' : `<button data-m="${sunMode.month}" class="on">${['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'][sunMode.month]}</button>`);
+  $('sp-play').classList.toggle('on', sunMode.play); $('sp-play').textContent = sunMode.play ? '❚❚' : '▶';
+}
+function sunChanged() { renderSunPanel(); placeSun(); shadowsDirty(); }
+$('pf-sun').addEventListener('click', () => setSunMode(!sunMode.on));
+$('sp-h').addEventListener('input', () => { sunMode.hour = +$('sp-h').value; sunMode.play = false; sunChanged(); });
+$('sp-m').addEventListener('click', (e) => { const b = e.target.closest('button[data-m]'); if (!b) return; sunMode.month = +b.dataset.m; sunChanged(); });
+$('sp-play').addEventListener('click', () => { sunMode.play = !sunMode.play; if (sunMode.play && sunMode.hour >= 21.9) sunMode.hour = 5; sunMode.last = performance.now(); renderSunPanel(); });
+function stepSun(now) {
+  if (!sunMode.on || !sunMode.play) return;
+  const dt = Math.min(100, now - sunMode.last); sunMode.last = now;
+  sunMode.hour += dt / 1000 * 1.2; // ein Tag in ~15 s
+  if (sunMode.hour >= 22) { sunMode.hour = 22; sunMode.play = false; }
+  sunChanged();
+}
 function setLight(on) {
   if (light.on === !!on) return;
+  if (on && sunMode.on) setSunMode(false);
   light.on = !!on;
   updateLightUI(); refreshLight();
   // Grundriss über dem Panel einpassen
@@ -3100,9 +3327,11 @@ function renderList() {
         ${dueL.map(row).join('')}` : '<div class="pf-grp" id="l-due"><h3>Fällig (0)</h3></div><div class="pf-list-empty" style="padding:6px 0 10px">Heute ist nichts zu gießen. 🌿</div>'}
       ${soon.length ? `<div class="pf-grp" id="l-soon"><h3>Demnächst</h3></div>${soon.map(row).join('')}` : ''}`
     : '<div class="pf-list-empty">Noch keine Pflanzen.<br>Tippe in der 3D-Ansicht auf den Boden oder ein Fenster, um deine erste Pflanze zu platzieren.</div>'}
+    <button class="pf-rlink" id="l-share"><span class="ic">📄</span><span class="t"><b>Gießplan teilen</b><span>PDF für deine Urlaubsvertretung – per WhatsApp & Co.</span></span></button>
     <button class="pf-rlink" id="l-recs"><span class="ic">🪴</span><span class="t"><b>Was passt wohin?</b><span>Freie Plätze und passende Pflanzen je Raum</span></span></button>`;
   $('l-close').addEventListener('click', closeAux);
   $('l-recs').addEventListener('click', () => openRecs());
+  $('l-share').addEventListener('click', () => openShare());
   $('l-rem').addEventListener('click', () => openReminder('list'));
   if ($('l-all')) $('l-all').addEventListener('click', () => waterPlants(dueL.map((i) => i.p)));
   body.querySelectorAll('button.open').forEach((b) => b.addEventListener('click', () => {
@@ -3133,6 +3362,9 @@ function openSettings() {
         <div class="v"><b id="st-v"></b><span>Plan-oben zeigt in diese Richtung</span></div>
         <button id="st-orient" type="button">Mit Kompass einstellen</button>
       </div>
+      <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Stockwerk</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)" id="st-bl">${esc(buildingLabel())}</p></div>
+        <div class="pf-step"><button id="st-f-" aria-label="Stockwerk tiefer">−</button><b id="st-f">${state.building.floor}</b><button id="st-f+" aria-label="Stockwerk höher">+</button>
+          <span>von</span><button id="st-t-" aria-label="weniger Geschosse">−</button><b id="st-t">${state.building.total}</b><button id="st-t+" aria-label="mehr Geschosse">+</button></div></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
         <button class="pf-switch" id="st-names" role="switch" aria-checked="${state.showRoomNames}" aria-label="Raumnamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzen bewegen sich</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichtes Wiegen im Luftzug · aus spart Akku</p></div>
@@ -3146,6 +3378,14 @@ function openSettings() {
   $('st-close').addEventListener('click', () => { save(); closeAux(); });
   $('st-rem').addEventListener('click', () => { save(); openReminder('settings'); });
   $('st-design').addEventListener('click', () => { save(); startDesign(); });
+  const stepB = (df, dt) => {
+    const B = state.building;
+    B.total = clamp(B.total + dt, 1, 30); B.floor = clamp(B.floor + df, 1, B.total);
+    $('st-f').textContent = B.floor; $('st-t').textContent = B.total; $('st-bl').textContent = buildingLabel();
+    save(); buildBuilding();
+  };
+  $('st-f-').addEventListener('click', () => stepB(-1, 0)); $('st-f+').addEventListener('click', () => stepB(1, 0));
+  $('st-t-').addEventListener('click', () => stepB(0, -1)); $('st-t+').addEventListener('click', () => stepB(0, 1));
   $('st-motion').addEventListener('click', () => {
     state.motion = !state.motion; save();
     $('st-motion').setAttribute('aria-checked', String(state.motion)); requestRender();
@@ -3450,15 +3690,19 @@ $('pf-ds').addEventListener('click', (e) => {
   if (d.size != null) {
     const z = FURN[it.type].sizes[+d.size]; it.sizeIdx = +d.size; it.w = z[0]; it.d = z[1];
   } else if (d.style) it.style = d.style;
-  else if (d.act === 'rot') it.rot = ((it.rot || 0) + Math.PI / 2) % (Math.PI * 2);
+  else if (d.act === 'rot') {
+    it.rot = ((it.rot || 0) + Math.PI / 2) % (Math.PI * 2);
+    for (const p of plantsOn(it.id)) { const dx = p.x - it.x, dy = p.y - it.y; p.x = it.x - dy; p.y = it.y + dx; syncPlantObj(p); }
+  }
   else if (d.act === 'dup') {
     const c = { ...it, id: uid(), x: it.x + 0.3, y: it.y + 0.3 };
     state.design.items.push(c); syncItem(c); design.sel = c.id;
   } else if (d.act === 'del') {
     const i = state.design.items.indexOf(it);
     state.design.items.splice(i, 1); syncItem({ id: it.id, _gone: true });
+    const on = plantsOn(it.id); on.forEach((p) => { p.onItem = undefined; syncPlantObj(p); });
     design.sel = null; save(); renderDesign(); markSelItem();
-    toast(`${FURN[it.type].name} entfernt`, () => { state.design.items.splice(i, 0, it); syncItem(it); save(); requestRender(); });
+    toast(`${FURN[it.type].name} entfernt`, () => { state.design.items.splice(i, 0, it); syncItem(it); on.forEach((p) => { p.onItem = it.id; syncPlantObj(p); }); save(); requestRender(); });
     return;
   }
   syncItem(it); save(); markSelItem(); renderDesign();
@@ -3535,8 +3779,11 @@ cvs.addEventListener('pointermove', (e) => {
   const D = design.drag; if (!D || D.pid !== e.pointerId) return;
   const rc = cvs.getBoundingClientRect(), g = floorAtScreen(e.clientX - rc.left, e.clientY - rc.top); if (!g) return;
   const it = itemById(D.id); if (!it) return;
-  it.x = g.x + D.ox; it.y = g.y + D.oy; D.moved = true;
+  const dx = g.x + D.ox - it.x, dy = g.y + D.oy - it.y;
+  it.x += dx; it.y += dy; D.moved = true;
   const m = itemObjs.get(it.id); if (m) m.position.set(it.x, m.position.y, it.y);
+  const m3 = item3d.get(it.id); if (m3) m3.position.set(it.x, m3.position.y, it.y);
+  for (const p of plantsOn(it.id)) { p.x += dx; p.y += dy; const o = plantObjs.get(p.uid); if (o) o.position.set(p.x, o.position.y, p.y); }
   requestRender();
 });
 const endDrag = (e) => {
@@ -3545,6 +3792,242 @@ const endDrag = (e) => {
   if (D.moved) { save(); shadowsDirty(); }
 };
 cvs.addEventListener('pointerup', endDrag); cvs.addEventListener('pointercancel', endDrag);
+
+/* ------------------------------------------------------------------ */
+/* Gießplan als PDF: wann und wie viel – zum Teilen mit der Vertretung   */
+/* ------------------------------------------------------------------ */
+const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const dShort = (d) => `${WD[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}.`;
+const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const share = { from: null, to: null, who: '', note: '' };
+function openShare() {
+  if (!state.plants.length) { toast('Noch keine Pflanzen'); return; }
+  closeAux();
+  const t0 = new Date(); t0.setHours(12, 0, 0, 0);
+  if (!share.from) { share.from = isoDay(t0); share.to = isoDay(new Date(t0.getTime() + 13 * 864e5)); }
+  const body = $('pf-set-body');
+  body.innerHTML = `<div class="pf-head"><div style="min-width:0"><h2>Gießplan teilen</h2><p style="font-style:normal">PDF mit Grundriss, Mengen und Terminen</p></div>
+      <button class="pf-x" id="sh-close" aria-label="Schließen">${ICONS.close}</button></div>
+    <div class="pf-shf">
+      <div class="row2"><label>Von<input type="date" id="sh-from" value="${share.from}"></label><label>Bis<input type="date" id="sh-to" value="${share.to}"></label></div>
+      <div class="chips"><button data-d="7">1 Woche</button><button data-d="14">2 Wochen</button><button data-d="21">3 Wochen</button></div>
+      <label>Für (optional)<input type="text" id="sh-who" maxlength="40" placeholder="z. B. Lena" value="${esc(share.who)}"></label>
+      <label>Hinweise (optional)<textarea id="sh-note" rows="3" maxlength="400" placeholder="z. B. Gießkanne steht unter der Spüle, Schlüssel bei …">${esc(share.note)}</textarea></label>
+      <div class="sum" id="sh-sum"></div>
+      <button class="pf-act primary" id="sh-go" style="width:100%;height:50px;flex:none;border-radius:14px;font-size:16px">PDF erstellen & teilen</button>
+    </div>`;
+  const upd = () => {
+    share.from = $('sh-from').value; share.to = $('sh-to').value; share.who = $('sh-who').value.trim(); share.note = $('sh-note').value.trim();
+    const sch = waterSchedule(share.from, share.to);
+    $('sh-sum').textContent = sch.days.length ? `${sch.days.length} Gießtage · ${sch.items.length} Pflanzen` : 'Im Zeitraum muss nichts gegossen werden.';
+  };
+  ['sh-from', 'sh-to', 'sh-who', 'sh-note'].forEach((id) => $(id).addEventListener('input', upd));
+  body.querySelector('.chips').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-d]'); if (!b) return;
+    const f = new Date($('sh-from').value + 'T12:00'); $('sh-to').value = isoDay(new Date(f.getTime() + (+b.dataset.d - 1) * 864e5)); upd();
+  });
+  $('sh-close').addEventListener('click', closeAux);
+  $('sh-go').addEventListener('click', async () => {
+    upd();
+    const b = $('sh-go'); b.disabled = true; b.textContent = 'Erstelle PDF …';
+    try { await makeWaterPdf(); } catch (e) { console.warn(e); toast('PDF konnte nicht erstellt werden'); }
+    b.disabled = false; b.textContent = 'PDF erstellen & teilen';
+  });
+  upd();
+  setSheet.classList.add('open'); scrim.classList.add('show');
+}
+// Termine im Zeitraum: ab dem nächsten Fälligkeitstag (Überfälliges am ersten Tag) im jeweiligen Rhythmus
+function waterSchedule(fromIso, toIso) {
+  const from = new Date((fromIso || '') + 'T12:00'), to = new Date((toIso || '') + 'T12:00');
+  if (isNaN(from) || isNaN(to) || to < from) return { items: [], days: [] };
+  const list = numberedPlants();
+  const byDay = new Map();
+  const items = [];
+  for (const it of list) {
+    const r = it.r; if (!r || !Number.isFinite(+r.intervalDays)) continue;
+    const iv = Math.max(1, Math.round(+r.intervalDays));
+    const last = new Date(it.p.lastWateredAt || nowDate().toISOString()); last.setHours(12, 0, 0, 0);
+    let d = new Date(last.getTime() + iv * 864e5);
+    if (d < from) d = new Date(from);
+    const dates = [];
+    while (d <= to) { dates.push(new Date(d)); d = new Date(d.getTime() + iv * 864e5); }
+    items.push({ ...it, iv, dates });
+    for (const x of dates) { const k = isoDay(x); if (!byDay.has(k)) byDay.set(k, { date: x, list: [] }); byDay.get(k).list.push(it); }
+  }
+  const days = [...byDay.values()].sort((a, b) => a.date - b.date);
+  return { items, days, from, to };
+}
+// Pflanzen nach Raum sortiert und durchnummeriert (gleiche Nummern in Plan, Liste und Kalender)
+function numberedPlants() {
+  const L = state.plants.map((p) => { const { a, r } = compute(p); return { p, a, r, def: plantDef(p.plantId) }; });
+  L.sort((A, B) => String(A.a.roomName || '').localeCompare(String(B.a.roomName || ''), 'de') || A.p.y - B.p.y || A.p.x - B.p.x);
+  L.forEach((x, i) => { x.n = i + 1; });
+  return L;
+}
+function placeText(it) {
+  const p = it.p, oi = p.onItem && state.design && itemById(p.onItem);
+  const where = oi ? `auf ${FURN[oi.type].name}` : sillOf(p) ? 'Fensterbank' : p.standCm >= 60 ? 'auf dem Tisch' : p.standCm > 0 ? 'auf dem Hocker' : 'Boden';
+  return [it.a.roomName, where].filter(Boolean).join(' · ');
+}
+const amountText = (r) => (isDip(r) ? 'Tauchen (ca. 10 Min.)' : `${fmtInt(r.mlPerWatering)} ml`);
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[data-src="${src}"]`)) { res(); return; }
+    const el = document.createElement('script'); el.src = src; el.dataset.src = src; el.onload = () => res(); el.onerror = rej;
+    document.head.appendChild(el);
+  });
+}
+// Grundriss von oben rendern (eigene Kamera, quadratisch), mit nummerierten Markern
+function planSnapshot(list, S = 1400) {
+  const prevPR = renderer.getPixelRatio();
+  const xs = fitPts.map((p) => p.x), zs = fitPts.map((p) => p.z);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), z0 = Math.min(...zs), z1 = Math.max(...zs);
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, ext = Math.max(x1 - x0, z1 - z0) / 2 + 0.4;
+  const cam = new THREE.PerspectiveCamera(20, 1, 0.1, 400);
+  const dist = ext / Math.tan(THREE.MathUtils.degToRad(10));
+  cam.position.set(cx, dist, cz); cam.up.set(0, 0, -1); cam.lookAt(cx, 0, cz); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+  const hidden = [];
+  const hide = (o) => { if (o && o.visible) { o.visible = false; hidden.push(o); } };
+  hide(ring); hide(distLine); if (bldg.above) hide(bldg.above);
+  for (const lm of light.meshes || []) hide(lm);
+  renderer.setPixelRatio(1); renderer.setSize(S, S, false);
+  renderer.shadowMap.needsUpdate = true;
+  renderer.render(scene, cam);
+  const shot = renderer.domElement.toDataURL('image/png');
+  hidden.forEach((o) => { o.visible = true; });
+  renderer.setPixelRatio(prevPR); resize(); shadowsDirty();
+  const proj = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(cam); return [(v.x + 1) / 2 * S, (1 - v.y) / 2 * S]; };
+  const markers = list.map((it) => { const g = plantObjs.get(it.p.uid); const top = g ? g.userData.standY + 0.05 : 0; const [x, y] = proj(it.p.x, top, it.p.y); return { n: it.n, x, y }; });
+  // Zuschnitt auf den Grundriss
+  const corners = fitPts.map((p) => proj(p.x, p.y, p.z));
+  const pad = 40, bx0 = Math.max(0, Math.min(...corners.map((c) => c[0])) - pad), by0 = Math.max(0, Math.min(...corners.map((c) => c[1])) - pad);
+  const bx1 = Math.min(S, Math.max(...corners.map((c) => c[0])) + pad), by1 = Math.min(S, Math.max(...corners.map((c) => c[1])) + pad);
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.createElement('canvas'); cv.width = bx1 - bx0; cv.height = by1 - by0;
+      const g = cv.getContext('2d');
+      g.fillStyle = '#ffffff'; g.fillRect(0, 0, cv.width, cv.height);
+      g.drawImage(img, bx0, by0, cv.width, cv.height, 0, 0, cv.width, cv.height);
+      for (const m of markers) {
+        const x = m.x - bx0, y = m.y - by0, r = 26;
+        g.beginPath(); g.arc(x, y, r + 4, 0, 7); g.fillStyle = '#ffffff'; g.fill();
+        g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = '#3c6247'; g.fill();
+        g.fillStyle = '#ffffff'; g.font = 'bold 28px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(m.n), x, y + 1);
+      }
+      // Nordpfeil (Plan-oben = planUpDeg)
+      { const a = -planUpDeg() * Math.PI / 180, nx = cv.width - 60, ny = 64;
+        g.save(); g.translate(nx, ny); g.rotate(a);
+        g.fillStyle = '#3c6247'; g.beginPath(); g.moveTo(0, -34); g.lineTo(13, 10); g.lineTo(0, 2); g.lineTo(-13, 10); g.closePath(); g.fill();
+        g.restore(); g.fillStyle = '#3c6247'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText('N', nx + Math.sin(a) * 52, ny - Math.cos(a) * 52); }
+      res({ url: cv.toDataURL('image/jpeg', 0.9), w: cv.width, h: cv.height });
+    };
+    img.src = shot;
+  });
+}
+function pngOf(url, size = 96) {
+  return new Promise((res) => {
+    if (!url) { res(null); return; }
+    const img = new Image();
+    img.onload = () => { const cv = document.createElement('canvas'); cv.width = cv.height = size; const g = cv.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, size, size); g.drawImage(img, 0, 0, size, size); res(cv.toDataURL('image/jpeg', 0.9)); };
+    img.onerror = () => res(null);
+    img.src = url;
+  });
+}
+async function makeWaterPdf() {
+  await loadScript('vendor/jspdf.umd.min.js');
+  const { jsPDF } = window.jspdf;
+  const sch = waterSchedule(share.from, share.to);
+  const list = numberedPlants();
+  const snap = await planSnapshot(list);
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const PW = 210, PH = 297, M = 14;
+  const GREEN = [60, 98, 71], INK = [34, 35, 31], GREY = [120, 118, 110], LINE = [226, 222, 214];
+  const txt = (t, x, y, o = {}) => { doc.setFont('helvetica', o.b ? 'bold' : 'normal'); doc.setFontSize(o.s || 10); doc.setTextColor(...(o.c || INK)); doc.text(String(t), x, y, o.opt || {}); };
+  const clean = (t) => String(t || '').replace(/[–—]/g, '-').replace(/[≈]/g, 'ca.').replace(/[^\x00-\xFF]/g, '');
+  let y = M;
+  const footer = () => { txt('Erstellt mit Plantdaddy', PW / 2, PH - 8, { s: 8, c: GREY, opt: { align: 'center' } }); };
+  const newPage = () => { footer(); doc.addPage(); y = M; };
+  // Kopf
+  doc.setFillColor(...GREEN); doc.rect(0, 0, PW, 30, 'F');
+  txt('Gießplan', M, 15, { s: 22, b: true, c: [255, 255, 255] });
+  const range = sch.from && sch.to ? `${dShort(sch.from)}${sch.from.getFullYear() !== sch.to.getFullYear() ? sch.from.getFullYear() : ''} bis ${dShort(sch.to)}${sch.to.getFullYear()}` : '';
+  txt(clean(`${FP.name || ''}  ·  ${range}`), M, 23, { s: 10.5, c: [225, 236, 228] });
+  if (share.who) txt(clean(`Für ${share.who} - danke fürs Gießen!`), PW - M, 15, { s: 10.5, c: [255, 255, 255], opt: { align: 'right' } });
+  y = 38;
+  // Grundriss
+  const maxW = PW - 2 * M, maxH = 112;
+  let iw = maxW, ih = iw * snap.h / snap.w; if (ih > maxH) { ih = maxH; iw = ih * snap.w / snap.h; }
+  doc.addImage(snap.url, 'JPEG', (PW - iw) / 2, y, iw, ih);
+  y += ih + 7;
+  // Pflanzenliste
+  txt('Die Pflanzen', M, y, { s: 13, b: true }); y += 6;
+  const thumbsPng = await Promise.all(list.map((it) => pngOf(thumbs.get(it.def.id))));
+  const rowH = 13;
+  for (let i = 0; i < list.length; i++) {
+    const it = list[i];
+    if (y + rowH > PH - 16) { newPage(); }
+    doc.setDrawColor(...LINE); doc.line(M, y + rowH - 1, PW - M, y + rowH - 1);
+    doc.setFillColor(...GREEN); doc.circle(M + 4, y + 5.5, 3.6, 'F');
+    txt(String(it.n), M + 4, y + 6.8, { s: 9, b: true, c: [255, 255, 255], opt: { align: 'center' } });
+    if (thumbsPng[i]) doc.addImage(thumbsPng[i], 'JPEG', M + 10, y + 0.5, 10, 10);
+    txt(clean(it.p.nick ? `${it.p.nick} (${it.def.name})` : it.def.name), M + 23, y + 4.6, { s: 10.5, b: true });
+    txt(clean(placeText(it)), M + 23, y + 9.6, { s: 8.5, c: GREY });
+    if (it.r) {
+      txt(clean(amountText(it.r)), PW - M - 38, y + 4.6, { s: 10.5, b: true, c: GREEN });
+      txt(clean(intervalText(it.r.intervalDays)), PW - M - 38, y + 9.6, { s: 8.5, c: GREY });
+    }
+    y += rowH;
+  }
+  // Kalender
+  newPage();
+  txt('Wann gießen?', M, y + 4, { s: 15, b: true }); y += 8;
+  txt('Abhaken, was erledigt ist. Nummern = Pflanzen im Grundriss.', M, y + 2, { s: 9, c: GREY }); y += 8;
+  if (!sch.days.length) { txt('Im Zeitraum muss nichts gegossen werden.', M, y + 4, { s: 11 }); y += 10; }
+  for (const day of sch.days) {
+    const lines = day.list.map((it) => clean(`${it.n}  ${it.p.nick || it.def.name.replace(/\s*\(.*\)\s*$/, '')}  -  ${it.r ? amountText(it.r) : ''}`));
+    const sum = day.list.reduce((a, it) => a + (it.r && !isDip(it.r) ? it.r.mlPerWatering : 0), 0);
+    const h = 8 + lines.length * 5.2;
+    if (y + h > PH - 16) newPage();
+    doc.setDrawColor(...GREEN); doc.setLineWidth(0.5); doc.roundedRect(M, y + 1, 5, 5, 1, 1, 'S');
+    txt(dShort(day.date), M + 8, y + 5, { s: 11.5, b: true });
+    if (sum) txt(clean(`zusammen ${sum >= 1000 ? fmt1(sum / 1000) + ' l' : fmtInt(sum) + ' ml'}`), PW - M, y + 5, { s: 9, c: GREY, opt: { align: 'right' } });
+    let yy = y + 10.5;
+    for (const l of lines) { txt(l, M + 8, yy, { s: 10 }); yy += 5.2; }
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.2); doc.line(M, y + h + 1, PW - M, y + h + 1);
+    y += h + 3;
+  }
+  // Hinweise
+  const tips = ['Langsam gießen, bis unten ein wenig herausläuft. Wasser im Untersetzer nach 15 Minuten wegschütten.',
+    'Lieber etwas weniger als zu viel: Ist die Erde noch nass, diesmal auslassen.',
+    'Zimmerwarmes Leitungswasser ist ideal.'];
+  if (share.note) tips.unshift(share.note);
+  const tl = tips.flatMap((t) => doc.splitTextToSize(clean('- ' + t), PW - 2 * M - 8));
+  const th = 12 + tl.length * 5;
+  if (y + th > PH - 16) newPage();
+  doc.setFillColor(238, 244, 239); doc.roundedRect(M, y + 2, PW - 2 * M, th, 3, 3, 'F');
+  txt('Gut zu wissen', M + 5, y + 9, { s: 11, b: true, c: GREEN });
+  let ty = y + 15; for (const l of tl) { txt(l, M + 5, ty, { s: 9.5 }); ty += 5; }
+  footer();
+  const name = `Giessplan_${share.from || 'plan'}.pdf`;
+  const b64 = doc.output('datauristring').split(',')[1];
+  await sharePdf(b64, name, doc);
+}
+async function sharePdf(b64, name, doc) {
+  const C = window.Capacitor, P = C && C.Plugins;
+  const text = 'Gießplan für meine Pflanzen – danke fürs Gießen! 🌿';
+  if (C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() && P && P.Filesystem && P.Share) {
+    const w = await P.Filesystem.writeFile({ path: name, data: b64, directory: 'CACHE' });
+    await P.Share.share({ title: 'Gießplan', text, files: [w.uri], dialogTitle: 'Gießplan teilen' });
+    return;
+  }
+  const blob = doc.output('blob'), file = new File([blob], name, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Gießplan', text }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  window.__lastPdf = b64;
+}
 
 /* ------------------------------------------------------------------ */
 /* Pflanzenbilder rendern                                              */
@@ -4081,6 +4564,7 @@ load();
 if (!state.design) { state.design = { rooms: {}, items: [] }; const r0 = defaultRug(); if (r0) state.design.items.push({ id: uid(), sizeIdx: 1, ...r0 }); }
 applyRoomLooks();
 syncAllItems();
+buildBuilding();
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
 new ResizeObserver(resize).observe(appEl);
@@ -4147,6 +4631,8 @@ window.__plantflat = {
   water: (id) => { const p = state.plants.find((q) => q.uid === id); if (p) waterPlants([p]); },
   fx: () => fx.length,
   fxSlow: (v) => { fxSlow = v; },
+  schedule: (a, b) => { const s2 = waterSchedule(a, b); return s2.days.map((d) => [isoDay(d.date), d.list.map((x) => x.n + ':' + x.def.id)]); },
+  pdf: async (a, b) => { share.from = a; share.to = b; share.who = 'Lena'; share.note = 'Schlüssel liegt beim Nachbarn.'; await makeWaterPdf(); return (window.__lastPdf || '').length; },
   designOn: (on) => (on ? startDesign() : endDesign()),
   designState: () => ({ d: state.design, sel: design.sel, room: design.room && design.room.id }),
   designTap: (x, y) => designTap(x, y),
