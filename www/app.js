@@ -1099,7 +1099,8 @@ const plateSideMat = new THREE.MeshStandardMaterial({ color: 0x9d7556, roughness
   // Gruppe 0 = Deckflächen, 1 = Seiten/Fase
   const top = new THREE.Mesh(mergeGeos(geos, 0), plateTopMat), side = new THREE.Mesh(mergeGeos(geos, 1), plateSideMat);
   geos.forEach((g) => g.dispose());
-  for (const m of [top, side]) { m.receiveShadow = true; m.userData.kind = 'plate'; scene.add(m); }
+  // Keine Insel-Platte mehr: die Außenwände sind die Grenze, darunter geht die Fassade runter (s. buildBuilding)
+  for (const m of [top, side]) { m.receiveShadow = true; m.userData.kind = 'plate'; }
   // Kontaktschatten: weich geblurrte Silhouette, einmal in ein Canvas gerendert
   const pb = plateRects.reduce((b, q) => ({ x0: Math.min(b.x0, q.x0), x1: Math.max(b.x1, q.x1), y0: Math.min(b.y0, q.y0), y1: Math.max(b.y1, q.y1) }), { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity });
   const M = 1.6, X0 = pb.x0 - M, Y0 = pb.y0 - M, WW = pb.x1 - pb.x0 + 2 * M, HH = pb.y1 - pb.y0 + 2 * M;
@@ -2263,31 +2264,48 @@ function buildBuilding() {
   const X0 = rb.x0 - pad, X1 = rb.x1 + pad, Y0 = rb.y0 - pad, Y1 = rb.y1 + pad, BW = X1 - X0, BD = Y1 - Y0, CX = (X0 + X1) / 2, CY = (Y0 + Y1) / 2;
   const glassM = (op) => new THREE.MeshBasicMaterial({ color: 0x9fb4bf, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide });
   const lineM = (op) => new THREE.LineBasicMaterial({ color: 0x8fa3b8, transparent: true, opacity: op, depthWrite: false });
-  // Fenster der Wohnung auf die Hausfassade projizieren (gleiche Achsen in jedem Geschoss)
-  const facWins = lightOpenings.map((o) => {
-    const n = openingNormal(o), L = segLen(o), mx = (o.a[0] + o.b[0]) / 2, my = (o.a[1] + o.b[1]) / 2;
-    const ax = Math.abs(n[0]) > Math.abs(n[1]);
-    const fx = ax ? (n[0] > 0 ? X1 : X0) : mx, fy = ax ? my : (n[1] > 0 ? Y1 : Y0);
-    const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
-    return { x: fx + n[0] * 0.012, y: fy + n[1] * 0.012, rot: ax ? Math.PI / 2 : 0, w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
-  });
   const balB = balcony ? polyBox(balcony.polygon) : null;
+  // Fassade nach unten: exakt der Grundriss (Räume + Außenwände), bündig mit der Wandaußenkante.
+  // Opak; tiefere Geschosse verschwimmen farblich in den Hintergrund.
+  const fpGeo = (h) => {
+    const list = rooms.map((r) => {
+      const sh = new THREE.Shape(); r.polygon.forEach((q, i) => (i ? sh.lineTo(q[0], -q[1]) : sh.moveTo(q[0], -q[1])));
+      const g = new THREE.ExtrudeGeometry(sh, { depth: h, bevelEnabled: false }); g.rotateX(-Math.PI / 2); return g;
+    });
+    (FP.walls || []).filter((w) => w.exterior).forEach((w) => {
+      const t = w.thickness || 0.2, L = Math.hypot(w.b[0] - w.a[0], w.b[1] - w.a[1]); if (L < 0.01) return;
+      const g = new THREE.BoxGeometry(L + t, h, t);
+      g.rotateY(-Math.atan2(w.b[1] - w.a[1], w.b[0] - w.a[0])); g.translate((w.a[0] + w.b[0]) / 2, h / 2, (w.a[1] + w.b[1]) / 2);
+      list.push(g);
+    });
+    const m = mergeGeos(list); list.forEach((g) => g.dispose()); return m;
+  };
+  const facWins2 = lightOpenings.map((o) => {
+    const n = openingNormal(o), L = segLen(o), off = openingHalfWall(o) + 0.012;
+    const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
+    return { x: (o.a[0] + o.b[0]) / 2 + n[0] * off, y: (o.a[1] + o.b[1]) / 2 + n[1] * off, rot: Math.atan2(n[0], n[1]), w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
+  });
+  const FAC = new THREE.Color(0xe9dfd0), BGC = new THREE.Color(0x1c2a3b);
+  const SLAB_BOT = -0.19, GAP = 0.035; // Unterkante Bodenplatte der Wohnung; feine Geschossfuge
+  const floorH = SH - GAP;
+  const geoF = nBelow ? fpGeo(floorH) : null;
   for (let k = 1; k <= nBelow; k++) {
-    const fade = 1 - (k - 1) / Math.max(1, nBelow) * 0.8;
-    const yTop = -(k - 1) * SH - 0.45, yBot = -k * SH + 0.05;
-    const box = new THREE.Mesh(new THREE.BoxGeometry(BW, yTop - yBot, BD), bldgMat.clone());
-    box.material.opacity = 0.2 * fade;
-    box.position.set(CX, (yTop + yBot) / 2, CY); box.receiveShadow = true; g.add(box);
-    const ed = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), lineM(0.55 * fade)); ed.position.copy(box.position); g.add(ed);
-    const fl = -k * SH + 0.05; // Fußboden dieses Geschosses
-    for (const wv of facWins) {
-      const pl = new THREE.Mesh(new THREE.PlaneGeometry(wv.w, wv.h), glassM(0.45 * fade));
+    const mix = Math.min(0.9, (k - 1) * 0.2);
+    const yTop = SLAB_BOT - (k - 1) * SH, yBot = yTop - floorH;
+    const mat = new THREE.MeshStandardMaterial({ color: FAC.clone().lerp(BGC, mix), roughness: 0.95 });
+    const box = new THREE.Mesh(geoF, mat);
+    box.position.y = yBot; box.receiveShadow = true; box.userData.shared = true; g.add(box);
+    const fl = yTop - floorH + 0.2; // Fußboden dieses Geschosses (≈)
+    const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x8fa9bb).lerp(BGC, mix * 0.8), side: THREE.DoubleSide });
+    for (const wv of facWins2) {
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(wv.w, wv.h), winM);
       pl.position.set(wv.x, fl + wv.sill + wv.h / 2, wv.y); pl.rotation.y = wv.rot; g.add(pl);
     }
     if (balB) {
-      const bb = new THREE.Mesh(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.14, balB.maxY - balB.minY), bldgMat.clone());
-      bb.material.opacity = 0.5 * fade; bb.position.set((balB.minX + balB.maxX) / 2, fl - 0.07, (balB.minY + balB.maxY) / 2); g.add(bb);
-      const be = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.9, balB.maxY - balB.minY)), lineM(0.35 * fade));
+      const bm = new THREE.MeshStandardMaterial({ color: FAC.clone().lerp(BGC, mix), roughness: 0.95 });
+      const bb = new THREE.Mesh(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.16, balB.maxY - balB.minY), bm);
+      bb.position.set((balB.minX + balB.maxX) / 2, fl - 0.08, (balB.minY + balB.maxY) / 2); g.add(bb);
+      const be = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(balB.maxX - balB.minX, 0.9, balB.maxY - balB.minY)), lineM(0.4 * (1 - mix)));
       be.position.set(bb.position.x, fl + 0.45, bb.position.z); g.add(be);
     }
   }
