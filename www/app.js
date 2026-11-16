@@ -28,7 +28,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe U
   color:var(--ink);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.35;
   user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
-#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:linear-gradient(180deg,#f8f1e6 0%,#f6e7d9 46%,#e6e9da 100%)}
+#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#26384c 0%,#1c2a3b 52%,#141f2b 100%)}
 #pf canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .pf-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .pf-room{position:absolute;left:0;top:0;transform:translate(-50%,-50%);text-align:center;white-space:nowrap;
@@ -49,14 +49,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-badge.mini.due .s{color:#dce9ff}
 .pf-badge.mini.over{background:var(--blue-d)}
 .pf-badge.mini.over:after{border-top-color:var(--blue-d)}
+.pf-nonames .pf-badge.mini{padding:3px}
+.pf-nonames .pf-badge.mini b,.pf-nonames .pf-badge.mini .s{display:none}
+.pf-segs{display:inline-flex;flex:none;background:#efede9;border-radius:999px;padding:3px}
+.pf-segs button{height:30px;padding:0 12px;border-radius:999px;font-weight:600;font-size:13px;color:var(--ink2)}
+.pf-segs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 .pf-dist{position:absolute;left:0;top:0;background:rgba(34,35,31,.82);color:#fff;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;display:none}
 
 .pf-top{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat) + 10px) calc(var(--sar) + 12px) 0 calc(var(--sal) + 12px);
   display:flex;align-items:center;gap:10px;pointer-events:none}
 .pf-top > *{pointer-events:auto}
 .pf-title{flex:1;min-width:0;pointer-events:none}
-.pf-title b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em}
-.pf-title span{display:block;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-title b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em;color:#f3e7d3}
+.pf-title span{display:block;font-size:11.5px;color:#9fb0c3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-btn{height:40px;min-width:40px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.94);
   box-shadow:var(--shadow);display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:14px;
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .12s}
@@ -300,7 +305,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button{width:36px;height:36px;border-radius:50%;background:#f1efeb;font-size:15px;flex:none}
 .pf-sp .tm button.on{background:var(--ink);color:#fff}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
-.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(92,66,40,.13) 100%)}
+.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(8,14,22,.28) 100%)}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:#f1efeb;border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -598,6 +603,8 @@ const state = {
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
+  wallMode: 'diorama', // 'diorama' = hintere Außenwände in voller Höhe, 'cut' = alle Wände auf Schnitthöhe (Grundriss-Schnitt)
+  showPlantNames: true, // Namen an den Pflanzen-Markern (aus: nur Symbol)
   design: null, // Wohnung gestalten: { rooms: {id: {floor, wall}}, items: [...] }
   building: { floor: 7, total: 9 }, // Stockwerk der Wohnung / Geschosse des Hauses
 };
@@ -674,6 +681,8 @@ function load() {
     state.seenHint = d.seenHint === true;
     state.showRoomNames = d.showRoomNames === true;
     state.motion = d.motion !== false;
+    state.wallMode = d.wallMode === 'cut' ? 'cut' : 'diorama';
+    state.showPlantNames = d.showPlantNames !== false;
     state.design = cleanDesign(d.design);
     if (d.building && typeof d.building === 'object') {
       const tot = Math.round(num(d.building.total, 9, 1, 30));
@@ -688,7 +697,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, motion: state.motion, design: state.design, building: state.building,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, motion: state.motion, design: state.design, building: state.building,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -910,7 +919,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
 
 // „Cozy“-Licht: warme Himmelsfüllung, warmer Bodenreflex, warmes Grundlicht hebt die Schatten (nicht grau)
-const hemi = new THREE.HemisphereLight(0xfff4e6, 0xa8825e, 1.15);
+const hemi = new THREE.HemisphereLight(0xfff1e0, 0x8a6a4e, 0.9);
 const amb = new THREE.AmbientLight(0xffe2c4, 0.45);
 scene.add(hemi, amb);
 // Nachmittagssonne aus Westen (kompassrichtig über planUpDeg), golden, eher flach
@@ -937,9 +946,9 @@ function placeSun() {
   const night = sunMode.on && elev < 0;
   // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
   const low = clamp(elev / 12, 0, 1);
-  sun.intensity = sunMode.on ? (night ? 0 : 3.1 * (0.35 + 0.65 * low)) : 2.2;
-  sun.color.setHSL(0.09, 1, sunMode.on ? 0.62 + 0.18 * low : 0.83);
-  hemi.intensity = sunMode.on ? (night ? 0.55 : 0.85) : 1.15;
+  sun.intensity = sunMode.on ? (night ? 0 : 3.1 * (0.35 + 0.65 * low)) : 2.9;
+  sun.color.setHSL(0.09, 1, sunMode.on ? 0.62 + 0.18 * low : 0.78);
+  hemi.intensity = sunMode.on ? (night ? 0.55 : 0.85) : 0.9;
   hemi.color.set(night ? 0xbcc8e0 : 0xfff4e6);
   amb.intensity = sunMode.on ? 0.3 : 0.45;
   const d = THREE.MathUtils.degToRad(az - planUpDeg());
@@ -1574,8 +1583,11 @@ function addWall(w) {
   const frame = ext ? frameMat.clone() : frameMat;
   const glass = ext ? glassMat.clone() : glassMat;
   const cap = ext ? capMat.clone() : capMat;
-  const capGeos = [], edgeGeos = [];
+  const capGeos = [], edgeGeos = [], upCapGeos = [];
   const group = new THREE.Group();
+  // Diorama: Wandteile oberhalb der Schnitthöhe (nur Außenwände) – sichtbar, wenn die Wand hinten liegt
+  const upper = ext ? new THREE.Group() : null;
+  if (upper) { upper.visible = false; group.add(upper); }
   const ang = -Math.atan2(dy, dx);
   const ext0 = t / 2; // Ecken schließen
   const box = (s0, s1, y0, y1, extend0 = 0, extend1 = 0) => {
@@ -1600,6 +1612,22 @@ function addWall(w) {
         a.rotation.y = ang + (sg > 0 ? 0 : Math.PI);
         a.raycast = () => {}; a.renderOrder = -1;
         group.add(a);
+      }
+    }
+    if (upper && y1 > CUT + 0.01) {
+      const ya = Math.max(y0, CUT), len2 = s1 - s0 + extend0 + extend1, sm2 = (s0 - extend0 + s1 + extend1) / 2;
+      if (len2 > 0.005) {
+        const um = new THREE.Mesh(new THREE.BoxGeometry(len2, y1 - ya, t), matsAt(sm2));
+        um.position.set(w.a[0] + ux * sm2, (ya + y1) / 2, w.a[1] + uy * sm2); um.rotation.y = ang;
+        um.castShadow = true; um.receiveShadow = true; um.userData.kind = 'wall';
+        upper.add(um);
+        if (y1 >= WH - 1e-4) {
+          const cl = len2 + 2 * CAP_OVER - 2 * CAP_B, cw = t + 2 * CAP_OVER - 2 * CAP_B;
+          const shp = new THREE.Shape(); shp.moveTo(-cl / 2, -cw / 2); shp.lineTo(cl / 2, -cw / 2); shp.lineTo(cl / 2, cw / 2); shp.lineTo(-cl / 2, cw / 2); shp.closePath();
+          const g = new THREE.ExtrudeGeometry(shp, { depth: 0.018, bevelEnabled: true, bevelThickness: CAP_B, bevelSize: CAP_B, bevelSegments: 2 });
+          g.rotateX(-Math.PI / 2); g.rotateY(ang); g.translate(um.position.x, WH - 0.014, um.position.z);
+          upCapGeos.push(g);
+        }
       }
     }
     y1 = Math.min(y1, CUT); // oberhalb der Schnitthöhe nichts zeichnen
@@ -1638,6 +1666,19 @@ function addWall(w) {
       g.position.set(w.a[0] + ux * sm, sill + h / 2, w.a[1] + uy * sm); g.rotation.y = ang; g.renderOrder = 2;
       g.userData.kind = 'glass'; g.userData.opening = o;
       group.add(g);
+      if (upper && top > CUT + 0.02) {
+        // Diorama: oberer Fensterteil + Rahmen oben
+        const y0u = Math.max(sill, CUT), hu = top - y0u;
+        const gu = new THREE.Mesh(new THREE.BoxGeometry(len, hu, 0.02), glass);
+        gu.position.set(w.a[0] + ux * sm, y0u + hu / 2, w.a[1] + uy * sm); gu.rotation.y = ang; gu.renderOrder = 2;
+        gu.userData.kind = 'glass'; gu.userData.opening = o; upper.add(gu);
+        const fu = new THREE.Mesh(new THREE.BoxGeometry(len, 0.04, 0.07), frame);
+        fu.position.set(w.a[0] + ux * sm, top - 0.02, w.a[1] + uy * sm); fu.rotation.y = ang; fu.userData.opening = o; upper.add(fu);
+        if (len > 1.3 && o.type === 'window') {
+          const fm = new THREE.Mesh(new THREE.BoxGeometry(0.04, hu, 0.07), frame);
+          fm.position.set(w.a[0] + ux * sm, y0u + hu / 2, w.a[1] + uy * sm); fm.rotation.y = ang; fm.userData.opening = o; upper.add(fm);
+        }
+      }
       // schlanker Rahmen
       const fr = 0.04;
       [[len, fr, sill + fr / 2], [len, fr, sill + h - fr / 2]].forEach(([l, hh, y]) => {
@@ -1654,8 +1695,15 @@ function addWall(w) {
   });
   if (cur < L) box(cur, L, 0, WH, cur === 0 ? ext0 : 0, ext0);
   else if (ops.length) { /* Öffnung bis Wandende */ }
+  let capMesh = null;
+  if (upCapGeos.length) {
+    const um = new THREE.Mesh(mergeGeos(upCapGeos), cap);
+    upCapGeos.forEach((g) => g.dispose());
+    um.castShadow = true; um.receiveShadow = true; um.userData.kind = 'wall'; um.userData.cap = true;
+    upper.add(um);
+  }
   if (capGeos.length) {
-    const cm = new THREE.Mesh(mergeGeos(capGeos), cap);
+    const cm = new THREE.Mesh(mergeGeos(capGeos), cap); capMesh = cm;
     capGeos.forEach((g) => g.dispose());
     cm.castShadow = true; cm.receiveShadow = true; cm.userData.kind = 'wall'; cm.userData.cap = true;
     group.add(cm);
@@ -1668,7 +1716,7 @@ function addWall(w) {
   const mid = [(w.a[0] + w.b[0]) / 2, (w.a[1] + w.b[1]) / 2];
   let n = [uy, -ux];
   if ((mid[0] - cx0) * n[0] + (mid[1] - cy0) * n[1] < 0) n = [-n[0], -n[1]];
-  wallGroups.push({ group, mats: ext ? [side, top, frame, cap, ...extMat.values()] : null, glass: ext ? glass : null, nOut: n, mid, exterior: ext, fade: 1 });
+  wallGroups.push({ group, mats: ext ? [side, top, frame, cap, ...extMat.values()] : null, glass: ext ? glass : null, nOut: n, mid, exterior: ext, fade: 1, upper, capMesh, tall: false });
 }
 (FP.walls || []).forEach(addWall);
 {
@@ -2034,10 +2082,10 @@ function fitPose(polarDeg, azDeg, pts, rect, minDist = 1) {
   place(d);
   return { pos: fitCam.position.clone(), target: t.clone(), dist: d };
 }
-const POLAR_3D = 31; // ≈ 59° Blickneigung über dem Horizont
+const POLAR_3D = 44; // ≈ 46° Blickneigung über dem Horizont (Diorama-Schrägsicht)
 function camPose(mode) {
   const polar = mode === 'top' ? 0.01 : POLAR_3D;
-  const az = baseAzimuthDeg() + (mode === 'top' ? 0 : -8); // leicht seitlich
+  const az = baseAzimuthDeg() + (mode === 'top' ? 0 : -34); // über Eck: zwei Rückwände sichtbar
   const r = fitPose(polar, az, fitPts, freeRect());
   controls.maxDistance = Math.max(controls.maxDistance, r.dist * 1.6);
   return { pos: r.pos, target: r.target };
@@ -2048,7 +2096,7 @@ function flyTo(pos, target, ms = 650) {
   requestRender();
 }
 // Pflanze + nächstes Fenster gemeinsam zeigen (oberhalb des Sheets), Abstand mind. 6 m
-const FOCUS_MIN = 6;
+const FOCUS_MIN = 6 * Math.tan(THREE.MathUtils.degToRad(19)) / Math.tan(THREE.MathUtils.degToRad(26 / 2)); // ≈ gleicher Bildausschnitt wie früher mit 38°
 function focusPlant(p) {
   const st = (p.standCm || 0) / 100, top = st + clamp(p.plantHeightCm / 100, 0.1, 2.5) + 0.12;
   const pts = [new THREE.Vector3(p.x, 0, p.y), new THREE.Vector3(p.x, top, p.y)];
@@ -2105,7 +2153,7 @@ function resize() {
   applyViewOffset();
   requestRender();
 }
-const BASE_FOV = 38;
+const BASE_FOV = 26; // eng = fast isometrischer Diorama-Look
 function applyViewOffset() {
   // Bildmitte nach oben schieben, wenn ein Sheet offen ist (Maßstab bleibt gleich)
   if (sheetOffset > 0.5) {
@@ -2147,7 +2195,9 @@ function updateWallFade() {
   const tilt = Math.acos(clamp(-camDir.y, -1, 1)); // 0 = von oben
   // Draufsicht: Wände werfen keine Schatten (sonst doppelte Wandkanten)
   const off = tilt < 0.3;
-  if (bldg.above && bldg.above.visible === off) { bldg.above.visible = !off; dirty = true; }
+  // Geschosse darüber nur im Schnitt-Modus (im Diorama würden sie die hohen Rückwände überdecken)
+  const showAbove = !off && state.wallMode === 'cut';
+  if (bldg.above && bldg.above.visible !== showAbove) { bldg.above.visible = showAbove; dirty = true; }
   if (off !== topShadowOff) {
     topShadowOff = off; applyWallShadows();
     // Draufsicht: Wandkappen etwas dunkler (Plan liest), 3D: helle Creme
@@ -2155,6 +2205,25 @@ function updateWallFade() {
     capMat.color.copy(cc); for (const wg of wallGroups) if (wg.mats) wg.mats[3].color.copy(cc);
     for (const e of edgeMeshes) e.visible = off;
   }
+  // Diorama: Außenwände auf der abgewandten Seite in voller Höhe (wie ein aufgeschnittenes Puppenhaus)
+  const dio = state.wallMode === 'diorama' && !off && !orient.on;
+  let tallCh = false;
+  for (const wg of wallGroups) {
+    if (!wg.upper) continue;
+    let want = false;
+    if (dio) {
+      const vx = camera.position.x - wg.mid[0], vz = camera.position.z - wg.mid[1];
+      const facing = (vx * wg.nOut[0] + vz * wg.nOut[1]) / (Math.hypot(vx, vz) || 1);
+      // Hysterese, damit Wände beim Drehen nicht flackern
+      want = wg.tall ? facing < -0.12 : facing < -0.22;
+    }
+    if (want !== wg.tall) {
+      wg.tall = want; wg.upper.visible = want;
+      if (wg.capMesh) wg.capMesh.visible = !want;
+      tallCh = true;
+    }
+  }
+  if (tallCh) shadowsDirty();
   // Flacher Blick: Außenwände zwischen Kamera und Wohnung halbtransparent (Cutaway)
   let changed = false;
   for (const wg of wallGroups) {
@@ -2181,7 +2250,7 @@ function updateWallFade() {
  * darüber nur als feine Umrisslinien (verdecken nichts) */
 const SH = 3.0; // Geschosshöhe
 const bldg = { group: null, above: null };
-const bldgMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, transparent: true, opacity: 0.5, depthWrite: false });
+const bldgMat = new THREE.MeshStandardMaterial({ color: 0xb8c7d6, roughness: 0.95, transparent: true, opacity: 0.5, depthWrite: false });
 function buildBuilding() {
   if (bldg.group) { scene.remove(bldg.group); bldg.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material !== bldgMat) o.material.dispose(); }); }
   const g = new THREE.Group(); g.raycast = () => {};
@@ -2193,7 +2262,7 @@ function buildBuilding() {
   const rb = rooms.reduce((b, r) => { const q = polyBox(r.polygon); return { x0: Math.min(b.x0, q.minX), x1: Math.max(b.x1, q.maxX), y0: Math.min(b.y0, q.minY), y1: Math.max(b.y1, q.maxY) }; }, { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity });
   const X0 = rb.x0 - pad, X1 = rb.x1 + pad, Y0 = rb.y0 - pad, Y1 = rb.y1 + pad, BW = X1 - X0, BD = Y1 - Y0, CX = (X0 + X1) / 2, CY = (Y0 + Y1) / 2;
   const glassM = (op) => new THREE.MeshBasicMaterial({ color: 0x9fb4bf, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide });
-  const lineM = (op) => new THREE.LineBasicMaterial({ color: 0xb9ab98, transparent: true, opacity: op, depthWrite: false });
+  const lineM = (op) => new THREE.LineBasicMaterial({ color: 0x8fa3b8, transparent: true, opacity: op, depthWrite: false });
   // Fenster der Wohnung auf die Hausfassade projizieren (gleiche Achsen in jedem Geschoss)
   const facWins = lightOpenings.map((o) => {
     const n = openingNormal(o), L = segLen(o), mx = (o.a[0] + o.b[0]) / 2, my = (o.a[1] + o.b[1]) / 2;
@@ -2207,7 +2276,7 @@ function buildBuilding() {
     const fade = 1 - (k - 1) / Math.max(1, nBelow) * 0.8;
     const yTop = -(k - 1) * SH - 0.45, yBot = -k * SH + 0.05;
     const box = new THREE.Mesh(new THREE.BoxGeometry(BW, yTop - yBot, BD), bldgMat.clone());
-    box.material.opacity = 0.42 * fade;
+    box.material.opacity = 0.2 * fade;
     box.position.set(CX, (yTop + yBot) / 2, CY); box.receiveShadow = true; g.add(box);
     const ed = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), lineM(0.55 * fade)); ed.position.copy(box.position); g.add(ed);
     const fl = -k * SH + 0.05; // Fußboden dieses Geschosses
@@ -2226,7 +2295,7 @@ function buildBuilding() {
   // nur die Innenseiten (BackSide): wirken wie eine Kulisse hinter der Wohnung, verdecken nichts
   for (let k = 0; k < nAbove; k++) {
     const y0 = WH + 0.25 + k * SH, y1 = y0 + SH - 0.3;
-    const m = new THREE.MeshBasicMaterial({ color: 0xfffaf2, transparent: true, opacity: 0.3 - k * 0.06, depthWrite: false, side: THREE.BackSide });
+    const m = new THREE.MeshBasicMaterial({ color: 0xfffaf2, transparent: true, opacity: 0.14 - k * 0.03, depthWrite: false, side: THREE.BackSide });
     const none = new THREE.MeshBasicMaterial({ visible: false });
     const bx = new THREE.Mesh(new THREE.BoxGeometry(BW, y1 - y0, BD), [m, m, none, none, m, m]); // ohne Boden/Decke
     bx.position.set(CX, (y0 + y1) / 2, CY); above.add(bx);
@@ -3365,6 +3434,10 @@ function openSettings() {
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Stockwerk</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)" id="st-bl">${esc(buildingLabel())}</p></div>
         <div class="pf-step"><button id="st-f-" aria-label="Stockwerk tiefer">−</button><b id="st-f">${state.building.floor}</b><button id="st-f+" aria-label="Stockwerk höher">+</button>
           <span>von</span><button id="st-t-" aria-label="weniger Geschosse">−</button><b id="st-t">${state.building.total}</b><button id="st-t+" aria-label="mehr Geschosse">+</button></div></div>
+      <div class="pf-tg" style="border-top:1px solid #efede9"><div style="min-width:0"><b>Wände</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)" id="st-wm-h">${state.wallMode === 'cut' ? 'Alle Wände auf 1,2 m geschnitten' : 'Hintere Außenwände in voller Höhe'}</p></div>
+        <div class="pf-segs" id="st-wm"><button data-m="diorama" class="${state.wallMode !== 'cut' ? 'on' : ''}">Diorama</button><button data-m="cut" class="${state.wallMode === 'cut' ? 'on' : ''}">Schnitt</button></div></div>
+      <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzennamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Aus: nur kleine Symbole an den Pflanzen</p></div>
+        <button class="pf-switch" id="st-pnames" role="switch" aria-checked="${state.showPlantNames}" aria-label="Pflanzennamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
         <button class="pf-switch" id="st-names" role="switch" aria-checked="${state.showRoomNames}" aria-label="Raumnamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid #efede9"><div><b>Pflanzen bewegen sich</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichtes Wiegen im Luftzug · aus spart Akku</p></div>
@@ -3389,6 +3462,16 @@ function openSettings() {
   $('st-motion').addEventListener('click', () => {
     state.motion = !state.motion; save();
     $('st-motion').setAttribute('aria-checked', String(state.motion)); requestRender();
+  });
+  $('st-wm').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    state.wallMode = b.dataset.m; save();
+    $('st-wm').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    $('st-wm-h').textContent = state.wallMode === 'cut' ? 'Alle Wände auf 1,2 m geschnitten' : 'Hintere Außenwände in voller Höhe';
+    requestRender();
+  }));
+  $('st-pnames').addEventListener('click', () => {
+    state.showPlantNames = !state.showPlantNames; save();
+    $('st-pnames').setAttribute('aria-checked', String(state.showPlantNames)); applyPlantNames();
   });
   $('st-names').addEventListener('click', () => {
     state.showRoomNames = !state.showRoomNames; save();
@@ -4514,6 +4597,11 @@ function updateHint() {
   const show = state.plants.length === 0 && !draft && !selected;
   $('pf-hint').classList.toggle('hide', !show);
 }
+function applyPlantNames() {
+  appEl.classList.toggle('pf-nonames', !state.showPlantNames);
+  for (const el of miniBadges.values()) el._w = null; // Größe neu messen
+  requestRender();
+}
 function renderMiniBadges() {
   for (const el of miniBadges.values()) el.remove();
   miniBadges.clear();
@@ -4567,6 +4655,7 @@ syncAllItems();
 buildBuilding();
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
+applyPlantNames();
 new ResizeObserver(resize).observe(appEl);
 resize();
 {
