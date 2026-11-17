@@ -46,10 +46,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-badge{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:var(--ink);color:var(--ivory);
   font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px;white-space:nowrap;box-shadow:var(--shadow)}
 .pf-badge:after{content:"";position:absolute;left:calc(50% + var(--ax,0px));bottom:-4px;margin-left:-4px;border:4px solid transparent;border-bottom:0;border-top-color:var(--ink)}
-.pf-badge.mini{background:rgba(245,240,231,.96);color:var(--ink);font-weight:600;font-size:11.5px;padding:3px 8px 3px 4px;box-shadow:0 1px 5px rgba(0,0,0,.16);
+.pf-badge.mini{background:rgba(245,240,231,.97);color:var(--ink);font-weight:600;font-size:11.5px;padding:3px 9px 3px 3px;box-shadow:0 2px 6px rgba(74,58,36,.16);
   pointer-events:auto;cursor:pointer;display:none;align-items:center;gap:4px;line-height:16px}
 .pf-badge.mini:after{border-top-color:rgba(245,240,231,.96)}
-.pf-badge.mini .e{font-size:13px;width:18px;height:18px;border-radius:50%;background:var(--green-l);display:inline-flex;align-items:center;justify-content:center}
+.pf-badge.mini .e{width:22px;height:22px;border-radius:50%;background:var(--green-l);color:var(--olive);display:inline-flex;align-items:center;justify-content:center}
+.pf-badge.mini .e svg{width:13px;height:13px}
 .pf-badge.mini .s{color:var(--ink3);font-weight:600}
 .pf-badge.mini.due{background:var(--blue);color:var(--ivory)}
 .pf-badge.mini.due:after{border-top-color:var(--blue)}
@@ -57,7 +58,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-badge.mini.due .s{color:#d9dcc4}
 .pf-badge.mini.over{background:var(--blue-d)}
 .pf-badge.mini.over:after{border-top-color:var(--blue-d)}
-.pf-nonames .pf-badge.mini{padding:3px}
+.pf-nonames .pf-badge.mini{padding:3px;border-radius:50%}
 .pf-nonames .pf-badge.mini b,.pf-nonames .pf-badge.mini .s{display:none}
 .pf-segs{display:inline-flex;flex:none;background:var(--soft);border-radius:999px;padding:3px}
 .pf-segs button{height:30px;padding:0 12px;border-radius:999px;font-weight:600;font-size:13px;color:var(--ink2)}
@@ -68,7 +69,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   display:flex;align-items:center;gap:10px;pointer-events:none}
 .pf-top > *{pointer-events:auto}
 .pf-title{flex:1;min-width:0;pointer-events:none}
-.pf-title b{display:block;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.pf-title b{display:block;font-size:14.5px;font-weight:650;letter-spacing:-.01em;color:var(--forest)}
 .pf-title span{display:block;font-size:11.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-btn{height:40px;min-width:40px;padding:0 14px;border-radius:999px;background:rgba(245,240,231,.96);
   box-shadow:var(--shadow);display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:14px;
@@ -77,15 +78,27 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-btn .cnt.due{background:var(--blue)}
 .pf-btn .cnt{background:var(--green);color:var(--ivory);border-radius:999px;min-width:20px;height:20px;font-size:12px;
   display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
-.pf-compass{width:44px;height:44px;padding:0;border-radius:50%;position:relative}
-.pf-compass svg{width:34px;height:34px;transition:transform .08s linear}
+.pf-compass{width:40px;height:40px;padding:0;border-radius:50%;position:relative;flex:none;display:flex;align-items:center;justify-content:center;background:var(--soft)}
+.pf-compass svg{width:32px;height:32px;transition:transform .08s linear}
+/* Kopfzeile: Kompass + Name + Adresse als ein Baustein */
+.pf-hgroup{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:rgba(245,240,231,.96);border-radius:24px;padding:4px 14px 4px 4px;box-shadow:var(--shadow)}
+.pf-cntbtn{height:48px;padding:0 12px 0 13px;gap:7px;color:var(--forest)}
+.pf-cntbtn .cnt{background:var(--olive)}
+.pf-rbtn{width:48px;height:48px;padding:0;color:var(--ink)}
+/* Untere Navigation: ein Container, gleich große Felder, aktiv = Oliv */
+.pf-nav{flex:1;max-width:460px;margin:0 auto;display:flex;gap:2px;background:rgba(245,240,231,.97);border-radius:24px;padding:5px;box-shadow:var(--shadow)}
+.pf-nav button{flex:1;min-width:0;height:52px;border-radius:19px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--ink);font-size:11px;font-weight:600;letter-spacing:.01em;transition:background .2s,color .2s}
+.pf-nav button svg{width:19px;height:19px}
+.pf-nav button.on{background:var(--olive);color:var(--ivory)}
+.pf-nav button:active{transform:scale(.96)}
 .pf-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 calc(var(--sar) + 12px) calc(var(--sab) + 14px) calc(var(--sal) + 12px);
   display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none;transition:opacity .2s,transform .25s}
 .pf-bottom > *{pointer-events:auto}
 .pf-seg{display:inline-flex;background:rgba(245,240,231,.96);border-radius:999px;padding:4px;box-shadow:var(--shadow)}
 .pf-seg button{height:34px;padding:0 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--ink2);transition:background .2s,color .2s}
 .pf-seg button.on{background:var(--olive);color:var(--ivory)}
-.pf-hint{position:absolute;left:50%;bottom:calc(var(--sab) + 72px);transform:translateX(-50%);
+.pf-hint{position:absolute;left:50%;bottom:calc(var(--sab) + 88px);transform:translateX(-50%);
   background:rgba(34,35,31,.86);color:var(--ivory);font-size:13.5px;font-weight:500;padding:10px 16px;border-radius:999px;
   white-space:nowrap;pointer-events:none;box-shadow:var(--shadow);transition:opacity .3s, transform .3s;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
 .pf-hint.hide{opacity:0;transform:translateX(-50%) translateY(8px)}
@@ -296,17 +309,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-dbn #pf-dbn-x{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;color:#d9dcc4}
 /* Lichtkarte */
 .pf-bl{display:flex;align-items:center;gap:8px}
-.pf-lbtn{height:42px;padding:0 14px 0 12px;gap:6px;font-size:13.5px}
-.pf-lbtn svg{width:16px;height:16px}
-.pf-lbtn.on{background:var(--ink);color:var(--ivory)}
-.pf-lp{position:absolute;left:12px;right:12px;bottom:calc(var(--sab) + 66px);margin:0 auto;max-width:420px;background:rgba(245,240,231,.96);
+.pf-lp{position:absolute;left:12px;right:12px;bottom:calc(var(--sab) + 84px);margin:0 auto;max-width:420px;background:rgba(245,240,231,.96);
   border-radius:16px;box-shadow:var(--shadow);padding:8px 10px 7px;display:flex;flex-direction:column;gap:6px;
   transition:opacity .2s,transform .2s;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .pf-lp.hide,.pf-bb.hide{opacity:0;transform:translateY(8px);pointer-events:none}
 .pf-lr{display:flex;align-items:center;gap:8px}
-.pf-sbtn{width:42px;height:42px;padding:0;justify-content:center}
-.pf-sbtn svg{width:20px;height:20px}
-.pf-sbtn.on{background:#e9a43c;color:var(--ivory)}
 .pf-sp .tm{display:flex;align-items:center;gap:8px}
 .pf-sp .tm b{font-size:20px;font-weight:750;font-variant-numeric:tabular-nums;min-width:56px}
 .pf-sp .tm span{flex:1;font-size:12px;color:var(--ink2);line-height:1.3}
@@ -465,6 +472,9 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 `;
 
 const ICONS = {
+  leaf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></svg>',
+  cube: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+  plan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 12h8M11.5 3.5v13M15 12h5.5"/></svg>',
   close: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   list: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 21c-4-2-7-5.5-7-10 3 0 5.5 1.5 7 4 1.5-2.5 4-4 7-4 0 4.5-3 8-7 10z"/><path d="M12 15V5M12 5c-1.5-1.5-3.5-2-5-2M12 5c1.5-1.5 3.5-2 5-2"/></svg>',
   dropW: '<svg width="11" height="11" viewBox="0 0 24 24" fill="#F5F0E7"><path d="M12 2.5s-7 7.6-7 12.5a7 7 0 0014 0c0-4.9-7-12.5-7-12.5z"/></svg>',
@@ -484,13 +494,16 @@ root.innerHTML = `
   <div class="pf-vig"></div>
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
-    <button class="pf-btn pf-compass" id="pf-compass" aria-label="Nordausrichtung einstellen">
+    <div class="pf-hgroup">
+    <button class="pf-compass" id="pf-compass" aria-label="Nordausrichtung einstellen">
       <svg viewBox="0 0 40 40" id="pf-compass-svg"><circle cx="20" cy="20" r="17" fill="none" stroke="#dcd9d2" stroke-width="1.5"/>
         <path d="M20 6l5 14h-10z" fill="#b5483a"/><path d="M20 34l5-14h-10z" fill="#c9c6bf"/>
         <text x="20" y="5.2" text-anchor="middle" font-size="0" fill="#b5483a">N</text></svg>
     </button>
-    <div class="pf-title"><b>Meine Wohnung</b><span id="pf-addr"></span></div>
-    <button class="pf-btn" id="pf-list-btn">${ICONS.list}<span>Meine Pflanzen</span><span class="cnt" id="pf-count">0</span></button>
+      <div class="pf-title"><b>Meine Wohnung</b><span id="pf-addr"></span></div>
+    </div>
+    <button class="pf-btn pf-cntbtn" id="pf-list-btn" aria-label="Meine Pflanzen">${ICONS.leaf}<span class="cnt" id="pf-count">0</span></button>
+    <button class="pf-btn pf-rbtn" id="pf-reset" aria-label="Ansicht zurücksetzen">${ICONS.focus}</button>
   </div>
   <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe auf Boden oder Fenster, um zu pflanzen</div>
   <div class="pf-banner hide" id="pf-banner"><span>Tippe auf die neue Stelle – oder ein Fenster für die Fensterbank</span><button id="pf-move-cancel">Abbrechen</button></div>
@@ -508,12 +521,12 @@ root.innerHTML = `
     <div class="pf-lr"><span>Monat</span><div class="pf-ms" id="sp-m"></div></div>
   </div>
   <div class="pf-bottom" id="pf-bottom">
-    <div class="pf-bl">
-      <div class="pf-seg" id="pf-viewseg"><button data-v="3d" class="on">3D</button><button data-v="top">Draufsicht</button></div>
-      <button class="pf-btn pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte">${ICONS.sun}<span>Licht</span></button>
-      <button class="pf-btn pf-sbtn" id="pf-sun" aria-pressed="false" aria-label="Sonnenlauf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 6v2M5.6 9.6l1.4 1.4M18.4 9.6 17 11M2 14h2M20 14h2"/></svg></button>
-    </div>
-    <button class="pf-btn" id="pf-reset" aria-label="Ansicht zurücksetzen" style="padding:0 12px">${ICONS.focus}</button>
+    <nav class="pf-nav" aria-label="Ansicht">
+      <div id="pf-viewseg" style="display:contents"><button data-v="3d" class="on">${ICONS.cube}<span>3D</span></button><button data-v="top">${ICONS.plan}<span>Draufsicht</span></button></div>
+      <button class="pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte">${ICONS.sun}<span>Licht</span></button>
+      <button class="pf-sbtn" id="pf-sun" aria-pressed="false" aria-label="Sonnenlauf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 6v2M5.6 9.6l1.4 1.4M18.4 9.6 17 11M2 14h2M20 14h2"/></svg><span>Sonne</span></button>
+      <button id="pf-nav-list" aria-label="Meine Pflanzen">${ICONS.leaf}<span>Pflanzen</span></button>
+    </nav>
   </div>
   <div class="pf-bb hide" id="pf-bb" role="status"><div class="pf-emoji" id="pf-bb-e"></div>
     <div class="t"><b id="pf-bb-t"></b><span id="pf-bb-s"></span><div class="pf-leg" id="pf-bb-leg"></div></div>
@@ -4693,7 +4706,7 @@ function renderMiniBadges() {
     const el = document.createElement('div');
     el.className = 'pf-badge mini' + (due.due ? ' due' : '') + (due.days < 0 ? ' over' : '');
     const st = due.due ? (due.days < 0 ? due.text : 'heute') : due.text;
-    el.innerHTML = `<span class="e">${due.due ? ICONS.dropW : plantIcon(def)}</span><b>${esc(p.nick || def.name)}</b><span class="s">${esc(st)}</span>`;
+    el.innerHTML = `<span class="e">${due.due ? ICONS.dropW : ICONS.leaf}</span><b>${esc(p.nick || def.name)}</b><span class="s">${esc(st)}</span>`;
     el.dataset.uid = p.uid; el.dataset.prio = due.due ? 1 : 2;
     setThirst(p);
     el.addEventListener('click', (e) => { e.stopPropagation(); if (moveMode) return; openPlant(p, { focus: true }); });
@@ -4704,6 +4717,7 @@ function renderMiniBadges() {
 }
 $('pf-addr').textContent = FP.name || '';
 $('pf-list-btn').addEventListener('click', openList);
+$('pf-nav-list').addEventListener('click', openList);
 $('pf-compass').addEventListener('click', openSettings);
 $('pf-scrim').addEventListener('click', () => { save(); closeAux(); });
 $('pf-move-cancel').addEventListener('click', cancelMove);
