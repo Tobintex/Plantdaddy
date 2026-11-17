@@ -927,8 +927,8 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
 
 // „Cozy“-Licht: warme Himmelsfüllung, warmer Bodenreflex, warmes Grundlicht hebt die Schatten (nicht grau)
-const hemi = new THREE.HemisphereLight(0xeef3f8, 0x8a6a4e, 0.82); // kühler Himmel → warme Sonne hebt sich ab
-const amb = new THREE.AmbientLight(0xf1ece6, 0.4);
+const hemi = new THREE.HemisphereLight(0xf8eedf, 0x9a7656, 0.82); // warmes Nachmittags-Grundlicht
+const amb = new THREE.AmbientLight(0xf2e3cd, 0.4);
 /* Lampen: je Raum eine warme Pendelleuchte; die Lichter bleiben immer in der Szene (Intensität 0 = aus),
  * damit beim Umschalten keine Shader neu kompiliert werden */
 const lamps = [];
@@ -976,9 +976,9 @@ function placeSun() {
   // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
   const low = clamp(elev / 12, 0, 1);
   sun.intensity = night ? 0.35 : sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
-  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74); // nachts: kühles Mondlicht
+  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.075, 0.95, sunMode.on ? 0.62 + 0.18 * low : 0.72); // nachts: kühles Mondlicht
   hemi.intensity = night ? 0.32 : sunMode.on ? 0.85 : 0.62;
-  hemi.color.set(night ? 0xa9b8d4 : 0xeef3f8);
+  hemi.color.set(night ? 0xa9b8d4 : 0xf8eedf);
   amb.intensity = night ? 0.12 : sunMode.on ? 0.3 : 0.3;
   applyLamps(lampsOn());
   const d = THREE.MathUtils.degToRad(az - planUpDeg());
@@ -995,7 +995,7 @@ const sc = span * 0.85;
 Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.5, far: span * 4 });
 sun.shadow.bias = -0.0008;
 sun.shadow.normalBias = 0.025;
-sun.shadow.radius = 3;
+sun.shadow.radius = 4.5; // weichere Schattenkanten
 scene.add(sun, sun.target);
 
 /* --- prozedurale Texturen (einmalig erzeugt, gecacht, ≤ 512 px) --- */
@@ -1019,7 +1019,7 @@ const oakTex = () => canvasTex('oak', 512, 2.4, (c, S, R) => {
     let x = -R() * 300;
     while (x < S) {
       const len = 200 + R() * 170;
-      const L = 66 + R() * 7, hue = 31 + R() * 5, sat = 46 + R() * 10;
+      const L = 66 + R() * 7, hue = 30 + R() * 5, sat = 50 + R() * 9; // honigfarbene Eiche
       for (const ox of [0, S]) {
         const x0 = x - ox; if (x0 + len < 0 || x0 > S) continue;
         c.fillStyle = hsl(hue, sat, L); c.fillRect(x0, j * rh, len, rh);
@@ -1148,7 +1148,7 @@ const plateSideMat = new THREE.MeshStandardMaterial({ color: 0x9d7556, roughness
 }
 
 // Sockel nur unter Räumen und Wänden (nicht unter dem Treppenhaus / Bounding-Box)
-const slabMat = new THREE.MeshStandardMaterial({ color: 0xeadfce, roughness: 1 });
+const slabMat = new THREE.MeshStandardMaterial({ color: 0xe0d3bf, roughness: 1 });
 function buildSlab() {
   const SL = 0.185; // reicht bis in die Bodenplatte
   rooms.forEach((r) => {
@@ -1187,7 +1187,7 @@ function floorKind(r) {
 }
 /* Wohnung gestalten: Böden und Wandfarben je Raum */
 const FLOOR_OPTS = [
-  { id: 'oak', name: 'Eiche hell', tex: () => oakTex(), color: 0xf6eee4, rough: 0.85 },
+  { id: 'oak', name: 'Eiche honig', tex: () => oakTex(), color: 0xf3e6d3, rough: 0.88 },
   { id: 'oakdark', name: 'Eiche dunkel', tex: () => oakTex(), color: 0x9c7c62, rough: 0.8 },
   { id: 'herring', name: 'Fischgrät', tex: () => herringTex(), color: 0xffffff, rough: 0.75 },
   { id: 'tile', name: 'Fliesen hell', tex: () => tileTex(), color: 0xffffff, rough: 0.7 },
@@ -1195,7 +1195,7 @@ const FLOOR_OPTS = [
   { id: 'concrete', name: 'Estrich', tex: () => concreteTex(), color: 0xffffff, rough: 0.9 },
 ];
 const WALL_OPTS = [
-  { id: 'alt', name: 'Altweiß', c: '#f6efe4' }, { id: 'kalk', name: 'Kalkweiß', c: '#eeeeea' }, { id: 'grau', name: 'Hellgrau', c: '#d9d6d0' },
+  { id: 'alt', name: 'Kalkstein', c: '#eee4d3' }, { id: 'kalk', name: 'Kalkweiß', c: '#eeeeea' }, { id: 'grau', name: 'Hellgrau', c: '#d9d6d0' },
   { id: 'sand', name: 'Sand', c: '#ead6b4' }, { id: 'salbei', name: 'Salbei', c: '#c6d0b8' }, { id: 'rose', name: 'Rosé', c: '#ebcfc4' },
   { id: 'blau', name: 'Taubenblau', c: '#c2ccd6' }, { id: 'tanne', name: 'Tannengrün', c: '#8a9c8b' },
 ];
@@ -1440,7 +1440,7 @@ function itemCanvas(it, k = ITEM_PX) {
 }
 const itemObjs = new Map(); // id -> mesh (Planzeichen am Boden)
 const item3d = new Map();   // id -> Group (weißer, durchscheinender Baukörper wie im Architekturmodell)
-const massMat = new THREE.MeshStandardMaterial({ color: 0xfffdf9, roughness: 0.85, transparent: true, opacity: 0.8 });
+const massMat = new THREE.MeshStandardMaterial({ color: 0xefe5d4, roughness: 0.92, transparent: true, opacity: 0.85 }); // weiche, warme Polster-/Leinentöne
 const massEdge = new THREE.LineBasicMaterial({ color: 0xa8968a, transparent: true, opacity: 0.55 });
 // Teile in lokalen Koordinaten: x = Breite, z = Tiefe (Rückseite bei −d/2), y = Höhe; [x, y, z, w, h, d]
 function itemParts(it) {
@@ -1560,12 +1560,12 @@ function cleanDesign(d) {
 }
 // Walls with openings
 // Spielzeug-Wände: warmes Off-White, Schnittkante als leicht breitere, abgerundete Kappe (keine schwarzen Kanten)
-const wallSideMat = new THREE.MeshStandardMaterial({ color: 0xf6efe4, roughness: 0.9 });
-const wallTopMat = new THREE.MeshStandardMaterial({ color: 0xfdf8f0, roughness: 0.9 });
-const capMat = new THREE.MeshStandardMaterial({ color: 0xfffbf4, roughness: 0.8 });
+const wallSideMat = new THREE.MeshStandardMaterial({ color: 0xeee4d3, roughness: 0.95 }); // warmer Kalkstein-Putz
+const wallTopMat = new THREE.MeshStandardMaterial({ color: 0xf4ede1, roughness: 0.95 });
+const capMat = new THREE.MeshStandardMaterial({ color: 0xf6f0e6, roughness: 0.9 });
 const CAP_3D = new THREE.Color(0xfffbf4), CAP_TOP = new THREE.Color(0xf4ebdd); // Draufsicht: etwas dunkler, damit der Plan liest
 const glassMat = new THREE.MeshStandardMaterial({ color: 0xd6ecf6, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.5, depthWrite: false });
-const frameMat = new THREE.MeshStandardMaterial({ color: 0xe6d3b8, roughness: 0.7 });
+const frameMat = new THREE.MeshStandardMaterial({ color: 0xcfae84, roughness: 0.75 }); // Eichenrahmen
 const CAP_B = 0.012, CAP_OVER = 0.008; // Fase, Überstand je Seite
 // Draufsicht: weiche taupe Kante um die Wandkappen (nur dort sichtbar, damit der Plan liest; 3D ohne Konturen)
 const edgeMat = new THREE.MeshBasicMaterial({ color: 0xa88f76 });
