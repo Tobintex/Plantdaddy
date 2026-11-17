@@ -323,12 +323,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button.on{background:var(--ink);color:var(--ivory)}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
 .pf-vig{display:none}
-/* Zusammenhalt: dieselbe Papierstruktur liegt auch über der 3D-Szene, dazu weiches Fensterlicht über allem */
-.pf-gobo,.pf-grain{position:absolute;inset:0;pointer-events:none;transition:opacity .5s}
-.pf-gobo{background:url(textures/gobo.png) right top/cover no-repeat;mix-blend-mode:soft-light;opacity:1}
+/* Zusammenhalt: dieselbe Papierstruktur liegt auch über der 3D-Szene */
+.pf-grain{position:absolute;inset:0;pointer-events:none;transition:opacity .5s}
 .pf-grain{background:url(textures/grain.png) repeat;background-size:256px 256px;mix-blend-mode:soft-light;opacity:.9}
 #pf > canvas{filter:sepia(.16) saturate(.9) contrast(.97)}
-#pf.pf-night .pf-gobo{opacity:0}
 #pf.pf-night .pf-grain{opacity:.35}
 #pf.pf-night > canvas{filter:none}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
@@ -502,7 +500,6 @@ document.head.appendChild(styleEl);
 root.innerHTML = `
 <div id="pf">
   <div class="pf-vig"></div>
-  <div class="pf-gobo" aria-hidden="true"></div>
   <div class="pf-grain" aria-hidden="true"></div>
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
