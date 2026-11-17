@@ -4,6 +4,41 @@ import * as THREE from './vendor/three.module.min.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import * as PM from './plantModels.js';
 
+/* ------------------------------------------------------------------ */
+/* Papierstruktur + leichte Umgebungsverdeckung direkt auf allen Objekten.
+ * Statt eines Bildschirm-Overlays sitzt die Struktur in Weltkoordinaten auf den Flächen
+ * (dreht sich also mit), gerechnet im Shader – ohne Texturen und ohne Nachbearbeitung. */
+const PAPER = { grain: 0.15, ao: 0.28 };
+const _chunkBase = { common: THREE.ShaderChunk.common, project_vertex: THREE.ShaderChunk.project_vertex, color_fragment: THREE.ShaderChunk.color_fragment };
+function applyPaperChunks(aoOn) {
+  THREE.ShaderChunk.common = _chunkBase.common + `
+varying vec3 vPaperPos;
+float pHash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float pNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(pHash(i), pHash(i + vec2(1.0, 0.0)), f.x), mix(pHash(i + vec2(0.0, 1.0)), pHash(i + vec2(1.0, 1.0)), f.x), f.y); }
+float paperGrain(vec2 uv){
+  float fib = (pNoise(uv * vec2(7.0, 26.0)) + pNoise(uv.yx * vec2(7.0, 26.0) + 17.0)) - 1.0; // feine Fasern längs/quer
+  float cloud = pNoise(uv * 1.3 + 3.1) - 0.5;                                                // Papierwolken
+  float fine = pNoise(uv * 38.0) - 0.5;
+  return fib * 0.55 + cloud * 0.7 + fine * 0.35;
+}`;
+  THREE.ShaderChunk.project_vertex = _chunkBase.project_vertex + `
+vPaperPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+#ifdef USE_INSTANCING
+vPaperPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+#endif`;
+  THREE.ShaderChunk.color_fragment = _chunkBase.color_fragment + `
+{
+  vec3 pN = normalize(cross(dFdx(vPaperPos), dFdy(vPaperPos)));
+  vec3 aN = abs(pN);
+  vec2 pUv = aN.y > max(aN.x, aN.z) ? vPaperPos.xz : (aN.x > aN.z ? vPaperPos.zy : vPaperPos.xy);
+  diffuseColor.rgb *= 1.0 + ${PAPER.grain.toFixed(3)} * paperGrain(pUv);
+  ${aoOn ? `// leichte Umgebungsverdeckung: senkrechte Flächen werden zum Boden hin dunkler (Wandfuß, Möbel-, Topfunterkante)
+  if (aN.y < 0.6 && vPaperPos.y > -0.03 && vPaperPos.y < 0.7) diffuseColor.rgb *= mix(1.0 - ${PAPER.ao.toFixed(3)}, 1.0, smoothstep(0.0, 0.55, vPaperPos.y));` : ''}
+}`;
+}
+applyPaperChunks(true);
+
 const STORAGE_KEY = 'plantflat.v1';
 const FP = window.FLOORPLAN;
 const PLANTS = Array.isArray(window.PLANTS) ? window.PLANTS : [];
@@ -323,11 +358,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button.on{background:var(--ink);color:var(--ivory)}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
 .pf-vig{display:none}
-/* Zusammenhalt: dieselbe Papierstruktur liegt auch über der 3D-Szene */
-.pf-grain{position:absolute;inset:0;pointer-events:none;transition:opacity .5s}
-.pf-grain{background:url(textures/grain.png) repeat;background-size:256px 256px;mix-blend-mode:soft-light;opacity:.9}
 #pf > canvas{filter:sepia(.16) saturate(.9) contrast(.97)}
-#pf.pf-night .pf-grain{opacity:.35}
 #pf.pf-night > canvas{filter:none}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:var(--soft);border-radius:999px;padding:3px;min-width:0}
@@ -500,7 +531,6 @@ document.head.appendChild(styleEl);
 root.innerHTML = `
 <div id="pf">
   <div class="pf-vig"></div>
-  <div class="pf-grain" aria-hidden="true"></div>
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
     <div class="pf-hgroup">
@@ -633,6 +663,7 @@ const state = {
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
+  ao: true, // leichte Umgebungsverdeckung
   lamps: 'auto', // Lampen: 'auto' (ab Sonnenuntergang) | 'on' | 'off'
   wallMode: 'diorama', // 'diorama' = hintere Außenwände in voller Höhe, 'cut' = alle Wände auf Schnitthöhe (Grundriss-Schnitt)
   showPlantNames: true, // Namen an den Pflanzen-Markern (aus: nur Symbol)
@@ -714,6 +745,7 @@ function load() {
     state.motion = d.motion !== false;
     state.wallMode = d.wallMode === 'cut' ? 'cut' : 'diorama';
     state.lamps = ['on', 'off'].includes(d.lamps) ? d.lamps : 'auto';
+    state.ao = d.ao !== false;
     state.showPlantNames = d.showPlantNames !== false;
     state.design = cleanDesign(d.design);
     if (d.building && typeof d.building === 'object') {
@@ -729,7 +761,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, lamps: state.lamps, motion: state.motion, design: state.design, building: state.building,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, lamps: state.lamps, ao: state.ao, motion: state.motion, design: state.design, building: state.building,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -1606,7 +1638,7 @@ const aoGeo = (() => { const g = new THREE.PlaneGeometry(1, AO_W); g.rotateX(-Ma
 const aoMat = (() => {
   const cv = document.createElement('canvas'); cv.width = 4; cv.height = 64;
   const g = cv.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 64);
-  gr.addColorStop(0, 'rgba(70,48,30,0.26)'); gr.addColorStop(0.35, 'rgba(70,48,30,0.09)'); gr.addColorStop(1, 'rgba(70,48,30,0)');
+  gr.addColorStop(0, 'rgba(70,48,30,0.32)'); gr.addColorStop(0.35, 'rgba(70,48,30,0.11)'); gr.addColorStop(1, 'rgba(70,48,30,0)');
   g.fillStyle = gr; g.fillRect(0, 0, 4, 64);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
   return new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
@@ -3532,6 +3564,8 @@ function openSettings() {
         <div class="pf-segs" id="st-wm"><button data-m="diorama" class="${state.wallMode !== 'cut' ? 'on' : ''}">Diorama</button><button data-m="cut" class="${state.wallMode === 'cut' ? 'on' : ''}">Schnitt</button></div></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div style="min-width:0"><b>Lampen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Auto: an ab Sonnenuntergang</p></div>
         <div class="pf-segs" id="st-lamps">${[['auto', 'Auto'], ['on', 'An'], ['off', 'Aus']].map(([k, t]) => `<button data-m="${k}" class="${state.lamps === k ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+      <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Umgebungsverdeckung</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichte Schatten in Ecken und am Wandfuß</p></div>
+        <button class="pf-switch" id="st-ao" role="switch" aria-checked="${state.ao}" aria-label="Umgebungsverdeckung"></button></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Pflanzennamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Aus: nur kleine Symbole an den Pflanzen</p></div>
         <button class="pf-switch" id="st-pnames" role="switch" aria-checked="${state.showPlantNames}" aria-label="Pflanzennamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
@@ -3570,6 +3604,9 @@ function openSettings() {
     $('st-lamps').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
     placeSun(); shadowsDirty();
   }));
+  $('st-ao').addEventListener('click', () => {
+    state.ao = !state.ao; save(); $('st-ao').setAttribute('aria-checked', String(state.ao)); applyAO();
+  });
   $('st-pnames').addEventListener('click', () => {
     state.showPlantNames = !state.showPlantNames; save();
     $('st-pnames').setAttribute('aria-checked', String(state.showPlantNames)); applyPlantNames();
@@ -3949,6 +3986,45 @@ function designTap(sx, sy) {
   const g = floorAtScreen(sx, sy), r = g && roomOfPt(g.x, g.y);
   if (r) { design.room = r; renderDesign(); }
 }
+// Wände als Barriere: Wandsegmente ohne Türöffnungen (durch Türen darf man Möbel schieben)
+let _wallBlockers = null;
+function wallBlockers() {
+  if (_wallBlockers) return _wallBlockers;
+  _wallBlockers = [];
+  for (const w of FP.walls || []) {
+    const t = w.thickness || 0.2, L = Math.hypot(w.b[0] - w.a[0], w.b[1] - w.a[1]); if (L < 0.01) continue;
+    const ux = (w.b[0] - w.a[0]) / L, uy = (w.b[1] - w.a[1]) / L;
+    const gaps = [];
+    for (const o of openings) {
+      if (o.type !== 'door' && o.type !== 'balcony-door') continue;
+      const off = (q) => Math.abs((q[0] - w.a[0]) * uy - (q[1] - w.a[1]) * ux);
+      if (off(o.a) > t * 0.75 || off(o.b) > t * 0.75) continue;
+      const p0 = (o.a[0] - w.a[0]) * ux + (o.a[1] - w.a[1]) * uy, p1 = (o.b[0] - w.a[0]) * ux + (o.b[1] - w.a[1]) * uy;
+      gaps.push([Math.min(p0, p1), Math.max(p0, p1)]);
+    }
+    gaps.sort((a, b) => a[0] - b[0]);
+    let cur = 0;
+    const push = (s0, s1) => { if (s1 - s0 > 0.01) _wallBlockers.push({ a: [w.a[0] + ux * s0, w.a[1] + uy * s0], b: [w.a[0] + ux * s1, w.a[1] + uy * s1], t }); };
+    for (const [g0, g1] of gaps) { push(cur, g0); cur = Math.max(cur, g1); }
+    push(cur, L);
+  }
+  return _wallBlockers;
+}
+// Überschneidet das Möbel (gedrehtes Rechteck) an Position x,y eine Wand?
+function itemHitsWall(it, x, y) {
+  const c = Math.cos(it.rot || 0), s2 = Math.sin(it.rot || 0), hx = it.w / 2, hy = it.d / 2;
+  const reach = Math.hypot(hx, hy);
+  for (const b of wallBlockers()) {
+    if (distToSeg(x, y, b.a, b.b) > reach + b.t) continue; // weit weg
+    const L = Math.hypot(b.b[0] - b.a[0], b.b[1] - b.a[1]), n = Math.max(1, Math.ceil(L / 0.05)), m = b.t / 2 - 0.005;
+    for (let i = 0; i <= n; i++) {
+      const px = b.a[0] + (b.b[0] - b.a[0]) * i / n - x, py = b.a[1] + (b.b[1] - b.a[1]) * i / n - y;
+      const u = px * c + py * s2, v = -px * s2 + py * c;
+      if (Math.abs(u) < hx + m && Math.abs(v) < hy + m) return true;
+    }
+  }
+  return false;
+}
 // Ziehen von Möbeln (vor OrbitControls abfangen)
 cvs.addEventListener('pointerdown', (e) => {
   if (!design.on || design.tab !== 'moebel' || design.pending) return;
@@ -3963,7 +4039,23 @@ cvs.addEventListener('pointermove', (e) => {
   const D = design.drag; if (!D || D.pid !== e.pointerId) return;
   const rc = cvs.getBoundingClientRect(), g = floorAtScreen(e.clientX - rc.left, e.clientY - rc.top); if (!g) return;
   const it = itemById(D.id); if (!it) return;
-  const dx = g.x + D.ox - it.x, dy = g.y + D.oy - it.y;
+  const gx = g.x + D.ox, gy = g.y + D.oy;
+  let tx = gx, ty = gy;
+  // Wände sind eine Barriere: in kleinen Schritten bewegen und an der Wand entlanggleiten statt hindurch
+  // (steckt das Möbel schon in einer Wand, frei bewegen, damit es herauskommt)
+  if (!itemHitsWall(it, it.x, it.y)) {
+    tx = it.x; ty = it.y;
+    const n = Math.min(60, Math.ceil(Math.hypot(gx - it.x, gy - it.y) / 0.04));
+    const sx = (gx - it.x) / (n || 1), sy = (gy - it.y) / (n || 1);
+    for (let i = 0; i < n; i++) {
+      if (!itemHitsWall(it, tx + sx, ty + sy)) { tx += sx; ty += sy; }
+      else if (sx && !itemHitsWall(it, tx + sx, ty)) tx += sx;
+      else if (sy && !itemHitsWall(it, tx, ty + sy)) ty += sy;
+      else break;
+    }
+  }
+  const dx = tx - it.x, dy = ty - it.y;
+  if (!dx && !dy) return;
   it.x += dx; it.y += dy; D.moved = true;
   const m = itemObjs.get(it.id); if (m) m.position.set(it.x, m.position.y, it.y);
   const m3 = item3d.get(it.id); if (m3) m3.position.set(it.x, m3.position.y, it.y);
@@ -4701,6 +4793,12 @@ function updateHint() {
   const show = state.plants.length === 0 && !draft && !selected;
   $('pf-hint').classList.toggle('hide', !show);
 }
+function applyAO() {
+  applyPaperChunks(state.ao);
+  aoMat.opacity = state.ao ? 1 : 0.75; // Kontaktstreifen am Boden etwas kräftiger mit AO
+  scene.traverse((o) => { if (o.material) [].concat(o.material).forEach((m) => { m.needsUpdate = true; }); });
+  shadowsDirty(); requestRender();
+}
 function applyPlantNames() {
   appEl.classList.toggle('pf-nonames', !state.showPlantNames);
   for (const el of miniBadges.values()) el._w = null; // Größe neu messen
@@ -4762,6 +4860,7 @@ lampsReady = true;
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
 applyPlantNames();
+if (!state.ao) applyAO();
 new ResizeObserver(resize).observe(appEl);
 resize();
 {
@@ -4831,5 +4930,8 @@ window.__plantflat = {
   designOn: (on) => (on ? startDesign() : endDesign()),
   designState: () => ({ d: state.design, sel: design.sel, room: design.room && design.room.id }),
   designTap: (x, y) => designTap(x, y),
+  hitsWall: (x, y, w, d, rot = 0) => itemHitsWall({ w, d, rot }, x, y),
+  blockers: () => wallBlockers().length,
+  roomAt: (x, y) => { const r = roomOfPt(x, y); return r && r.id; },
   dbg: () => ({ cam: camera.position.toArray().map((v) => +v.toFixed(2)), tgt: controls.target.toArray().map((v) => +v.toFixed(2)), dist: +camera.position.distanceTo(controls.target).toFixed(2), off: sheetOffset, tween: !!tween }),
 };
