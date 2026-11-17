@@ -28,7 +28,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe U
   color:var(--ink);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.35;
   user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
-#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#f6f8fa 0%,#eaeef2 55%,#dde3e9 100%)}
+#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:#E9DFCE}
+/* Leinen-/Papierstruktur: feststehend über den ganzen Bildschirm, hinter der 3D-Szene, ohne Einfluss auf Touch */
+#pf::before{content:"";position:fixed;inset:0;pointer-events:none;background:url(textures/linen.png) repeat;background-size:256px 256px;transition:opacity .4s}
+#pf.pf-night::before{opacity:.06}
 #pf.pf-night{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
 #pf.pf-night .pf-title b{color:#f3e7d3}
 #pf.pf-night .pf-title span{color:#a9b6c4}
@@ -308,7 +311,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button{width:36px;height:36px;border-radius:50%;background:#f1efeb;font-size:15px;flex:none}
 .pf-sp .tm button.on{background:var(--ink);color:#fff}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
-.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(40,56,74,.10) 100%)}
+.pf-vig{display:none}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:#f1efeb;border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -2333,7 +2336,7 @@ function buildBuilding() {
     const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
     return { x: (o.a[0] + o.b[0]) / 2 + n[0] * off, y: (o.a[1] + o.b[1]) / 2 + n[1] * off, rot: Math.atan2(n[0], n[1]), w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
   });
-  const FAC = new THREE.Color(0xeee6da), BGC = new THREE.Color(0xd3dbe3); // Fassade → kühles Offwhite des Hintergrunds
+  const FAC = new THREE.Color(0xe6dccb), BGC = new THREE.Color(0xe9dfce); // Fassade läuft ins warme Papier des Hintergrunds aus
   const SLAB_BOT = -0.19, GAP = 0.035; // Unterkante Bodenplatte der Wohnung; feine Geschossfuge
   const floorH = SH - GAP;
   const geoF = nBelow ? fpGeo(floorH) : null;
