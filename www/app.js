@@ -32,7 +32,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe U
   user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 #pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#f6f8fa 0%,#eaeef2 55%,#dde3e9 100%)}
-#pf.pf-night{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
+.pf-sky{position:absolute;inset:0;pointer-events:none;opacity:0}
+.pf-sky-d{background:radial-gradient(130% 85% at 50% 42%,#f7e2cf 0%,#efbf9f 55%,#d99a86 100%)}
+.pf-sky-n{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
 #pf canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .pf-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .pf-room{position:absolute;left:0;top:0;transform:translate(-50%,-50%);text-align:center;white-space:nowrap;
@@ -423,6 +425,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-ds .acts{display:flex;gap:8px;margin-top:9px}
 .pf-ds .acts button{flex:1;height:38px;border-radius:12px;background:var(--soft);font-weight:650;font-size:13.5px}
 .pf-ds .acts button.del{color:var(--red,#b5483a)}
+.pf-ds .chip.ok,.pf-ds .acts button.ok{background:var(--olive);color:var(--ivory)}
+.pf-nav button.pf-addbtn .pl{width:26px;height:26px;margin:-3px 0 -1px;border-radius:50%;background:var(--olive);color:var(--ivory);display:flex;align-items:center;justify-content:center}
+.pf-nav button.pf-addbtn .pl svg{width:16px;height:16px}
+.pf-nav button.pf-addbtn.on .pl{background:var(--ivory);color:var(--olive)}
 .pf-ds .ttl{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:15px;margin:0 2px}
 .pf-ds .ttl small{font-weight:600;font-size:12px;color:var(--ink3)}
 .pf-design .pf-top,.pf-design .pf-bottom,.pf-design .pf-lp,.pf-design .pf-dbn,.pf-design .pf-hint{opacity:0;pointer-events:none!important}
@@ -510,7 +516,8 @@ root.innerHTML = `
     <button class="pf-btn pf-cntbtn" id="pf-list-btn" aria-label="Meine Pflanzen"><span class="ic">${ICONS.leaf}</span><span class="lb">Pflanzen</span><span class="cnt" id="pf-count">0</span></button>
     <button class="pf-btn pf-rbtn" id="pf-reset" aria-label="Ansicht zurücksetzen">${ICONS.focus}</button>
   </div>
-  <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe auf Boden oder Fenster, um zu pflanzen</div>
+  <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe unten auf ＋ Neu, um eine Pflanze hinzuzufügen</div>
+  <div class="pf-banner hide" id="pf-addb"><span>Tippe auf den Boden, ein Möbel oder ein Fenster, um die neue Pflanze hinzustellen</span><button id="pf-add-cancel">Abbrechen</button></div>
   <div class="pf-banner hide" id="pf-banner"><span>Tippe auf die neue Stelle – oder ein Fenster für die Fensterbank</span><button id="pf-move-cancel">Abbrechen</button></div>
   <div class="pf-dbn hide" id="pf-dbn" role="status"><span id="pf-dbn-t"></span><button id="pf-dbn-go">Ansehen</button><button id="pf-dbn-x" aria-label="Hinweis schließen">${ICONS.close}</button></div>
   <div class="pf-toast hide" id="pf-toast"></div>
@@ -531,6 +538,7 @@ root.innerHTML = `
       <button class="pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte">${ICONS.sun}<span>Licht</span></button>
       <button class="pf-sbtn" id="pf-sun" aria-pressed="false" aria-label="Sonnenlauf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 6v2M5.6 9.6l1.4 1.4M18.4 9.6 17 11M2 14h2M20 14h2"/></svg><span>Sonne</span></button>
       <button id="pf-nav-list" aria-label="Meine Pflanzen">${ICONS.leaf}<span>Pflanzen</span></button>
+      <button class="pf-addbtn" id="pf-nav-add" aria-label="Pflanze hinzufügen"><i class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i><span>Neu</span></button>
     </nav>
   </div>
   <div class="pf-bb hide" id="pf-bb" role="status"><div class="pf-emoji" id="pf-bb-e"></div>
@@ -966,16 +974,21 @@ function pickLampShadows() {
   order.forEach((o, i) => { o.l.light.castShadow = on && i < k; });
   renderer.shadowMap.needsUpdate = true;
 }
-function applyLamps(on) {
-  if (!lampsReady || on === lampsLit) return;
-  lampsLit = on;
-  for (const l of lamps) { l.light.intensity = on ? l.power : 0; l.shade.visible = on; }
-  pickLampShadows();
-  const glow = on ? 0.55 : 0;
+/* Lampen stufenlos: k = 0 (aus) … 1 (voll an); beim Umschalten werden keine Shader neu kompiliert */
+let lampK = -1;
+function applyLamps(k) {
+  if (!lampsReady) return;
+  k = clamp(k, 0, 1);
+  if (Math.abs(k - lampK) < 0.004 && !(k === 0 && lampK > 0) && !(k === 1 && lampK < 1)) return;
+  lampK = k;
+  for (const l of lamps) { l.light.intensity = l.power * k; l.shade.visible = k > 0.02; }
+  lampShadeMat.emissiveIntensity = 2.2 * k;
+  const lit = k > 0.02;
+  if (lit !== lampsLit) { lampsLit = lit; pickLampShadows(); }
+  const glow = 0.55 * k;
   for (const wg of wallGroups) if (wg.glass) { wg.glass.emissive.set(0xffb15e); wg.glass.emissiveIntensity = glow; }
   glassMat.emissive.set(0xffb15e); glassMat.emissiveIntensity = glow;
-  for (const m of facadeWinMats) m.emissiveIntensity = on ? 0.35 : 0;
-  appEl.classList.toggle('pf-night', isNight());
+  for (const m of facadeWinMats) m.emissiveIntensity = 0.35 * k;
   dirty = true;
 }
 scene.add(hemi, amb);
@@ -996,30 +1009,86 @@ function solarPos(date) {
   return { az: ((az / rad) % 360 + 360) % 360, el: el / rad };
 }
 const sunMode = { on: false, month: new Date().getMonth(), hour: 17, play: false, last: 0 };
-let realSunEl = 30; // aktueller echter Sonnenstand (für die automatische Nacht im Normalmodus)
+let realSunEl = 30, realSunAz = SUN_COMPASS; // aktueller echter Sonnenstand (für Dämmerung/Nacht im Normalmodus)
 // Nacht = Sonne unter dem Horizont: im Sonnenlauf zur gewählten Uhrzeit, sonst jetzt gerade
 function isNight() { return sunMode.on ? solarPos(sunDate()).el < -0.8 : realSunEl < -0.8; }
-function lampsOn() { const m = state.lamps || 'auto'; return m === 'on' || (m === 'auto' && isNight()); }
+const sstep = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+/* Tageslicht-Verlauf über die Sonnenhöhe (Grad):
+ * day  1 → 0 zwischen +6° und −6° (bürgerliche Dämmerung)
+ * glow Abend-/Morgenrot, am stärksten knapp um den Horizont
+ * lamp Innenlicht geht schon vor Sonnenuntergang langsam an (ab +6°, voll bei −2°) */
+const dayOf = (e) => sstep(-6, 6, e);
+const glowOf = (e) => sstep(-5, 0.5, e) * (1 - sstep(1.5, 13, e));
+function lampLevel(e) { const m = state.lamps || 'auto'; return m === 'on' ? 1 : m === 'off' ? 0 : 1 - sstep(-2, 6, e); }
+function lampsOn() { return lampLevel(sunMode.on ? solarPos(sunDate()).el : realSunEl) > 0.5; }
 function sunDate() { const n = new Date(); const h = Math.floor(sunMode.hour), mi = Math.round((sunMode.hour - h) * 60); return new Date(n.getFullYear(), sunMode.month, 15, h, mi); }
+// Himmel hinter der Wohnung: Abendrot- und Nacht-Verlauf werden stufenlos überblendet
+const skyDusk = document.createElement('div'), skyNight = document.createElement('div');
+skyDusk.className = 'pf-sky pf-sky-d'; skyNight.className = 'pf-sky pf-sky-n';
+appEl.insertBefore(skyDusk, renderer.domElement); appEl.insertBefore(skyNight, renderer.domElement);
+/* Ziel- und aktueller Lichtzustand: Änderungen (Sonnenuntergang, Moduswechsel, Regler) werden weich überblendet */
+const sky = { cur: null, tgt: null };
+const C_MOON = new THREE.Color(0x9fb4d8), C_RED = new THREE.Color(0xff5a2a), C_DAYSKY = new THREE.Color(0xeef3f8),
+  C_NIGHTSKY = new THREE.Color(0x8b9cbf), C_DUSKSKY = new THREE.Color(0xf2b8a0), C_AMB = new THREE.Color(0xf1ece6), C_AMBN = new THREE.Color(0x9aa6c0), C_AMBD = new THREE.Color(0xffc6a0);
+const tmpC = new THREE.Color();
 function placeSun() {
-  let az = SUN_COMPASS, elev = SUN_ELEV;
-  if (sunMode.on) { const sp = solarPos(sunDate()); az = sp.az; elev = sp.el; }
-  if (!sunMode.on) { const now = solarPos(new Date()); realSunEl = now.el; }
-  const night = isNight();
-  // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
-  const low = clamp(elev / 12, 0, 1);
-  sun.intensity = night ? 0.35 : sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
-  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74); // nachts: kühles Mondlicht
-  hemi.intensity = night ? 0.4 : sunMode.on ? 0.85 : 0.62;
-  hemi.color.set(night ? 0xa9b8d4 : 0xeef3f8);
-  amb.intensity = night ? 0.12 : sunMode.on ? 0.3 : 0.3;
-  applyLamps(lampsOn());
-  const d = THREE.MathUtils.degToRad(az - planUpDeg());
+  if (!sunMode.on) { const now = solarPos(new Date()); realSunEl = now.el; realSunAz = now.az; }
+  let e, az, dirEl;
+  if (sunMode.on) { const sp = solarPos(sunDate()); e = sp.el; az = sp.az; dirEl = e; }
+  else {
+    // Normalmodus: tagsüber die schöne feste Nachmittagssonne, zur Dämmerung hin wandert sie zum echten Sonnenstand
+    e = realSunEl;
+    const k = sstep(4, 18, e);
+    let da = ((SUN_COMPASS - realSunAz + 540) % 360) - 180;
+    az = realSunAz + da * k; dirEl = e + (SUN_ELEV - e) * k;
+  }
+  // nachts: Mondlicht von schräg oben statt ganz flach
+  const dy = dayOf(e);
+  dirEl = Math.max(3, dirEl) * dy + 32 * (1 - dy);
+  sky.tgt = { e, az, dirEl, lamp: lampLevel(e) };
+  if (!sky.cur) { sky.cur = { ...sky.tgt }; }
+  applySky();
+}
+// pro Bild: aktuellen Zustand weich zum Ziel ziehen (≈ 0,35 s Zeitkonstante)
+let skyLast = 0;
+function stepSky(now) {
+  const dt = Math.min(1000, now - skyLast); skyLast = now; // echte Zeit (nicht pro Bild begrenzt), damit es auch bei ruckelnden Bildern gleich lang dauert
+  const c = sky.cur, t = sky.tgt; if (!c || !t) return;
+  let da = ((t.az - c.az + 540) % 360) - 180;
+  const done = Math.abs(t.e - c.e) < 0.02 && Math.abs(da) < 0.05 && Math.abs(t.dirEl - c.dirEl) < 0.02 && Math.abs(t.lamp - c.lamp) < 0.002;
+  if (done) { if (c.e !== t.e || c.lamp !== t.lamp || c.az !== t.az) { Object.assign(c, t); applySky(); } return; }
+  const k = 1 - Math.exp(-dt / 350);
+  c.e += (t.e - c.e) * k; c.az += da * k; c.dirEl += (t.dirEl - c.dirEl) * k; c.lamp += (t.lamp - c.lamp) * k;
+  applySky();
+}
+function applySky() {
+  const c = sky.cur; if (!c) return;
+  const day = dayOf(c.e), glow = glowOf(c.e);
+  const low = clamp(c.dirEl / 12, 0, 1);
+  // Tageswerte wie bisher; dann zur Dämmerung hin rot und schwächer, nachts kühles Mondlicht
+  const dayI = sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
+  sun.intensity = 0.35 + (dayI - 0.35) * day * (1 - 0.35 * glow);
+  sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74);
+  sun.color.lerp(C_RED, glow * 0.8);
+  tmpC.copy(C_MOON).lerp(sun.color, day); sun.color.copy(tmpC);
+  const hemiDay = sunMode.on ? 0.85 : 0.62;
+  hemi.intensity = 0.32 + (hemiDay - 0.32) * day;
+  hemi.color.copy(C_NIGHTSKY).lerp(C_DAYSKY, day).lerp(C_DUSKSKY, glow * 0.55);
+  amb.intensity = 0.1 + 0.2 * day;
+  amb.color.copy(C_AMBN).lerp(C_AMB, day).lerp(C_AMBD, glow * 0.45);
+  renderer.toneMappingExposure = 1.0 + 0.12 * day;
+  applyLamps(c.lamp);
+  skyNight.style.opacity = (1 - day).toFixed(3);
+  skyDusk.style.opacity = Math.min(1, glow * 1.15).toFixed(3);
+  appEl.classList.toggle('pf-night', day < 0.5);
+  const d = THREE.MathUtils.degToRad(c.az - planUpDeg());
   const vx = Math.sin(d), vy = -Math.cos(d); // Plan-Vektor zur Sonne
-  const el = THREE.MathUtils.degToRad(Math.max(2, elev)), R = span * 1.6;
+  const el = THREE.MathUtils.degToRad(Math.max(2, c.dirEl)), R = span * 1.6;
   sun.position.set(cx0 + vx * R * Math.cos(el), R * Math.sin(el), cy0 + vy * R * Math.cos(el));
   sun.target.position.set(cx0, 0, cy0);
   sun.target.updateMatrixWorld();
+  renderer.shadowMap.needsUpdate = true;
+  if (lampsReady) dirty = true; // (beim allerersten Aufruf gibt es die Render-Schleife noch nicht)
 }
 placeSun();
 sun.castShadow = true;
@@ -2202,30 +2271,24 @@ function flyTo(pos, target, ms = 650) {
   tween = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos.clone(), t1: target.clone(), start: performance.now(), ms };
   requestRender();
 }
-// Pflanze + nächstes Fenster gemeinsam zeigen (oberhalb des Sheets), Abstand mind. 6 m
-const FOCUS_MIN = 6 * Math.tan(THREE.MathUtils.degToRad(19)) / Math.tan(THREE.MathUtils.degToRad(26 / 2)); // ≈ gleicher Bildausschnitt wie früher mit 38°
+// Ausgewählte Pflanze nah heranholen (mit etwas Umgebung), oberhalb des Sheets; aktuelle Blickrichtung bleibt
+const FOCUS_MIN = 3;
 function focusPlant(p) {
-  const st = (p.standCm || 0) / 100, top = st + clamp(p.plantHeightCm / 100, 0.1, 2.5) + 0.12;
-  const pts = [new THREE.Vector3(p.x, 0, p.y), new THREE.Vector3(p.x, top, p.y)];
-  const w = windowTarget(p);
-  if (w) {
-    const o = w.o, sill = o.type === 'window' ? (+o.sill || 0) : 0;
-    pts.push(new THREE.Vector3(w.pt[0], 0, w.pt[1]), new THREE.Vector3(w.pt[0], CUT, w.pt[1]));
-    pts.push(new THREE.Vector3(w.mid[0], sill, w.mid[1]));
-  }
-  // aktuelle Blickrichtung (Azimut) beibehalten
+  const st = (p.standCm || 0) / 100, top = st + clamp(p.plantHeightCm / 100, 0.1, 2.5) * 1.15 + 0.3;
+  const r = Math.max(0.8, p.potDiameterCm / 200 + 0.55, (top - st) * 0.5); // Rand um die Pflanze
+  const pts = [new THREE.Vector3(p.x, top, p.y)];
+  for (const [dx, dz] of [[-r, -r], [r, -r], [-r, r], [r, r]]) pts.push(new THREE.Vector3(p.x + dx, st, p.y + dz));
   const off = camera.position.clone().sub(controls.target);
   const sph = new THREE.Spherical().setFromVector3(off);
   const az = THREE.MathUtils.radToDeg(sph.theta);
-  const polar = viewMode === 'top' ? 0.01 : 40;
+  const polar = viewMode === 'top' ? 0.01 : 48;
   // sichtbarer Bereich über dem Sheet (Sheet-Offset wird über setViewOffset ausgeglichen)
   const hb = $('pf-list-btn').getBoundingClientRect().bottom || 54;
   const sheetTop = sheet.classList.contains('open') ? H - Math.min(sheet.offsetHeight, H * 0.7) : H - 70;
   const half = Math.max(40, (sheetTop - (hb + 8)) / 2 - 30); // Rand für Marker
   const ky = half / (H / 2);
-  // fitPose arbeitet ohne Offset; Zentrum entspricht bei Offset der Mitte des freien Bereichs
-  const r = fitPose(polar, az, pts, { x0: -0.62, x1: 0.62, y0: -ky, y1: ky }, FOCUS_MIN);
-  flyTo(r.pos, r.target);
+  const f = fitPose(polar, az, pts, { x0: -0.62, x1: 0.62, y0: -ky, y1: ky }, FOCUS_MIN);
+  flyTo(f.pos, f.target);
 }
 function setViewMode(m) {
   viewMode = m;
@@ -2639,6 +2702,7 @@ function loop(now) {
   }
   if (fx.length) { runFx(now); dirty = true; }
   stepSun(now);
+  stepSky(now);
   // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist
   if (motionOn() && (state.plants.length || draft) && now - lastWind >= 33) {
     lastWind = now;
@@ -2714,27 +2778,44 @@ function handleTap(sx, sy) {
   if (orient.on) return;
   const hit = pick(sx, sy);
   if (!hit) { if (selected && !moveMode) closeSheet(); return; }
+  if (addMode && hit.type === 'plant') endAdd();
   if (moveMode) {
     if (hit.type === 'floor') movePlantTo(hit.x, hit.y, hit.item);
     else if (hit.type === 'window' && selected) { selected.onItem = undefined; if (placeOnSill(selected, hit.o, hit.x, hit.y)) movePlantTo(selected.x, selected.y, 'keep'); }
     else if (hit.type === 'plant' && hit.uid === selected?.uid) cancelMove();
     return;
   }
-  if (hit.type === 'window') {
-    if (selected) { closeSheet(); return; }
-    placeNewOnSill(hit.o, hit.x, hit.y);
+  if (addMode && (hit.type === 'window' || hit.type === 'floor')) {
+    endAdd();
+    if (hit.type === 'window') placeNewOnSill(hit.o, hit.x, hit.y); else placeNew(hit.x, hit.y, hit.item);
     return;
   }
+  if (hit.type === 'window') { if (selected) closeSheet(); return; }
   if (hit.type === 'plant') {
     const p = state.plants.find((q) => q.uid === hit.uid) || (draft && draft.uid === hit.uid ? draft : null);
     if (p) openPlant(p, { focus: true });
     return;
   }
   if (hit.type === 'wall') { if (selected) closeSheet(); return; }
-  if (hit.type === 'floor') {
-    if (selected) { closeSheet(); return; } // erster Tipp schließt nur (und speichert)
-    placeNew(hit.x, hit.y, hit.item);
-  }
+  if (hit.type === 'floor') { if (selected) closeSheet(); } // Tipp daneben schließt nur (und speichert); neue Pflanzen über ＋ Neu
+}
+// „＋ Neu“: erst danach setzt ein Tipp auf Boden/Fenster eine neue Pflanze
+let addMode = false;
+function startAdd() {
+  closeAux();
+  if (moveMode) cancelMove();
+  if (selected) closeSheet();
+  if (design.on || orient.on) return;
+  addMode = true;
+  $('pf-addb').classList.remove('hide'); $('pf-nav-add').classList.add('on');
+  updateHint();
+  if (!tween) { const { pos, target } = camPose(viewMode); flyTo(pos, target, 600); } // Überblick zum Platzieren
+}
+function endAdd() {
+  if (!addMode) return;
+  addMode = false;
+  $('pf-addb').classList.add('hide'); $('pf-nav-add').classList.remove('on');
+  updateHint();
 }
 
 /* ------------------------------------------------------------------ */
@@ -2771,7 +2852,7 @@ function startDraft(p) {
   openPlant(p, { isNew: true, focus: true });
 }
 function openPlant(p, { isNew = false, focus = false } = {}) {
-  closeAux();
+  closeAux(); endAdd();
   if (selected && selected !== p) commitSelected();
   if (!selected && !moveMode) {
     // Ansicht merken (bei laufender Kamerafahrt deren Ziel)
@@ -2880,7 +2961,7 @@ function renderSheet(isNew) {
     </div>
     <details class="pf-why" id="s-why"><summary>Wie wird das berechnet? · Pflege</summary><div id="s-why-body"></div><div class="pf-note" id="s-note"></div></details>
     </div><div class="pf-actions sticky">
-      ${isNew ? '' : '<button class="pf-act danger" id="s-del">Löschen</button>'}
+      <button class="pf-act danger" id="s-del">Löschen</button>
       <button class="pf-act ghost" id="s-move">Verschieben</button>
       <button class="pf-act primary" id="s-save">${isNew ? 'Speichern' : 'Fertig'}</button>
     </div>`;
@@ -2910,6 +2991,7 @@ function renderSheet(isNew) {
   $('s-move').addEventListener('click', startMove);
   $('s-best').addEventListener('click', startBest);
   if ($('s-del')) $('s-del').addEventListener('click', () => {
+    if (draft === p) { closeSheet({ commit: false }); toast('Pflanze verworfen'); return; } // gerade erst platziert: ohne Rückfrage weg
     const b = $('s-del');
     if (!b.classList.contains('armed')) {
       b.classList.add('armed'); b.textContent = 'Wirklich?';
@@ -3487,7 +3569,7 @@ function closeAux() {
   listSheet.classList.remove('open'); setSheet.classList.remove('open'); scrim.classList.remove('show');
 }
 function openList() {
-  hideDueBanner();
+  hideDueBanner(); endAdd();
   if (moveMode) cancelMove();
   if (selected) closeSheet();
   renderList();
@@ -3639,7 +3721,7 @@ function orientPose() {
   return r;
 }
 function startOrient() {
-  closeAux();
+  closeAux(); endAdd();
   if (moveMode) cancelMove();
   if (selected) closeSheet({ restoreView: false });
   orient.on = true; orient.prevNorth = state.northDeg; orient.prevView = viewMode;
@@ -3828,11 +3910,11 @@ function designPose() {
   return fitPose(0.01, baseAzimuthDeg(), fitPts, { x0: -1 + 16 / W, x1: 1 - 16 / W, y0: 1 - 2 * bot / H, y1: 1 - 2 * top / H });
 }
 function startDesign() {
-  closeAux();
+  closeAux(); endAdd();
   if (moveMode) cancelMove();
   if (selected) closeSheet({ restoreView: false });
   if (light.on) setLight(false);
-  design.on = true; design.prevView = viewMode; design.pending = null; design.sel = null; design.room = null;
+  design.on = true; design.prevView = viewMode; design.pending = null; design.sel = null; design.room = null; design.fresh = null;
   appEl.classList.add('pf-design');
   $('pf-dsb').classList.remove('hide'); $('pf-ds').classList.remove('hide');
   viewMode = 'top';
@@ -3842,7 +3924,7 @@ function startDesign() {
 }
 function endDesign() {
   if (!design.on) return;
-  design.on = false; design.drag = null; design.sel = null; design.pending = null;
+  design.on = false; design.drag = null; design.sel = null; design.pending = null; design.fresh = null;
   controls.enabled = true;
   appEl.classList.remove('pf-design');
   $('pf-dsb').classList.add('hide'); $('pf-ds').classList.add('hide');
@@ -3873,9 +3955,13 @@ function renderDesign() {
       const maxW = F.rug ? 4 : 3.2;
       const dims = (round ? rng('w', 'Ø', it.w, 0.5, maxW) : rng('w', 'Breite', it.w, 0.3, maxW) + rng('d', 'Tiefe', it.d, 0.25, F.rug ? 4 : 2.2))
         + (F.rug ? '' : rng('h', 'Höhe', itemH(it), ...(FURN_HR[it.type] || [0.3, 2.4])));
-      body = `<div class="ttl">${esc(F.name)}<small><button class="chip" data-desel="1" style="height:28px;padding:0 11px">＋ Weiteres Möbel</button></small></div>${sizes}<div class="pf-dsdims">${dims}</div>${styles}
+      const fresh = design.fresh === it.id;
+      body = fresh
+        ? `<div class="ttl">${esc(F.name)} platzieren</div>${sizes}<div class="pf-dsdims">${dims}</div>${styles}
+        <div class="acts"><button data-act="rot">↻ Drehen</button><button data-act="del" class="del">Verwerfen</button><button data-ok="1" class="ok">✓ Platzieren</button></div>`
+        : `<div class="ttl">${esc(F.name)}<small><button class="chip" data-desel="1" style="height:28px;padding:0 11px">＋ Weiteres Möbel</button></small></div>${sizes}<div class="pf-dsdims">${dims}</div>${styles}
         <div class="acts"><button data-act="rot">↻ Drehen</button><button data-act="dup">Duplizieren</button><button data-act="del" class="del">Löschen</button></div>`;
-      setDesignSub(`${F.name} ausgewählt · ziehen zum Verschieben`);
+      setDesignSub(fresh ? `Neu: ziehen oder in den Grundriss tippen · andere Möbel bleiben stehen` : `${F.name} ausgewählt · ziehen zum Verschieben`);
     } else {
       body = `<div class="hint">${design.pending ? `Tippe in den Grundriss, um ${esc(FURN[design.pending].name.toLowerCase().startsWith('teppich') ? 'den Teppich' : 'das Möbel')} zu platzieren.` : 'Wähle ein Möbel und tippe dann in den Grundriss. Vorhandene Möbel antippen zum Bearbeiten.'}</div>
         <div class="types">${FURN_ORDER.map((t) => `<button data-type="${t}" class="${design.pending === t ? 'on' : ''}"><img src="${typeIcon(t)}" alt="">${esc(FURN[t].name)}</button>`).join('')}</div>`;
@@ -3913,8 +3999,9 @@ $('pf-ds').addEventListener('change', (e) => { if (e.target.closest('input[data-
 $('pf-ds').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset;
-  if (d.tab) { design.tab = d.tab; design.pending = null; design.sel = null; markSelItem(); renderDesign(); return; }
-  if (d.desel) { design.sel = null; markSelItem(); renderDesign(); return; }
+  if (d.ok) { design.fresh = null; design.sel = null; save(); shadowsDirty(); markSelItem(); renderDesign(); return; }
+  if (d.tab) { design.tab = d.tab; design.pending = null; design.sel = null; design.fresh = null; markSelItem(); renderDesign(); return; }
+  if (d.desel) { design.sel = null; design.fresh = null; markSelItem(); renderDesign(); return; }
   if (d.type) { design.pending = design.pending === d.type ? null : d.type; renderDesign(); return; }
   if (d.room !== undefined) { design.room = d.room ? rooms.find((q) => q.id === d.room) : null; renderDesign(); return; }
   if (d.floor || d.wall) {
@@ -3934,10 +4021,11 @@ $('pf-ds').addEventListener('click', (e) => {
   }
   else if (d.act === 'dup') {
     const c = { ...it, id: uid(), x: it.x + 0.3, y: it.y + 0.3 };
-    state.design.items.push(c); syncItem(c); design.sel = c.id;
+    state.design.items.push(c); syncItem(c); design.sel = c.id; design.fresh = c.id;
   } else if (d.act === 'del') {
     const i = state.design.items.indexOf(it);
     state.design.items.splice(i, 1); syncItem({ id: it.id, _gone: true });
+    if (design.fresh === it.id) { design.fresh = null; design.sel = null; save(); renderDesign(); markSelItem(); shadowsDirty(); return; } // frisch platziert: einfach verwerfen
     const on = plantsOn(it.id); on.forEach((p) => { p.onItem = undefined; syncPlantObj(p); });
     design.sel = null; save(); renderDesign(); markSelItem();
     toast(`${FURN[it.type].name} entfernt`, () => { state.design.items.splice(i, 0, it); syncItem(it); on.forEach((p) => { p.onItem = it.id; syncPlantObj(p); }); save(); requestRender(); });
@@ -3990,12 +4078,20 @@ function placeItem(type, x, y) {
     }
   }
   state.design.items.push(it); syncItem(it);
-  design.sel = it.id; design.pending = null;
+  design.sel = it.id; design.pending = null; design.fresh = it.id; // neu: allein verschiebbar, bis bestätigt
   save(); markSelItem(); renderDesign();
 }
 function designTap(sx, sy) {
   if (design.tab === 'moebel') {
     if (design.pending) { const g = floorAtScreen(sx, sy); if (g && (roomOfPt(g.x, g.y) || (balcony && pointInPoly(g.x, g.y, balcony.polygon)))) placeItem(design.pending, g.x, g.y); return; }
+    const fr = design.fresh && itemById(design.fresh);
+    if (fr) {
+      // neues Möbel ist noch nicht bestätigt: andere Möbel nicht anwählen, Tipp auf freien Boden setzt es dorthin
+      if (designItemAt(sx, sy)) return;
+      const g = floorAtScreen(sx, sy);
+      if (g && (roomOfPt(g.x, g.y) || (balcony && pointInPoly(g.x, g.y, balcony.polygon))) && !itemHitsWall(fr, g.x, g.y)) moveItemBy(fr, g.x - fr.x, g.y - fr.y, true);
+      return;
+    }
     const it = designItemAt(sx, sy);
     design.sel = it ? it.id : null; markSelItem(); renderDesign();
     return;
@@ -4046,7 +4142,11 @@ function itemHitsWall(it, x, y) {
 cvs.addEventListener('pointerdown', (e) => {
   if (!design.on || design.tab !== 'moebel' || design.pending) return;
   const rc = cvs.getBoundingClientRect(), sx = e.clientX - rc.left, sy = e.clientY - rc.top;
-  const it = designItemAt(sx, sy); if (!it) return;
+  let it = designItemAt(sx, sy);
+  // neues, noch nicht bestätigtes Möbel: jeder Griff auf ein Möbel bewegt nur das neue
+  const fr = design.fresh && itemById(design.fresh);
+  if (fr && it) it = fr;
+  if (!it) return;
   const g = floorAtScreen(sx, sy); if (!g) return;
   design.drag = { id: it.id, pid: e.pointerId, ox: it.x - g.x, oy: it.y - g.y, moved: false };
   controls.enabled = false;
@@ -4073,12 +4173,17 @@ cvs.addEventListener('pointermove', (e) => {
   }
   const dx = tx - it.x, dy = ty - it.y;
   if (!dx && !dy) return;
-  it.x += dx; it.y += dy; D.moved = true;
+  D.moved = true;
+  moveItemBy(it, dx, dy);
+});
+function moveItemBy(it, dx, dy, commit = false) {
+  it.x += dx; it.y += dy;
   const m = itemObjs.get(it.id); if (m) m.position.set(it.x, m.position.y, it.y);
   const m3 = item3d.get(it.id); if (m3) m3.position.set(it.x, m3.position.y, it.y);
   for (const p of plantsOn(it.id)) { p.x += dx; p.y += dy; const o = plantObjs.get(p.uid); if (o) o.position.set(p.x, o.position.y, p.y); }
+  if (commit) { save(); shadowsDirty(); }
   requestRender();
-});
+}
 const endDrag = (e) => {
   const D = design.drag; if (!D || D.pid !== e.pointerId) return;
   design.drag = null; controls.enabled = true;
@@ -4807,7 +4912,7 @@ setInterval(() => { if (sunMode.on) return; const was = lastNight; placeSun(); l
 setInterval(() => { const d = dayNum(nowDate()); if (d !== lastDay) { lastDay = d; updateCount(); if (selected) refreshSheet(); queueReminderSync(); } }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastDay = dayNum(nowDate()); updateCount(); queueReminderSync(); } });
 function updateHint() {
-  const show = state.plants.length === 0 && !draft && !selected;
+  const show = state.plants.length === 0 && !draft && !selected && !addMode;
   $('pf-hint').classList.toggle('hide', !show);
 }
 function applyPlantNames() {
@@ -4836,6 +4941,8 @@ function renderMiniBadges() {
 $('pf-addr').textContent = FP.name || '';
 $('pf-list-btn').addEventListener('click', openList);
 $('pf-nav-list').addEventListener('click', openList);
+$('pf-nav-add').addEventListener('click', () => (addMode ? endAdd() : startAdd()));
+$('pf-add-cancel').addEventListener('click', endAdd);
 $('pf-compass').addEventListener('click', openSettings);
 $('pf-scrim').addEventListener('click', () => { save(); closeAux(); });
 $('pf-move-cancel').addEventListener('click', cancelMove);
