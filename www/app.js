@@ -425,6 +425,10 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-ds .acts{display:flex;gap:8px;margin-top:9px}
 .pf-ds .acts button{flex:1;height:38px;border-radius:12px;background:var(--soft);font-weight:650;font-size:13.5px}
 .pf-ds .acts button.del{color:var(--red,#b5483a)}
+.pf-bkbtns button{min-width:64px}
+.pf-bkask{margin:4px 0 8px;padding:12px 14px;border-radius:14px;background:var(--green-l,#e6efe2);font-size:13.5px;line-height:1.4}
+.pf-bkask>div{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.pf-bkask .pf-act{flex:0 0 auto;padding:0 16px}
 .pf-ds .chip.ok,.pf-ds .acts button.ok{background:var(--olive);color:var(--ivory)}
 .pf-nav button.pf-addbtn .pl{width:26px;height:26px;margin:-3px 0 -1px;border-radius:50%;background:var(--olive);color:var(--ivory);display:flex;align-items:center;justify-content:center}
 .pf-nav button.pf-addbtn .pl svg{width:16px;height:16px}
@@ -684,6 +688,8 @@ function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
+    // Rohstand vom letzten Start aufheben, bevor irgendetwas bereinigt und neu gespeichert wird
+    try { localStorage.setItem(STORAGE_KEY + '.prev', raw); } catch (e) { /* voll */ }
     const d = JSON.parse(raw);
     if (!d || typeof d !== 'object' || Array.isArray(d)) return;
     const num = (v, def, a, b) => { const n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? +v : NaN); return Number.isFinite(n) ? clamp(n, a, b) : def; };
@@ -699,7 +705,8 @@ function load() {
           while (!id || seen.has(id)) id = uid();
           seen.add(id);
           return {
-            uid: id, plantId: known(p.plantId) ? p.plantId : fallbackId,
+            // unbekannte Art (z. B. umbenannt) behalten statt still zur ersten Art zu machen
+            uid: id, plantId: known(p.plantId) || (typeof p.plantId === 'string' && p.plantId && p.plantId.length <= 40) ? p.plantId : fallbackId,
             x: clamp(p.x, bbox.minX - M, bbox.maxX + M), y: clamp(p.y, bbox.minY - M, bbox.maxY + M),
             potDiameterCm: Math.round(num(p.potDiameterCm, 18, 6, 50)), plantHeightCm: Math.round(num(p.plantHeightCm, 50, 10, 250)),
             standCm: Math.round(num(p.standCm, 0, 0, 150)),
@@ -729,7 +736,9 @@ function load() {
     }
   } catch (e) { /* storage unavailable */ }
 }
+var saveLocked = false; // beim Laden einer Sicherung: nichts mehr überschreiben, bis neu gestartet ist
 function save() {
+  if (saveLocked) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
@@ -737,6 +746,7 @@ function save() {
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
+  queueAutoBackup();
 }
 const planUpDeg = () => (state.northDeg != null ? state.northDeg : (+FP.planUpCompassDeg || 0));
 // Kompassrichtung eines Plan-Vektors (x rechts, y unten). Plan-oben = (0,-1) → planUpDeg, im Uhrzeigersinn.
@@ -1084,10 +1094,13 @@ function applySky() {
   const d = THREE.MathUtils.degToRad(c.az - planUpDeg());
   const vx = Math.sin(d), vy = -Math.cos(d); // Plan-Vektor zur Sonne
   const el = THREE.MathUtils.degToRad(Math.max(2, c.dirEl)), R = span * 1.6;
-  sun.position.set(cx0 + vx * R * Math.cos(el), R * Math.sin(el), cy0 + vy * R * Math.cos(el));
+  const nx = cx0 + vx * R * Math.cos(el), ny = R * Math.sin(el), nz = cy0 + vy * R * Math.cos(el);
+  // Schattenkarte nur neu zeichnen, wenn sich die Sonne merklich bewegt hat (sonst jede Minute unnötig)
+  const moved = Math.abs(nx - sun.position.x) + Math.abs(ny - sun.position.y) + Math.abs(nz - sun.position.z) > R * 0.0015;
+  sun.position.set(nx, ny, nz);
   sun.target.position.set(cx0, 0, cy0);
   sun.target.updateMatrixWorld();
-  renderer.shadowMap.needsUpdate = true;
+  if (moved) renderer.shadowMap.needsUpdate = true;
   if (lampsReady) dirty = true; // (beim allerersten Aufruf gibt es die Render-Schleife noch nicht)
 }
 placeSun();
@@ -1669,20 +1682,26 @@ function syncAllItems() {
 function cleanDesign(d) {
   const out = { rooms: {}, items: [] };
   if (!d || typeof d !== 'object') return null;
-  const fl = new Set(['oak', 'oakdark', 'herring', 'tile', 'tiledark', 'concrete']);
-  const wl = new Set(['alt', 'kalk', 'grau', 'sand', 'salbei', 'rose', 'blau', 'tanne']);
+  // Listen aus den echten Definitionen (nicht abgeschrieben), damit neue Böden/Farben/Möbel nicht verloren gehen
+  const fl = new Set(FLOOR_OPTS.map((o) => o.id));
+  const wl = new Set(WALL_OPTS.map((o) => o.id));
   if (d.rooms && typeof d.rooms === 'object') for (const [id, v] of Object.entries(d.rooms)) {
     if (!v || typeof v !== 'object') continue;
-    out.rooms[String(id).slice(0, 40)] = { floor: fl.has(v.floor) ? v.floor : undefined, wall: wl.has(v.wall) ? v.wall : undefined };
+    const keep = (v2, set) => (set.has(v2) ? v2 : typeof v2 === 'string' && v2.length <= 20 ? v2 : undefined); // unbekannt: aufheben, Anzeige nimmt Standard
+    out.rooms[String(id).slice(0, 40)] = { floor: keep(v.floor, fl), wall: keep(v.wall, wl) };
   }
-  const types = new Set(['sofa', 'sessel', 'bett', 'tisch', 'rund', 'couchtisch', 'schreib', 'regal', 'schrank', 'kommode', 'teppich', 'teppichrund']);
+  const types = new Set(Object.keys(FURN));
+  // Möbel mit unbekanntem Typ werden nicht gezeigt, aber aufgehoben (falls ein Typ einmal umbenannt wird)
+  const lost = Array.isArray(d.lost) ? d.lost.filter((it) => it && typeof it === 'object').slice(0, 80) : [];
   if (Array.isArray(d.items)) for (const it of d.items.slice(0, 80)) {
+    if (it && typeof it === 'object' && typeof it.type === 'string' && !types.has(it.type)) { lost.push(it); continue; }
     if (!it || !types.has(it.type)) continue;
     const n = (v, a, b, def) => (Number.isFinite(+v) ? clamp(+v, a, b) : def);
     out.items.push({ id: typeof it.id === 'string' ? it.id.slice(0, 40) : uid(), type: it.type, x: n(it.x, -50, 50, 0), y: n(it.y, -50, 50, 0),
       w: n(it.w, 0.2, 6, 1), d: n(it.d, 0.2, 6, 1), rot: n(it.rot, -7, 7, 0), sizeIdx: Math.round(n(it.sizeIdx, 0, 9, 0)), h: Number.isFinite(+it.h) && it.h !== null ? clamp(+it.h, 0.1, 3) : undefined,
       style: typeof it.style === 'string' ? it.style.slice(0, 20) : undefined });
   }
+  if (lost.length) out.lost = lost.slice(0, 80);
   return out;
 }
 // Walls with openings
@@ -2114,12 +2133,12 @@ function disposePlantGroup(g) {
   models.forEach((m) => { m.parent && m.parent.remove(m); PM.disposePlant(m); });
   g.traverse((o) => { if (o.geometry && !SHARED_GEO.has(o.geometry)) o.geometry.dispose(); });
 }
-function syncPlantObj(p) {
+function syncPlantObj(p, shadows = true) {
   const old = plantObjs.get(p.uid);
   if (old) { scene.remove(old); disposePlantGroup(old); }
   const g = buildPlant(p);
   scene.add(g); plantObjs.set(p.uid, g);
-  shadowsDirty();
+  if (shadows) shadowsDirty(); else requestRender();
 }
 function removePlantObj(id) {
   if (!state.plants.some((q) => q.uid === id) && draft?.uid !== id) dropLive(id);
@@ -2302,7 +2321,8 @@ function setViewMode(m) {
 /* Render loop                                                         */
 /* ------------------------------------------------------------------ */
 let dirty = true;
-function requestRender() { dirty = true; }
+function requestRender() { dirty = true; lastActive = performance.now(); }
+document.addEventListener('pointerdown', () => { lastActive = performance.now(); }, true);
 // Nur bei echter Kamerabewegung rendern: OrbitControls meldet sonst bei manchen Zielpunkten jedes Frame eine
 // „Änderung“ (target.clampLength erzeugt Rundungsrauschen) → Dauer-Rendering.
 const lastCam = { p: new THREE.Vector3(Infinity, 0, 0), q: new THREE.Quaternion(), t: new THREE.Vector3() };
@@ -2550,7 +2570,8 @@ function updateOverlay() {
     const s = toScreen(tmpV.set(selObj.position.x, selObj.userData.topY + 0.08, selObj.position.z).clone());
     if (s.behind) hideEl(badge);
     else {
-      badge._w = null; measure(badge);
+      if (badge._txt !== badge.textContent) { badge._txt = badge.textContent; badge._w = null; } // nur neu messen, wenn sich der Text ändert
+      measure(badge);
       const dx = clamp(clamp(s.x, badge._w / 2 + 4, W - badge._w / 2 - 4) - s.x, -badge._w / 2 + 14, badge._w / 2 - 14);
       badge.style.setProperty('--ax', `${(-dx).toFixed(1)}px`);
       put(badge, pinRect({ x: s.x + dx, y: s.y }, badge), s.x + dx, s.y - 8, 'translate(-50%,-100%)');
@@ -2617,7 +2638,8 @@ function updateOverlay() {
 
 const PULSE_MS = 1500;
 let last = performance.now();
-let lastWind = 0;
+let lastWind = 0, lastActive = performance.now(), windK = 0, frames = 0; // frames: gezeichnete Bilder (zum Prüfen, ob die App im Leerlauf ruht)
+const WIND_IDLE = 10000; // so lange nach der letzten Berührung/Änderung wiegen die Pflanzen
 const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 const motionOn = () => state.motion !== false && !(reduceMotion && reduceMotion.matches) && !orient.on && !design.on;
 /* Effekte (Gieß-Animation) */
@@ -2703,13 +2725,21 @@ function loop(now) {
   if (fx.length) { runFx(now); dirty = true; }
   stepSun(now);
   stepSky(now);
-  // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist
+  // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist – und nur eine Weile nach einer Berührung,
+  // danach klingt das Wiegen aus und die App zeichnet nichts mehr (Akku)
   if (motionOn() && (state.plants.length || draft) && now - lastWind >= 33) {
+    const want = now - lastActive < WIND_IDLE ? 1 : 0;
+    if (want || windK > 0) {
+      const dw = Math.min(50, now - lastWind);
+      windK = want ? Math.min(1, windK + dw / 1200) : Math.max(0, windK - dw / 1800);
+      PM.windUniforms.uWind.value = windK;
+      PM.windUniforms.uTime.value = now / 1000;
+      dirty = true;
+    }
     lastWind = now;
-    PM.windUniforms.uTime.value = now / 1000;
-    dirty = true;
   }
   if (dirty) {
+    frames++;
     renderer.render(scene, camera);
     updateOverlay();
     dirty = false;
@@ -2979,8 +3009,13 @@ function renderSheet(isNew) {
     focusPlant(p);
   });
   sel.addEventListener('click', () => openPicker(p.plantId, (id) => { if (id === p.plantId) return; p.plantId = id; syncPlantObj(p); updateSelection(); refreshSheet(); }));
-  pot.addEventListener('input', () => { p.potDiameterCm = +pot.value; pct(pot); syncPlantObj(p); updateSelection(); refreshSheet(); });
-  hh.addEventListener('input', () => { p.plantHeightCm = +hh.value; pct(hh); syncPlantObj(p); refreshSheet(); });
+  // Beim Ziehen höchstens einmal pro Bild neu aufbauen (ohne Schatten), Schatten erst beim Loslassen
+  let liveRaf = 0;
+  const live = () => { if (liveRaf) return; liveRaf = requestAnimationFrame(() => { liveRaf = 0; if (selected !== p) return; syncPlantObj(p, false); updateSelection(); refreshSheet(); }); };
+  pot.addEventListener('input', () => { p.potDiameterCm = +pot.value; pct(pot); $('s-pot-v').textContent = p.potDiameterCm + ' cm'; live(); });
+  hh.addEventListener('input', () => { p.plantHeightCm = +hh.value; pct(hh); $('s-h-v').textContent = p.plantHeightCm + ' cm'; live(); });
+  pot.addEventListener('change', () => { cancelAnimationFrame(liveRaf); liveRaf = 0; syncPlantObj(p); updateSelection(); refreshSheet(); });
+  hh.addEventListener('change', () => { cancelAnimationFrame(liveRaf); liveRaf = 0; syncPlantObj(p); refreshSheet(); });
   $('s-close').addEventListener('click', () => closeSheet());
   $('s-water').addEventListener('click', () => waterPlants([p]));
   const nk = $('s-nick');
@@ -3656,6 +3691,9 @@ function openSettings() {
         <button class="pf-switch" id="st-motion" role="switch" aria-checked="${state.motion}" aria-label="Bewegung an/aus"></button></div>
       <button class="pf-rlink" id="st-design"><span class="ic">🛋️</span><span class="t"><b>Wohnung gestalten</b><span>Möbel als Planzeichen, Teppiche, Böden und Wandfarben</span></span></button>
       <button class="pf-rlink" id="st-rem"><span class="ic">${ICONS.bell}</span><span class="t"><b>Erinnerung</b><span>${esc(reminderSummary())}</span></span></button>
+      <div class="pf-tg" style="border-top:1px solid var(--soft)"><div style="min-width:0"><b>Daten sichern</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)" id="st-bk-h">${esc(backupSummary())}</p></div>
+        <div class="pf-segs pf-bkbtns"><button id="st-bk-out">Sichern</button><button id="st-bk-in">Laden</button></div></div>
+      <div id="st-bk-ask"></div>
     </div>`;
   void def;
   $('st-v').textContent = `${compassName(planUpDeg())} · ${Math.round(planUpDeg())}°`;
@@ -3663,6 +3701,8 @@ function openSettings() {
   $('st-close').addEventListener('click', () => { save(); closeAux(); });
   $('st-rem').addEventListener('click', () => { save(); openReminder('settings'); });
   $('st-design').addEventListener('click', () => { save(); startDesign(); });
+  $('st-bk-out').addEventListener('click', exportBackup);
+  $('st-bk-in').addEventListener('click', importBackup);
   const stepB = (df, dt) => {
     const B = state.building;
     B.total = clamp(B.total + dt, 1, 30); B.floor = clamp(B.floor + df, 1, B.total);
@@ -4910,7 +4950,141 @@ let lastDay = dayNum(nowDate());
 let lastNight = null;
 setInterval(() => { if (sunMode.on) return; const was = lastNight; placeSun(); lastNight = isNight(); if (was !== null && was !== lastNight) shadowsDirty(); }, 60000);
 setInterval(() => { const d = dayNum(nowDate()); if (d !== lastDay) { lastDay = d; updateCount(); if (selected) refreshSheet(); queueReminderSync(); } }, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastDay = dayNum(nowDate()); updateCount(); queueReminderSync(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { flushSave(); return; } // Android kann die App im Hintergrund jederzeit beenden
+  lastDay = dayNum(nowDate()); updateCount(); queueReminderSync(); placeSun(); requestRender();
+});
+window.addEventListener('pagehide', flushSave);
+
+/* ------------------------------------------------------------------ */
+/* Datensicherung + Zurück-Taste                                       */
+/* ------------------------------------------------------------------ */
+function capP() { const C = window.Capacitor; return C && typeof C.isNativePlatform === 'function' && C.isNativePlatform() ? C.Plugins : null; }
+const BK_KEY = 'plantflat.bk', BK_DIR = 'Plantdaddy', BK_KEEP = 7;
+var bkTimer = 0, bkBusy = false; // var: save() kann schon beim Start laufen
+const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function backupText() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { /* leer */ }
+  return JSON.stringify({ app: 'plantdaddy', format: 1, exportedAt: new Date().toISOString(), data }, null, 1);
+}
+function bkInfo() { try { return JSON.parse(localStorage.getItem(BK_KEY) || 'null') || {}; } catch (e) { return {}; } }
+function backupSummary() {
+  const b = bkInfo();
+  if (!capP()) return 'Als Datei sichern und später wieder laden';
+  if (b.err && (!b.at || b.errAt > b.at)) return 'Automatische Sicherung fehlgeschlagen – bitte „Sichern“ nutzen';
+  if (!b.at) return 'Automatisch täglich in Dokumente/Plantdaddy';
+  const t = new Date(b.at);
+  return `Automatisch in Dokumente/Plantdaddy · zuletzt ${agoText(b.at)} ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+}
+function queueAutoBackup() { clearTimeout(bkTimer); bkTimer = setTimeout(autoBackup, 4000); }
+// Tagesdatei im öffentlichen Dokumente-Ordner (bleibt nach Deinstallation erhalten); die letzten 7 Tage bleiben liegen
+async function autoBackup() {
+  clearTimeout(bkTimer);
+  const P = capP(); if (!P || !P.Filesystem || bkBusy) return;
+  if (!localStorage.getItem(STORAGE_KEY)) return;
+  bkBusy = true;
+  const info = bkInfo(), day = localDay();
+  const names = [`Sicherung-${day}.json`, `Sicherung-${day}-2.json`, `Sicherung-${day}-3.json`];
+  let ok = null;
+  for (const n of info.day === day && info.name ? [info.name, ...names] : names) {
+    try {
+      await P.Filesystem.writeFile({ path: `${BK_DIR}/${n}`, data: backupText(), directory: 'DOCUMENTS', encoding: 'utf8', recursive: true });
+      ok = n; break;
+    } catch (e) { info.err = String((e && e.message) || e).slice(0, 120); } // z. B. Datei gehört einer früheren Installation
+  }
+  if (ok) {
+    const fresh = info.name !== ok || info.day !== day;
+    Object.assign(info, { at: new Date().toISOString(), day, name: ok, err: null });
+    if (fresh) {
+      try {
+        const r = await P.Filesystem.readdir({ path: BK_DIR, directory: 'DOCUMENTS' });
+        const files = (r.files || []).map((f) => (typeof f === 'string' ? f : f.name)).filter((n) => /^Sicherung-\d{4}-\d\d-\d\d(-\d)?\.json$/.test(n)).sort();
+        for (const n of files.slice(0, Math.max(0, files.length - BK_KEEP))) { try { await P.Filesystem.deleteFile({ path: `${BK_DIR}/${n}`, directory: 'DOCUMENTS' }); } catch (e) { /* fremde Datei */ } }
+      } catch (e) { /* Ordner nicht lesbar */ }
+    }
+  } else info.errAt = new Date().toISOString();
+  try { localStorage.setItem(BK_KEY, JSON.stringify(info)); } catch (e) { /* voll */ }
+  bkBusy = false;
+  const h = $('st-bk-h'); if (h) h.textContent = backupSummary();
+}
+function flushSave() {
+  if (saveLocked) return;
+  if (selected && draft === selected) commitSelected(); // gerade platzierte Pflanze nicht verlieren
+  save();
+  autoBackup();
+}
+async function exportBackup() {
+  flushSave();
+  const name = `Plantdaddy-Sicherung-${localDay()}.json`, text = backupText();
+  const P = capP();
+  try {
+    if (P && P.Filesystem && P.Share) {
+      const w = await P.Filesystem.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' });
+      await P.Share.share({ title: 'Plantdaddy-Sicherung', text: 'Sicherung meiner Pflanzen-Wohnung', files: [w.uri], dialogTitle: 'Sicherung speichern oder senden' });
+      return;
+    }
+  } catch (e) { if (!/cancel/i.test(String(e && e.message))) toast('Teilen fehlgeschlagen'); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+// Laden: Datei wählen → Vorschau → bestätigen → ersetzen und neu starten (load() prüft alles wie beim Start)
+let bkPending = null;
+function importBackup() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json,application/json,text/plain';
+  inp.addEventListener('change', async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    let file = null;
+    try { file = JSON.parse(await f.text()); } catch (e) { /* kein JSON */ }
+    // eigenes Sicherungsformat { app, exportedAt, data } oder direkt der gespeicherte Stand
+    const d = file && file.app === 'plantdaddy' ? file.data : file;
+    if (!d || typeof d !== 'object' || !Array.isArray(d.plants)) { bkPending = null; toast('Das ist keine Plantdaddy-Sicherung'); return; }
+    bkPending = { data: d };
+    const ts = file && file.exportedAt ? Date.parse(file.exportedAt) : NaN;
+    const when = Number.isFinite(ts) ? ` vom ${new Date(ts).toLocaleDateString('de-DE')}` : '';
+    const ask = $('st-bk-ask');
+    if (!ask) return;
+    ask.innerHTML = `<div class="pf-bkask"><span>Sicherung${esc(when)} mit <b>${d.plants.length} Pflanzen</b> laden? Ersetzt die aktuellen ${state.plants.length} Pflanzen.</span>
+      <div><button class="pf-act" id="st-bk-no">Abbrechen</button><button class="pf-act primary" id="st-bk-yes">Laden</button></div></div>`;
+    $('st-bk-no').addEventListener('click', () => { bkPending = null; ask.innerHTML = ''; });
+    $('st-bk-yes').addEventListener('click', () => {
+      if (!bkPending) return;
+      try {
+        const cur = localStorage.getItem(STORAGE_KEY);
+        if (cur) localStorage.setItem(STORAGE_KEY + '.vorImport', cur); // für den Notfall
+        saveLocked = true;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bkPending.data));
+      } catch (e) { saveLocked = false; toast('Laden fehlgeschlagen'); return; }
+      location.reload();
+    });
+  });
+  inp.click();
+}
+// Android-Zurück-Taste: oberste Ebene schließen statt die App zu beenden
+function handleBack() {
+  if (!$('pf-pick').classList.contains('hide')) { closePicker(); return true; }
+  if (setSheet.classList.contains('open') || listSheet.classList.contains('open')) { save(); closeAux(); return true; }
+  if (moveMode) { cancelMove(); return true; }
+  if (selected) { closeSheet(); return true; }
+  if (addMode) { endAdd(); return true; }
+  if (design.on) {
+    if (design.sel || design.pending) { design.sel = null; design.fresh = null; design.pending = null; save(); markSelItem(); renderDesign(); }
+    else endDesign();
+    return true;
+  }
+  if (orient.on) { endOrient(false); return true; }
+  if (light.on) { setLight(false); return true; }
+  if (sunMode.on) { setSunMode(false); return true; }
+  return false;
+}
+(function initNative() {
+  const P = capP(), App = P && P.App;
+  if (!App) return;
+  App.addListener('backButton', () => { if (!handleBack()) { flushSave(); App.minimizeApp(); } });
+  App.addListener('pause', flushSave);
+})();
+
 function updateHint() {
   const show = state.plants.length === 0 && !draft && !selected && !addMode;
   $('pf-hint').classList.toggle('hide', !show);
@@ -4993,6 +5167,7 @@ if (!PLANTS.length) toast('Pflanzendaten fehlen');
 
 // Debug-/Test-Hooks
 window.__plantflat = {
+  frames: () => frames,
   state,
   placeAt: (x, y) => placeNew(x, y),
   screenOf: (x, y, h = 0) => { const s = toScreen(new THREE.Vector3(x, h, y)); return { x: s.x, y: s.y }; },
