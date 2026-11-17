@@ -4,40 +4,6 @@ import * as THREE from './vendor/three.module.min.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import * as PM from './plantModels.js';
 
-/* ------------------------------------------------------------------ */
-/* Papierstruktur + leichte Umgebungsverdeckung direkt auf allen Objekten.
- * Statt eines Bildschirm-Overlays sitzt die Struktur in Weltkoordinaten auf den Flächen
- * (dreht sich also mit), gerechnet im Shader – ohne Texturen und ohne Nachbearbeitung. */
-const PAPER = { grain: 0.15, ao: 0.28 };
-const _chunkBase = { common: THREE.ShaderChunk.common, project_vertex: THREE.ShaderChunk.project_vertex, color_fragment: THREE.ShaderChunk.color_fragment };
-function applyPaperChunks(aoOn) {
-  THREE.ShaderChunk.common = _chunkBase.common + `
-varying vec3 vPaperPos;
-float pHash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
-float pNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(pHash(i), pHash(i + vec2(1.0, 0.0)), f.x), mix(pHash(i + vec2(0.0, 1.0)), pHash(i + vec2(1.0, 1.0)), f.x), f.y); }
-float paperGrain(vec2 uv){
-  float fib = (pNoise(uv * vec2(7.0, 26.0)) + pNoise(uv.yx * vec2(7.0, 26.0) + 17.0)) - 1.0; // feine Fasern längs/quer
-  float cloud = pNoise(uv * 1.3 + 3.1) - 0.5;                                                // Papierwolken
-  float fine = pNoise(uv * 38.0) - 0.5;
-  return fib * 0.55 + cloud * 0.7 + fine * 0.35;
-}`;
-  THREE.ShaderChunk.project_vertex = _chunkBase.project_vertex + `
-vPaperPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
-#ifdef USE_INSTANCING
-vPaperPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
-#endif`;
-  THREE.ShaderChunk.color_fragment = _chunkBase.color_fragment + `
-{
-  vec3 pN = normalize(cross(dFdx(vPaperPos), dFdy(vPaperPos)));
-  vec3 aN = abs(pN);
-  vec2 pUv = aN.y > max(aN.x, aN.z) ? vPaperPos.xz : (aN.x > aN.z ? vPaperPos.zy : vPaperPos.xy);
-  diffuseColor.rgb *= 1.0 + ${PAPER.grain.toFixed(3)} * paperGrain(pUv);
-  ${aoOn ? `// leichte Umgebungsverdeckung: senkrechte Flächen werden zum Boden hin dunkler (Wandfuß, Möbel-, Topfunterkante)
-  if (aN.y < 0.6 && vPaperPos.y > -0.03 && vPaperPos.y < 0.7) diffuseColor.rgb *= mix(1.0 - ${PAPER.ao.toFixed(3)}, 1.0, smoothstep(0.0, 0.55, vPaperPos.y));` : ''}
-}`;
-}
-applyPaperChunks(true);
 
 const STORAGE_KEY = 'plantflat.v1';
 const FP = window.FLOORPLAN;
@@ -65,10 +31,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe U
   color:var(--ink);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.35;
   user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
-#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:#E9DFCE}
-/* Leinen-/Papierstruktur: feststehend über den ganzen Bildschirm, hinter der 3D-Szene, ohne Einfluss auf Touch */
-#pf::before{content:"";position:fixed;inset:0;pointer-events:none;background:url(textures/linen.png) repeat;background-size:256px 256px;transition:opacity .4s}
-#pf.pf-night::before{opacity:.06}
+#pf{position:fixed;inset:0;overflow:hidden;overflow:clip;background:radial-gradient(130% 85% at 50% 42%,#f6f8fa 0%,#eaeef2 55%,#dde3e9 100%)}
 #pf.pf-night{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
 #pf canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .pf-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -357,9 +320,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button{width:36px;height:36px;border-radius:50%;background:var(--soft);font-size:15px;flex:none}
 .pf-sp .tm button.on{background:var(--ink);color:var(--ivory)}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
-.pf-vig{display:none}
-#pf > canvas{filter:sepia(.16) saturate(.9) contrast(.97)}
-#pf.pf-night > canvas{filter:none}
+.pf-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,rgba(0,0,0,0) 60%,rgba(40,56,74,.10) 100%)}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:var(--soft);border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -446,6 +407,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-ds .types button.on{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
 .pf-ds .types img{width:52px;height:36px;object-fit:contain}
 .pf-ds .row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+.pf-dsdims{margin-top:6px}
+.pf-dsr{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:12.5px;color:var(--ink2)}
+.pf-dsr span{width:46px;flex:none;font-weight:600}
+.pf-dsr input{flex:1;min-width:0}
+.pf-dsr b{width:58px;flex:none;text-align:right;font-weight:650;color:var(--ink);font-variant-numeric:tabular-nums}
 .pf-ds .row .lab{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);width:100%}
 .pf-ds .chip{height:32px;padding:0 12px;border-radius:999px;background:var(--soft);font-weight:650;font-size:13px;color:var(--ink2)}
 .pf-ds .chip.on{background:var(--green);color:var(--ivory)}
@@ -663,7 +629,6 @@ const state = {
   reminder: { on: false, h: 8, m: 0 }, // tägliche Gieß-Erinnerung (nur Android-App als Push)
   showRoomNames: false, // Raumnamen im Grundriss (Einstellungen)
   motion: true, // Pflanzen wiegen sich leicht (Einstellungen)
-  ao: true, // leichte Umgebungsverdeckung
   lamps: 'auto', // Lampen: 'auto' (ab Sonnenuntergang) | 'on' | 'off'
   wallMode: 'diorama', // 'diorama' = hintere Außenwände in voller Höhe, 'cut' = alle Wände auf Schnitthöhe (Grundriss-Schnitt)
   showPlantNames: true, // Namen an den Pflanzen-Markern (aus: nur Symbol)
@@ -745,7 +710,6 @@ function load() {
     state.motion = d.motion !== false;
     state.wallMode = d.wallMode === 'cut' ? 'cut' : 'diorama';
     state.lamps = ['on', 'off'].includes(d.lamps) ? d.lamps : 'auto';
-    state.ao = d.ao !== false;
     state.showPlantNames = d.showPlantNames !== false;
     state.design = cleanDesign(d.design);
     if (d.building && typeof d.building === 'object') {
@@ -761,7 +725,7 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       v: 1, plants: state.plants, northDeg: state.northDeg, lastPlantId: state.lastPlantId, seenHint: state.seenHint,
-      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, lamps: state.lamps, ao: state.ao, motion: state.motion, design: state.design, building: state.building,
+      reminder: state.reminder, showRoomNames: state.showRoomNames, showPlantNames: state.showPlantNames, wallMode: state.wallMode, lamps: state.lamps, motion: state.motion, design: state.design, building: state.building,
     }));
   } catch (e) { /* ignore */ }
   queueReminderSync();
@@ -983,8 +947,8 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
 
 // „Cozy“-Licht: warme Himmelsfüllung, warmer Bodenreflex, warmes Grundlicht hebt die Schatten (nicht grau)
-const hemi = new THREE.HemisphereLight(0xf8eedf, 0x9a7656, 0.82); // warmes Nachmittags-Grundlicht
-const amb = new THREE.AmbientLight(0xf2e3cd, 0.4);
+const hemi = new THREE.HemisphereLight(0xeef3f8, 0x8a6a4e, 0.82); // kühler Himmel → warme Sonne hebt sich ab
+const amb = new THREE.AmbientLight(0xf1ece6, 0.4);
 /* Lampen: je Raum eine warme Pendelleuchte; die Lichter bleiben immer in der Szene (Intensität 0 = aus),
  * damit beim Umschalten keine Shader neu kompiliert werden */
 const lamps = [];
@@ -1032,9 +996,9 @@ function placeSun() {
   // Sonnenmodus: Licht kommt nur durch die Fenster → Grundlicht etwas zurücknehmen; Dämmerung wärmer, Nacht kühl
   const low = clamp(elev / 12, 0, 1);
   sun.intensity = night ? 0.35 : sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
-  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.075, 0.95, sunMode.on ? 0.62 + 0.18 * low : 0.72); // nachts: kühles Mondlicht
+  if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74); // nachts: kühles Mondlicht
   hemi.intensity = night ? 0.32 : sunMode.on ? 0.85 : 0.62;
-  hemi.color.set(night ? 0xa9b8d4 : 0xf8eedf);
+  hemi.color.set(night ? 0xa9b8d4 : 0xeef3f8);
   amb.intensity = night ? 0.12 : sunMode.on ? 0.3 : 0.3;
   applyLamps(lampsOn());
   const d = THREE.MathUtils.degToRad(az - planUpDeg());
@@ -1051,7 +1015,7 @@ const sc = span * 0.85;
 Object.assign(sun.shadow.camera, { left: -sc, right: sc, top: sc, bottom: -sc, near: 0.5, far: span * 4 });
 sun.shadow.bias = -0.0008;
 sun.shadow.normalBias = 0.025;
-sun.shadow.radius = 4.5; // weichere Schattenkanten
+sun.shadow.radius = 3;
 scene.add(sun, sun.target);
 
 /* --- prozedurale Texturen (einmalig erzeugt, gecacht, ≤ 512 px) --- */
@@ -1075,7 +1039,7 @@ const oakTex = () => canvasTex('oak', 512, 2.4, (c, S, R) => {
     let x = -R() * 300;
     while (x < S) {
       const len = 200 + R() * 170;
-      const L = 66 + R() * 7, hue = 30 + R() * 5, sat = 50 + R() * 9; // honigfarbene Eiche
+      const L = 66 + R() * 7, hue = 31 + R() * 5, sat = 46 + R() * 10;
       for (const ox of [0, S]) {
         const x0 = x - ox; if (x0 + len < 0 || x0 > S) continue;
         c.fillStyle = hsl(hue, sat, L); c.fillRect(x0, j * rh, len, rh);
@@ -1204,7 +1168,7 @@ const plateSideMat = new THREE.MeshStandardMaterial({ color: 0x9d7556, roughness
 }
 
 // Sockel nur unter Räumen und Wänden (nicht unter dem Treppenhaus / Bounding-Box)
-const slabMat = new THREE.MeshStandardMaterial({ color: 0xe0d3bf, roughness: 1 });
+const slabMat = new THREE.MeshStandardMaterial({ color: 0xeadfce, roughness: 1 });
 function buildSlab() {
   const SL = 0.185; // reicht bis in die Bodenplatte
   rooms.forEach((r) => {
@@ -1243,7 +1207,7 @@ function floorKind(r) {
 }
 /* Wohnung gestalten: Böden und Wandfarben je Raum */
 const FLOOR_OPTS = [
-  { id: 'oak', name: 'Eiche honig', tex: () => oakTex(), color: 0xf3e6d3, rough: 0.88 },
+  { id: 'oak', name: 'Eiche hell', tex: () => oakTex(), color: 0xf6eee4, rough: 0.85 },
   { id: 'oakdark', name: 'Eiche dunkel', tex: () => oakTex(), color: 0x9c7c62, rough: 0.8 },
   { id: 'herring', name: 'Fischgrät', tex: () => herringTex(), color: 0xffffff, rough: 0.75 },
   { id: 'tile', name: 'Fliesen hell', tex: () => tileTex(), color: 0xffffff, rough: 0.7 },
@@ -1251,7 +1215,7 @@ const FLOOR_OPTS = [
   { id: 'concrete', name: 'Estrich', tex: () => concreteTex(), color: 0xffffff, rough: 0.9 },
 ];
 const WALL_OPTS = [
-  { id: 'alt', name: 'Kalkstein', c: '#eee4d3' }, { id: 'kalk', name: 'Kalkweiß', c: '#eeeeea' }, { id: 'grau', name: 'Hellgrau', c: '#d9d6d0' },
+  { id: 'alt', name: 'Altweiß', c: '#f6efe4' }, { id: 'kalk', name: 'Kalkweiß', c: '#eeeeea' }, { id: 'grau', name: 'Hellgrau', c: '#d9d6d0' },
   { id: 'sand', name: 'Sand', c: '#ead6b4' }, { id: 'salbei', name: 'Salbei', c: '#c6d0b8' }, { id: 'rose', name: 'Rosé', c: '#ebcfc4' },
   { id: 'blau', name: 'Taubenblau', c: '#c2ccd6' }, { id: 'tanne', name: 'Tannengrün', c: '#8a9c8b' },
 ];
@@ -1496,11 +1460,26 @@ function itemCanvas(it, k = ITEM_PX) {
 }
 const itemObjs = new Map(); // id -> mesh (Planzeichen am Boden)
 const item3d = new Map();   // id -> Group (weißer, durchscheinender Baukörper wie im Architekturmodell)
-const massMat = new THREE.MeshStandardMaterial({ color: 0xefe5d4, roughness: 0.92, transparent: true, opacity: 0.85 }); // weiche, warme Polster-/Leinentöne
+const massMat = new THREE.MeshStandardMaterial({ color: 0xfffdf9, roughness: 0.85, transparent: true, opacity: 0.8 });
+const massSelMat = new THREE.MeshStandardMaterial({ color: 0xd9ecd9, roughness: 0.85, transparent: true, opacity: 0.9 });
 const massEdge = new THREE.LineBasicMaterial({ color: 0xa8968a, transparent: true, opacity: 0.55 });
+// Höhenbereich je Möbeltyp (Regler in „Wohnung gestalten“); ohne eigenen Wert gilt FURN.h
+const FURN_HR = { sofa: [0.6, 1.1], sessel: [0.6, 1.2], bett: [0.3, 0.8], tisch: [0.6, 1.1], rund: [0.6, 1.1], couchtisch: [0.25, 0.6],
+  schreib: [0.6, 1.25], regal: [0.3, 2.6], schrank: [0.8, 2.6], kommode: [0.4, 1.4] };
+const itemH = (it) => (Number.isFinite(it.h) ? it.h : (FURN[it.type] && FURN[it.type].h) || 0);
 // Teile in lokalen Koordinaten: x = Breite, z = Tiefe (Rückseite bei −d/2), y = Höhe; [x, y, z, w, h, d]
 function itemParts(it) {
-  const w = it.w, d = it.d, P = [], t = it.type, H = (h) => Math.min(h, CUT - 0.01);
+  const P = itemPartsBase(it), F = FURN[it.type];
+  // Polstermöbel/Bett: ganzes Teil in der Höhe skalieren
+  if ((it.type === 'sofa' || it.type === 'sessel' || it.type === 'bett') && F.h) {
+    const k = itemH(it) / F.h;
+    for (const q of P) if (q[0] !== 'cyl') { q[1] *= k; q[4] *= k; }
+  }
+  return P;
+}
+function itemPartsBase(it) {
+  // im Schnitt-Modus enden Kastenmöbel an der Schnitthöhe, im Diorama in voller Höhe
+  const w = it.w, d = it.d, P = [], t = it.type, H = (h) => (state.wallMode === 'cut' ? Math.min(h, CUT - 0.01) : h);
   const leg = (x, z, h) => P.push([x, h / 2, z, 0.045, h, 0.045]);
   const chair = (x, z, a) => { const c = 0.42, ca = Math.cos(a), sa = Math.sin(a); P.push([x, 0.23, z, c, 0.46, c]); P.push([x - sa * 0.19, 0.62, z - ca * 0.19, Math.abs(ca) > 0.5 ? c : 0.05, 0.32, Math.abs(ca) > 0.5 ? 0.05 : c]); };
   if (t === 'sofa' || t === 'sessel') {
@@ -1522,7 +1501,7 @@ function itemParts(it) {
     return P;
   }
   if (t === 'tisch' || t === 'couchtisch' || t === 'schreib') {
-    const h = FURN[t].top, i = 0.06;
+    const h = itemH(it), i = 0.06;
     P.push([0, h - 0.02, 0, w, 0.04, d]);
     for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) leg(sx * (w / 2 - i), sz * (d / 2 - i), h - 0.04);
     if (t === 'tisch') { const n = Math.max(1, Math.round(w / 0.65)); for (let k = 0; k < n; k++) { const x = -w / 2 + w * (k + 0.5) / n; chair(x, -d / 2 - 0.12, 0); chair(x, d / 2 + 0.12, Math.PI); } }
@@ -1530,13 +1509,14 @@ function itemParts(it) {
     return P;
   }
   if (t === 'rund') {
-    P.push(['cyl', 0.73, 0, w / 2, 0.04]); P.push(['cyl', 0.36, 0, 0.06, 0.7]);
+    const h = itemH(it);
+    P.push(['cyl', h - 0.02, 0, w / 2, 0.04]); P.push(['cyl', (h - 0.04) / 2, 0, 0.06, h - 0.04]);
     const n = w > 1.0 ? 5 : 4;
     for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2 - Math.PI / 2, r = w / 2 + 0.14, ux = Math.cos(a), uz = Math.sin(a); chair(ux * r, uz * r, Math.atan2(-ux, -uz)); }
     return P;
   }
   // Kastenmöbel (Regal, Schrank, Kommode): bis zur Schnitthöhe
-  P.push([0, H(FURN[t].h) / 2, 0, w, H(FURN[t].h), d]);
+  P.push([0, H(itemH(it)) / 2, 0, w, H(itemH(it)), d]);
   return P;
 }
 function buildItem3d(it) {
@@ -1558,7 +1538,7 @@ function buildItem3d(it) {
   return g;
 }
 // Ablageflächen für Pflanzen (Tische, Regal, Kommode)
-const surfaceTop = (it) => (it && FURN[it.type] && FURN[it.type].top) || 0;
+const surfaceTop = (it) => (it && FURN[it.type] && FURN[it.type].top ? Math.min(itemH(it), state.wallMode === 'cut' && !['tisch', 'rund', 'couchtisch', 'schreib'].includes(it.type) ? CUT - 0.01 : 9) : 0);
 function insideItem(it, x, y, m = 0) {
   const c = Math.cos(it.rot || 0), s2 = Math.sin(it.rot || 0), dx = x - it.x, dy = y - it.y;
   const u = dx * c + dy * s2, v = -dx * s2 + dy * c;
@@ -1588,7 +1568,13 @@ function syncItem(it) {
   const o3 = item3d.get(it.id);
   if (o3) { scene.remove(o3); o3.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); item3d.delete(it.id); }
   if (!it._gone) { const g3 = buildItem3d(it); if (g3) { scene.add(g3); item3d.set(it.id, g3); } }
-  if (!it._gone) { const m = buildItemMesh(it); m.visible = !light.on; scene.add(m); itemObjs.set(it.id, m); } else itemObjs.delete(it.id);
+  if (!it._gone) {
+    const m = buildItemMesh(it); m.visible = !light.on;
+    // Unter 3D-Möbeln kein 2D-Planzeichen mehr (bleibt unsichtbar zum Antippen); Teppiche bleiben flach sichtbar
+    if (FURN[it.type] && !FURN[it.type].rug) m.material.visible = false;
+    scene.add(m); itemObjs.set(it.id, m);
+    if (design.on && design.sel === it.id) markSelItem();
+  } else itemObjs.delete(it.id);
   shadowsDirty();
 }
 function syncAllItems() {
@@ -1609,19 +1595,19 @@ function cleanDesign(d) {
     if (!it || !types.has(it.type)) continue;
     const n = (v, a, b, def) => (Number.isFinite(+v) ? clamp(+v, a, b) : def);
     out.items.push({ id: typeof it.id === 'string' ? it.id.slice(0, 40) : uid(), type: it.type, x: n(it.x, -50, 50, 0), y: n(it.y, -50, 50, 0),
-      w: n(it.w, 0.2, 6, 1), d: n(it.d, 0.2, 6, 1), rot: n(it.rot, -7, 7, 0), sizeIdx: Math.round(n(it.sizeIdx, 0, 9, 0)),
+      w: n(it.w, 0.2, 6, 1), d: n(it.d, 0.2, 6, 1), rot: n(it.rot, -7, 7, 0), sizeIdx: Math.round(n(it.sizeIdx, 0, 9, 0)), h: Number.isFinite(+it.h) && it.h !== null ? clamp(+it.h, 0.1, 3) : undefined,
       style: typeof it.style === 'string' ? it.style.slice(0, 20) : undefined });
   }
   return out;
 }
 // Walls with openings
 // Spielzeug-Wände: warmes Off-White, Schnittkante als leicht breitere, abgerundete Kappe (keine schwarzen Kanten)
-const wallSideMat = new THREE.MeshStandardMaterial({ color: 0xeee4d3, roughness: 0.95 }); // warmer Kalkstein-Putz
-const wallTopMat = new THREE.MeshStandardMaterial({ color: 0xf4ede1, roughness: 0.95 });
-const capMat = new THREE.MeshStandardMaterial({ color: 0xf6f0e6, roughness: 0.9 });
+const wallSideMat = new THREE.MeshStandardMaterial({ color: 0xf6efe4, roughness: 0.9 });
+const wallTopMat = new THREE.MeshStandardMaterial({ color: 0xfdf8f0, roughness: 0.9 });
+const capMat = new THREE.MeshStandardMaterial({ color: 0xfffbf4, roughness: 0.8 });
 const CAP_3D = new THREE.Color(0xfffbf4), CAP_TOP = new THREE.Color(0xf4ebdd); // Draufsicht: etwas dunkler, damit der Plan liest
 const glassMat = new THREE.MeshStandardMaterial({ color: 0xd6ecf6, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.5, depthWrite: false });
-const frameMat = new THREE.MeshStandardMaterial({ color: 0xcfae84, roughness: 0.75 }); // Eichenrahmen
+const frameMat = new THREE.MeshStandardMaterial({ color: 0xe6d3b8, roughness: 0.7 });
 const CAP_B = 0.012, CAP_OVER = 0.008; // Fase, Überstand je Seite
 // Draufsicht: weiche taupe Kante um die Wandkappen (nur dort sichtbar, damit der Plan liest; 3D ohne Konturen)
 const edgeMat = new THREE.MeshBasicMaterial({ color: 0xa88f76 });
@@ -1638,7 +1624,7 @@ const aoGeo = (() => { const g = new THREE.PlaneGeometry(1, AO_W); g.rotateX(-Ma
 const aoMat = (() => {
   const cv = document.createElement('canvas'); cv.width = 4; cv.height = 64;
   const g = cv.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 64);
-  gr.addColorStop(0, 'rgba(70,48,30,0.32)'); gr.addColorStop(0.35, 'rgba(70,48,30,0.11)'); gr.addColorStop(1, 'rgba(70,48,30,0)');
+  gr.addColorStop(0, 'rgba(70,48,30,0.26)'); gr.addColorStop(0.35, 'rgba(70,48,30,0.09)'); gr.addColorStop(1, 'rgba(70,48,30,0)');
   g.fillStyle = gr; g.fillRect(0, 0, 4, 64);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
   return new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
@@ -2392,7 +2378,7 @@ function buildBuilding() {
     const sill = o.type === 'window' ? (+o.sill || 0.9) : 0;
     return { x: (o.a[0] + o.b[0]) / 2 + n[0] * off, y: (o.a[1] + o.b[1]) / 2 + n[1] * off, rot: Math.atan2(n[0], n[1]), w: L, sill, h: Math.min(+o.height || (o.type === 'window' ? 1.4 : 2.1), SH - 0.5 - sill) };
   });
-  const FAC = new THREE.Color(0xe6dccb), BGC = new THREE.Color(0xe9dfce); // Fassade läuft ins warme Papier des Hintergrunds aus
+  const FAC = new THREE.Color(0xeee6da), BGC = new THREE.Color(0xd3dbe3); // Fassade → kühles Offwhite des Hintergrunds
   const SLAB_BOT = -0.19, GAP = 0.035; // Unterkante Bodenplatte der Wohnung; feine Geschossfuge
   const floorH = SH - GAP;
   const geoF = nBelow ? fpGeo(floorH) : null;
@@ -3564,8 +3550,6 @@ function openSettings() {
         <div class="pf-segs" id="st-wm"><button data-m="diorama" class="${state.wallMode !== 'cut' ? 'on' : ''}">Diorama</button><button data-m="cut" class="${state.wallMode === 'cut' ? 'on' : ''}">Schnitt</button></div></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div style="min-width:0"><b>Lampen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Auto: an ab Sonnenuntergang</p></div>
         <div class="pf-segs" id="st-lamps">${[['auto', 'Auto'], ['on', 'An'], ['off', 'Aus']].map(([k, t]) => `<button data-m="${k}" class="${state.lamps === k ? 'on' : ''}">${t}</button>`).join('')}</div></div>
-      <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Umgebungsverdeckung</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Leichte Schatten in Ecken und am Wandfuß</p></div>
-        <button class="pf-switch" id="st-ao" role="switch" aria-checked="${state.ao}" aria-label="Umgebungsverdeckung"></button></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Pflanzennamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Aus: nur kleine Symbole an den Pflanzen</p></div>
         <button class="pf-switch" id="st-pnames" role="switch" aria-checked="${state.showPlantNames}" aria-label="Pflanzennamen anzeigen"></button></div>
       <div class="pf-tg" style="border-top:1px solid var(--soft)"><div><b>Raumnamen anzeigen</b><p style="margin:2px 0 0;font-size:12.5px;color:var(--ink3)">Namen und Flächen im Grundriss</p></div>
@@ -3597,16 +3581,13 @@ function openSettings() {
     state.wallMode = b.dataset.m; save();
     $('st-wm').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
     $('st-wm-h').textContent = state.wallMode === 'cut' ? 'Alle Wände auf 1,2 m geschnitten' : 'Hintere Außenwände in voller Höhe';
-    requestRender();
+    syncAllItems(); state.plants.forEach(syncPlantObj); requestRender();
   }));
   $('st-lamps').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
     state.lamps = b.dataset.m; save();
     $('st-lamps').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
     placeSun(); shadowsDirty();
   }));
-  $('st-ao').addEventListener('click', () => {
-    state.ao = !state.ao; save(); $('st-ao').setAttribute('aria-checked', String(state.ao)); applyAO();
-  });
   $('st-pnames').addEventListener('click', () => {
     state.showPlantNames = !state.showPlantNames; save();
     $('st-pnames').setAttribute('aria-checked', String(state.showPlantNames)); applyPlantNames();
@@ -3855,6 +3836,7 @@ function endDesign() {
 }
 function markSelItem() {
   for (const [id, m] of itemObjs) m.material.color.set(design.on && id === design.sel ? 0xd9ecd9 : 0xffffff);
+  for (const [id, g] of item3d) { const on = design.on && id === design.sel; g.traverse((o) => { if (o.isMesh) o.material = on ? massSelMat : massMat; }); }
   requestRender();
 }
 function setDesignSub(t) { $('ds-sub').textContent = t; }
@@ -3870,7 +3852,12 @@ function renderDesign() {
       const styles = F.rug ? `<div class="row"><span class="lab">Farbe</span>${RUG_STYLES.map((st) => st.id === 'muster'
         ? `<button class="chip${it.style === 'muster' ? ' on' : ''}" data-style="muster">Muster</button>`
         : `<button class="sw${it.style === st.id ? ' on' : ''}" data-style="${st.id}" style="background:${st.c}" aria-label="${st.id}"></button>`).join('')}</div>` : '';
-      body = `<div class="ttl">${esc(F.name)}<small><button class="chip" data-desel="1" style="height:28px;padding:0 11px">＋ Weiteres Möbel</button></small></div>${sizes}${styles}
+      const round = it.type === 'rund' || it.type === 'teppichrund', cm = (v) => Math.round(v * 100);
+      const rng = (k, lab, v, a, b) => `<label class="pf-dsr"><span>${lab}</span><input type="range" data-dim="${k}" min="${cm(a)}" max="${cm(b)}" step="5" value="${cm(v)}"><b id="ds-v-${k}">${cm(v)} cm</b></label>`;
+      const maxW = F.rug ? 4 : 3.2;
+      const dims = (round ? rng('w', 'Ø', it.w, 0.5, maxW) : rng('w', 'Breite', it.w, 0.3, maxW) + rng('d', 'Tiefe', it.d, 0.25, F.rug ? 4 : 2.2))
+        + (F.rug ? '' : rng('h', 'Höhe', itemH(it), ...(FURN_HR[it.type] || [0.3, 2.4])));
+      body = `<div class="ttl">${esc(F.name)}<small><button class="chip" data-desel="1" style="height:28px;padding:0 11px">＋ Weiteres Möbel</button></small></div>${sizes}<div class="pf-dsdims">${dims}</div>${styles}
         <div class="acts"><button data-act="rot">↻ Drehen</button><button data-act="dup">Duplizieren</button><button data-act="del" class="del">Löschen</button></div>`;
       setDesignSub(`${F.name} ausgewählt · ziehen zum Verschieben`);
     } else {
@@ -3892,7 +3879,21 @@ function renderDesign() {
     }
   }
   el.innerHTML = seg + body;
+  el.querySelectorAll('input[data-dim]').forEach(pct);
 }
+// Maß-Regler: live anpassen, beim Loslassen speichern
+$('pf-ds').addEventListener('input', (e) => {
+  const r = e.target.closest('input[data-dim]'); if (!r) return;
+  const it = design.sel ? itemById(design.sel) : null; if (!it) return;
+  const v = +r.value / 100, k = r.dataset.dim;
+  if (k === 'w') { it.w = v; if (it.type === 'rund' || it.type === 'teppichrund') it.d = v; }
+  else if (k === 'd') it.d = v; else it.h = v;
+  const lab = $('ds-v-' + k); if (lab) lab.textContent = Math.round(v * 100) + ' cm';
+  pct(r);
+  syncItem(it); for (const p of plantsOn(it.id)) syncPlantObj(p);
+  requestRender();
+});
+$('pf-ds').addEventListener('change', (e) => { if (e.target.closest('input[data-dim]')) { save(); shadowsDirty(); } });
 $('pf-ds').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const d = b.dataset;
@@ -3909,7 +3910,7 @@ $('pf-ds').addEventListener('click', (e) => {
   }
   const it = design.sel ? itemById(design.sel) : null; if (!it) return;
   if (d.size != null) {
-    const z = FURN[it.type].sizes[+d.size]; it.sizeIdx = +d.size; it.w = z[0]; it.d = z[1];
+    const z = FURN[it.type].sizes[+d.size]; it.sizeIdx = +d.size; it.w = z[0]; it.d = z[1]; delete it.h;
   } else if (d.style) it.style = d.style;
   else if (d.act === 'rot') {
     it.rot = ((it.rot || 0) + Math.PI / 2) % (Math.PI * 2);
@@ -4793,12 +4794,6 @@ function updateHint() {
   const show = state.plants.length === 0 && !draft && !selected;
   $('pf-hint').classList.toggle('hide', !show);
 }
-function applyAO() {
-  applyPaperChunks(state.ao);
-  aoMat.opacity = state.ao ? 1 : 0.75; // Kontaktstreifen am Boden etwas kräftiger mit AO
-  scene.traverse((o) => { if (o.material) [].concat(o.material).forEach((m) => { m.needsUpdate = true; }); });
-  shadowsDirty(); requestRender();
-}
 function applyPlantNames() {
   appEl.classList.toggle('pf-nonames', !state.showPlantNames);
   for (const el of miniBadges.values()) el._w = null; // Größe neu messen
@@ -4860,7 +4855,6 @@ lampsReady = true;
 placeSun(); // Nordrichtung aus dem Speicher
 state.plants.forEach(syncPlantObj);
 applyPlantNames();
-if (!state.ao) applyAO();
 new ResizeObserver(resize).observe(appEl);
 resize();
 {

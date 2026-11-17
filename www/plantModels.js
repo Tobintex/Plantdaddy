@@ -1489,7 +1489,7 @@ export function buildPlant(plantId, opts = {}) {
   let tris = (potGeo.index ? potGeo.index.count : potGeo.attributes.position.count) / 3 + soilGeo.index.count / 3;
   for (const p of e.parts) {
     const m = new THREE.Mesh(p.geo, MATS[p.mat]);
-    m.castShadow = false; m.receiveShadow = false; m.name = p.mat; m.userData.part = p.mat;
+    m.castShadow = true; m.receiveShadow = false; m.name = p.mat; m.userData.part = p.mat; // Blätter werfen Schatten
     g.add(m);
     tris += p.geo.index.count / 3;
   }
