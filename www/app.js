@@ -47,7 +47,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-badge.mini{background:rgba(245,240,231,.97);color:var(--ink);font-weight:600;font-size:11.5px;padding:3px 9px 3px 3px;box-shadow:0 2px 6px rgba(74,58,36,.16);
   pointer-events:auto;cursor:pointer;display:none;align-items:center;gap:4px;line-height:16px}
 .pf-badge.mini:after{border-top-color:rgba(245,240,231,.96)}
-.pf-badge.mini .e{width:22px;height:22px;border-radius:50%;background:var(--green-l);color:var(--olive);display:inline-flex;align-items:center;justify-content:center}
+.pf-badge.mini .e{width:24px;height:24px;border-radius:50%;background:transparent;color:var(--forest);display:inline-flex;align-items:center;justify-content:center}
 .pf-badge.mini .e svg{width:13px;height:13px}
 .pf-badge.mini .s{color:var(--ink3);font-weight:600}
 .pf-badge.mini.due{background:var(--blue);color:var(--ivory)}
@@ -56,7 +56,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-badge.mini.due .s{color:#d9dcc4}
 .pf-badge.mini.over{background:var(--blue-d)}
 .pf-badge.mini.over:after{border-top-color:var(--blue-d)}
-.pf-nonames .pf-badge.mini{padding:3px;border-radius:50%}
+.pf-nonames .pf-badge.mini{padding:5px;border-radius:50%}
+.pf-nonames .pf-badge.mini .e svg{width:16px;height:16px}
 .pf-nonames .pf-badge.mini b,.pf-nonames .pf-badge.mini .s{display:none}
 .pf-segs{display:inline-flex;flex:none;background:var(--soft);border-radius:999px;padding:3px}
 .pf-segs button{height:30px;padding:0 12px;border-radius:999px;font-weight:600;font-size:13px;color:var(--ink2)}
@@ -80,9 +81,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .pf-compass svg{width:32px;height:32px;transition:transform .08s linear}
 /* Kopfzeile: Kompass + Name + Adresse als ein Baustein */
 .pf-hgroup{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:rgba(245,240,231,.96);border-radius:24px;padding:4px 14px 4px 4px;box-shadow:var(--shadow)}
-.pf-cntbtn{height:48px;padding:0 12px 0 13px;gap:7px;color:var(--forest)}
+.pf-cntbtn{height:48px;padding:0 6px 0 6px;gap:8px;color:var(--ink);font-size:13.5px;font-weight:600}
+.pf-cntbtn .ic{width:36px;height:36px;border-radius:50%;background:var(--soft);color:var(--forest);display:flex;align-items:center;justify-content:center}
+.pf-hgroup .pf-title{border-left:1px solid var(--sand);padding-left:11px;min-width:0}
+.pf-hgroup .pf-title b,.pf-hgroup .pf-title span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-cntbtn .cnt{background:var(--olive)}
-.pf-rbtn{width:48px;height:48px;padding:0;color:var(--ink)}
+.pf-rbtn{position:absolute;right:calc(var(--sar) + 12px);top:calc(100% + 12px);width:46px;height:46px;padding:0;color:var(--ink);border-radius:50%}
 /* Untere Navigation: ein Container, gleich große Felder, aktiv = Oliv */
 .pf-nav{flex:1;max-width:460px;margin:0 auto;display:flex;gap:2px;background:rgba(245,240,231,.97);border-radius:24px;padding:5px;box-shadow:var(--shadow)}
 .pf-nav button{flex:1;min-width:0;height:52px;border-radius:19px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
@@ -319,6 +323,14 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-sp .tm button.on{background:var(--ink);color:var(--ivory)}
 .pf-sp input[type=range]{width:100%;accent-color:#e9a43c;margin:2px 0}
 .pf-vig{display:none}
+/* Zusammenhalt: dieselbe Papierstruktur liegt auch über der 3D-Szene, dazu weiches Fensterlicht über allem */
+.pf-gobo,.pf-grain{position:absolute;inset:0;pointer-events:none;transition:opacity .5s}
+.pf-gobo{background:url(textures/gobo.png) right top/cover no-repeat;mix-blend-mode:soft-light;opacity:1}
+.pf-grain{background:url(textures/grain.png) repeat;background-size:256px 256px;mix-blend-mode:soft-light;opacity:.9}
+#pf > canvas{filter:sepia(.16) saturate(.9) contrast(.97)}
+#pf.pf-night .pf-gobo{opacity:0}
+#pf.pf-night .pf-grain{opacity:.35}
+#pf.pf-night > canvas{filter:none}
 .pf-lr > span{flex:none;width:46px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .pf-ms{flex:1;display:flex;background:var(--soft);border-radius:999px;padding:3px;min-width:0}
 .pf-ms button{flex:1 1 0;min-width:0;height:28px;border-radius:999px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:background .15s,color .15s}
@@ -470,7 +482,7 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 `;
 
 const ICONS = {
-  leaf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19c3-4 6-7 10-9"/></svg>',
+  leaf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"/><path d="M12 12C12 8 9 5.5 4.5 5.5 4.5 9.5 7.5 12 12 12z"/><path d="M12 10c0-3.6 2.7-6 7-6 0 3.6-2.7 6-7 6z"/></svg>',
   cube: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
   plan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 12h8M11.5 3.5v13M15 12h5.5"/></svg>',
   close: '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -490,6 +502,8 @@ document.head.appendChild(styleEl);
 root.innerHTML = `
 <div id="pf">
   <div class="pf-vig"></div>
+  <div class="pf-gobo" aria-hidden="true"></div>
+  <div class="pf-grain" aria-hidden="true"></div>
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
     <div class="pf-hgroup">
@@ -500,7 +514,7 @@ root.innerHTML = `
     </button>
       <div class="pf-title"><b>Meine Wohnung</b><span id="pf-addr"></span></div>
     </div>
-    <button class="pf-btn pf-cntbtn" id="pf-list-btn" aria-label="Meine Pflanzen">${ICONS.leaf}<span class="cnt" id="pf-count">0</span></button>
+    <button class="pf-btn pf-cntbtn" id="pf-list-btn" aria-label="Meine Pflanzen"><span class="ic">${ICONS.leaf}</span><span class="lb">Pflanzen</span><span class="cnt" id="pf-count">0</span></button>
     <button class="pf-btn pf-rbtn" id="pf-reset" aria-label="Ansicht zurücksetzen">${ICONS.focus}</button>
   </div>
   <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe auf Boden oder Fenster, um zu pflanzen</div>
