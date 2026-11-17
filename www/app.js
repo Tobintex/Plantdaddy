@@ -35,8 +35,6 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 #pf::before{content:"";position:fixed;inset:0;pointer-events:none;background:url(textures/linen.png) repeat;background-size:256px 256px;transition:opacity .4s}
 #pf.pf-night::before{opacity:.06}
 #pf.pf-night{background:radial-gradient(130% 85% at 50% 42%,#3a4656 0%,#2a3442 55%,#1f2833 100%)}
-#pf.pf-night .pf-title b{color:#f3e7d3}
-#pf.pf-night .pf-title span{color:#a9b6c4}
 #pf canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;outline:none}
 .pf-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .pf-room{position:absolute;left:0;top:0;transform:translate(-50%,-50%);text-align:center;white-space:nowrap;
