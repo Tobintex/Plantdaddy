@@ -939,7 +939,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false; // nur bei Szenenänderung neu berechnen (s. shadowsDirty)
 renderer.shadowMap.needsUpdate = true;
-function shadowsDirty() { renderer.shadowMap.needsUpdate = true; dirty = true; }
+function shadowsDirty() { renderer.shadowMap.needsUpdate = true; dirty = true; if (lampsLit && typeof pickLampShadows === 'function') pickLampShadows(); }
 renderer.setClearColor(0x000000, 0);
 appEl.insertBefore(renderer.domElement, appEl.firstChild);
 
@@ -954,10 +954,23 @@ const amb = new THREE.AmbientLight(0xf1ece6, 0.4);
 const lamps = [];
 let lampsReady = false, lampsLit = null;
 const lampShadeMat = new THREE.MeshStandardMaterial({ color: 0xfff3dc, emissive: 0xffb866, emissiveIntensity: 2.2, roughness: 0.6 });
+/* Nachts: die Lampen in den Räumen mit den meisten Pflanzen werfen Schatten (Pflanzen, Töpfe, Möbel, Wände).
+ * Immer gleich viele Schatten-Lampen, damit beim Umschalten keine Shader neu kompiliert werden. */
+const LAMP_SHADOWS = 2;
+function pickLampShadows() {
+  if (!lamps.length) return;
+  const on = lampsLit === true;
+  const n = (l) => state.plants.filter((p) => pointInPoly(p.x, p.y, l.room.polygon)).length;
+  const order = lamps.map((l) => ({ l, n: n(l) })).sort((a, b) => b.n - a.n);
+  const k = Math.min(LAMP_SHADOWS, lamps.length);
+  order.forEach((o, i) => { o.l.light.castShadow = on && i < k; });
+  renderer.shadowMap.needsUpdate = true;
+}
 function applyLamps(on) {
   if (!lampsReady || on === lampsLit) return;
   lampsLit = on;
   for (const l of lamps) { l.light.intensity = on ? l.power : 0; l.shade.visible = on; }
+  pickLampShadows();
   const glow = on ? 0.55 : 0;
   for (const wg of wallGroups) if (wg.glass) { wg.glass.emissive.set(0xffb15e); wg.glass.emissiveIntensity = glow; }
   glassMat.emissive.set(0xffb15e); glassMat.emissiveIntensity = glow;
@@ -997,7 +1010,7 @@ function placeSun() {
   const low = clamp(elev / 12, 0, 1);
   sun.intensity = night ? 0.35 : sunMode.on ? 3.1 * (0.35 + 0.65 * low) : 3.6;
   if (night) sun.color.set(0x9fb4d8); else sun.color.setHSL(0.085, 1, sunMode.on ? 0.62 + 0.18 * low : 0.74); // nachts: kühles Mondlicht
-  hemi.intensity = night ? 0.32 : sunMode.on ? 0.85 : 0.62;
+  hemi.intensity = night ? 0.4 : sunMode.on ? 0.85 : 0.62;
   hemi.color.set(night ? 0xa9b8d4 : 0xeef3f8);
   amb.intensity = night ? 0.12 : sunMode.on ? 0.3 : 0.3;
   applyLamps(lampsOn());
@@ -1300,7 +1313,10 @@ function buildLamps() {
     light.position.set(x, 2.0, y); scene.add(light);
     const shade = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 10), lampShadeMat);
     shade.position.set(x, 2.08, y); shade.visible = false; shade.raycast = () => {}; scene.add(shade);
-    lamps.push({ light, shade, power });
+    // Schatten der Lampe (nur Würfel-Shadowmap, klein; welche Lampen ihn werfen, entscheidet pickLampShadows)
+    light.shadow.mapSize.set(512, 512); light.shadow.bias = -0.006; light.shadow.normalBias = 0.045; light.shadow.radius = 3;
+    light.shadow.camera.near = 0.08; light.shadow.camera.far = light.distance;
+    lamps.push({ light, shade, power, room: r });
   }
 }
 buildLamps();
