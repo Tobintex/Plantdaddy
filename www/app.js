@@ -305,6 +305,29 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-dbn{position:absolute;left:12px;right:12px;top:calc(var(--sat) + 62px);margin:0 auto;max-width:420px;background:var(--blue);color:var(--ivory);
   border-radius:14px;padding:6px 6px 6px 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;box-shadow:var(--shadow);
   transition:opacity .25s,transform .25s}
+.pf-dbn{padding:9px 9px 9px 9px!important;gap:10px!important;border-radius:18px!important}
+.pf-dbn .d{width:34px;height:34px;border-radius:50%;background:rgba(245,240,231,.15);display:flex;align-items:center;justify-content:center;flex:none}
+.pf-dbn .d svg{width:16px;height:16px}
+.pf-dbn .t{flex:1;min-width:0;text-align:left;color:inherit;padding:0}
+.pf-dbn .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-dbn .t span{display:block;font-size:12.5px;opacity:.82;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-dbn #pf-dbn-go{background:var(--ivory)!important;color:var(--forest);padding:0 14px!important;height:40px;border-radius:999px;font-weight:700;font-size:13px;flex:none}
+#pf.pf-today .pf-rbtn{top:calc(100% + 80px)}
+.pf-rbtn{transition:top .25s}
+.pf-gear{color:var(--forest)}
+.pf-gear svg{width:21px;height:21px}
+/* Pflanzen-Fenster: Reiter Pflege / Einrichten */
+.pf-tabs{display:flex;gap:4px;background:var(--soft);border-radius:999px;padding:4px;margin:0 0 12px}
+.pf-tabs button{flex:1;height:40px;border-radius:999px;font:inherit;font-size:13.5px;font-weight:650;color:var(--ink2)}
+.pf-tabs button.on{background:var(--card);color:var(--forest);box-shadow:0 1px 3px rgba(74,58,36,.14)}
+#pf-sheet[data-tab=care] [data-pane=setup],#pf-sheet[data-tab=setup] [data-pane=care]{display:none!important}
+.pf-setup-note{font-size:12.5px;color:var(--ink3);margin:-4px 0 10px}
+/* größere Tippflächen (mind. 44 px) */
+.pf-x{width:44px!important;height:44px!important}
+#pf-sheet .pf-stand button{min-height:44px!important;padding:6px 8px!important}
+input[type=range]::-webkit-slider-thumb{width:30px!important;height:30px!important;margin-top:-12px!important}
+.pf-grab{padding:12px 0 8px!important}
+.pf-grab i{width:48px!important}
 .pf-dbn.hide{opacity:0;transform:translateY(-8px);pointer-events:none}
 .pf-dbn span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-dbn #pf-dbn-go{background:rgba(255,255,255,.2);padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px;flex:none}
@@ -510,11 +533,7 @@ root.innerHTML = `
   <div class="pf-overlay" id="pf-labels"></div>
   <div class="pf-top">
     <div class="pf-hgroup">
-    <button class="pf-compass" id="pf-compass" aria-label="Nordausrichtung einstellen">
-      <svg viewBox="0 0 40 40" id="pf-compass-svg"><circle cx="20" cy="20" r="17" fill="none" stroke="#dcd9d2" stroke-width="1.5"/>
-        <path d="M20 6l5 14h-10z" fill="#b5483a"/><path d="M20 34l5-14h-10z" fill="#c9c6bf"/>
-        <text x="20" y="5.2" text-anchor="middle" font-size="0" fill="#b5483a">N</text></svg>
-    </button>
+    <button class="pf-compass pf-gear" id="pf-compass" aria-label="Einstellungen"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       <div class="pf-title"><b>Meine Wohnung</b><span id="pf-addr"></span></div>
     </div>
     <button class="pf-btn pf-cntbtn" id="pf-list-btn" aria-label="Meine Pflanzen"><span class="ic">${ICONS.leaf}</span><span class="lb">Pflanzen</span><span class="cnt" id="pf-count">0</span></button>
@@ -523,7 +542,7 @@ root.innerHTML = `
   <div class="pf-hint hide" id="pf-hint"><span class="dot"></span>Tippe unten auf ＋ Neu, um eine Pflanze hinzuzufügen</div>
   <div class="pf-banner hide" id="pf-addb"><span>Tippe auf den Boden, ein Möbel oder ein Fenster, um die neue Pflanze hinzustellen</span><button id="pf-add-cancel">Abbrechen</button></div>
   <div class="pf-banner hide" id="pf-banner"><span>Tippe auf die neue Stelle – oder ein Fenster für die Fensterbank</span><button id="pf-move-cancel">Abbrechen</button></div>
-  <div class="pf-dbn hide" id="pf-dbn" role="status"><span id="pf-dbn-t"></span><button id="pf-dbn-go">Ansehen</button><button id="pf-dbn-x" aria-label="Hinweis schließen">${ICONS.close}</button></div>
+  <div class="pf-dbn hide" id="pf-dbn" role="status"><div class="d">${ICONS.drop}</div><button class="t" id="pf-dbn-open" aria-label="Fällige Pflanzen ansehen"><b id="pf-dbn-t"></b><span id="pf-dbn-s"></span></button><button id="pf-dbn-go">Gegossen</button></div>
   <div class="pf-toast hide" id="pf-toast"></div>
   <div class="pf-lp hide" id="pf-lp" aria-label="Lichtkarte">
     <div class="pf-lr"><span>Monat</span><div class="pf-ms" id="pf-lm"></div></div>
@@ -2632,7 +2651,7 @@ function updateOverlay() {
   const a = toScreen(new THREE.Vector3(c.x, 0, c.z));
   const b = toScreen(new THREE.Vector3(c.x + nx, 0, c.z + ny));
   const ang = Math.atan2(b.x - a.x, -(b.y - a.y)) * 180 / Math.PI;
-  $('pf-compass-svg').style.transform = `rotate(${ang.toFixed(1)}deg)`;
+  const csvg = $('pf-compass-svg'); if (csvg) csvg.style.transform = `rotate(${ang.toFixed(1)}deg)`;
   if (orient.on) drawRing(ang);
 }
 
@@ -2725,6 +2744,7 @@ function loop(now) {
   if (fx.length) { runFx(now); dirty = true; }
   stepSun(now);
   stepSky(now);
+  todayTick();
   // Wind: ~30 Bilder/s, nur wenn Pflanzen da sind und Bewegung an ist – und nur eine Weile nach einer Berührung,
   // danach klingt das Wiegen aus und die App zeichnet nichts mehr (Akku)
   if (motionOn() && (state.plants.length || draft) && now - lastWind >= 33) {
@@ -2965,12 +2985,18 @@ function renderSheet(isNew) {
       <div style="min-width:0;flex:1"><h2 id="s-name"></h2><p><span id="s-room"></span> · <i id="s-latin"></i></p></div>
       <button class="pf-x" id="s-close" aria-label="Schließen">${ICONS.close}</button>
     </div>
+    <div class="pf-tabs" role="tablist"><button type="button" role="tab" data-tabbtn="care">Pflege</button><button type="button" role="tab" data-tabbtn="setup">Einrichten</button></div>
+    <div data-pane="care">
     <div class="pf-result">
       <div id="s-result"></div>
       <div class="pf-due"><div class="d"><b id="s-due"></b><span id="s-last"></span></div>
         <button class="pf-water" id="s-water" type="button">✓ Gegossen</button></div>
       <div class="pf-fb" id="s-fb" hidden></div>
     </div>
+    <details class="pf-why" id="s-why"><summary>Wie wird das berechnet? · Pflege</summary><div id="s-why-body"></div><div class="pf-note" id="s-note"></div></details>
+    </div>
+    <div data-pane="setup">
+    <p class="pf-setup-note">${isNew ? 'Einmal einstellen – danach nur nach dem Umtopfen oder Umstellen nötig.' : 'Nur nach dem Umtopfen oder Umstellen nötig.'}</p>
     <div class="pf-field" style="border-top:0">
       <div class="lbl pf-sthead"><label for="s-stand">Standhöhe <span class="val" id="s-stand-v"></span></label>
         <button class="pf-bp" id="s-best" type="button">${ICONS.sun}Beste Plätze zeigen</button></div>
@@ -2989,13 +3015,20 @@ function renderSheet(isNew) {
       <label for="s-h"><span class="ln">Höhe <span class="val" id="s-h-v"></span></span><span class="hint">(ab Topfrand)</span></label>
       <input type="range" id="s-h" min="10" max="250" step="5" value="${p.plantHeightCm}">
     </div>
-    <details class="pf-why" id="s-why"><summary>Wie wird das berechnet? · Pflege</summary><div id="s-why-body"></div><div class="pf-note" id="s-note"></div></details>
+    </div>
     </div><div class="pf-actions sticky">
-      <button class="pf-act danger" id="s-del">Löschen</button>
-      <button class="pf-act ghost" id="s-move">Verschieben</button>
+      <button class="pf-act danger" id="s-del" data-pane="setup">Löschen</button>
+      <button class="pf-act ghost" id="s-move" data-pane="setup">Verschieben</button>
       <button class="pf-act primary" id="s-save">${isNew ? 'Speichern' : 'Fertig'}</button>
     </div>`;
   bindGrab(sheet);
+  // Reiter: neue Pflanzen starten bei „Einrichten“, bestehende bei „Pflege“
+  const setTab = (t) => {
+    sheet.dataset.tab = t;
+    sheet.querySelectorAll('[data-tabbtn]').forEach((b) => { const on = b.dataset.tabbtn === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  };
+  setTab(isNew ? 'setup' : 'care');
+  sheet.querySelector('.pf-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tabbtn]'); if (b) setTab(b.dataset.tabbtn); });
   const sel = $('s-plant'), pot = $('s-pot'), hh = $('s-h'), st = $('s-stand');
   pct(pot); pct(hh); pct(st);
   st.addEventListener('input', () => { p.onItem = undefined; p.standCm = +st.value; pct(st); syncPlantObj(p); updateSelection(); refreshSheet(); });
@@ -4895,18 +4928,32 @@ function openReminder(from) {
   renderReminder();
 }
 // Web: kompakter Hinweis beim Öffnen, wenn etwas fällig ist
-function hideDueBanner() { clearTimeout(dbnTimer); $('pf-dbn').classList.add('hide'); }
-function showDueBanner() {
-  if (nativeLN() && state.reminder.on) return;
-  const n = dueCount();
-  if (!n) return;
-  $('pf-dbn-t').textContent = `💧 ${n === 1 ? '1 Pflanze' : `${n} Pflanzen`} heute fällig`;
-  $('pf-dbn').classList.remove('hide');
-  clearTimeout(dbnTimer); dbnTimer = setTimeout(hideDueBanner, 9000);
+function hideDueBanner() { /* die Heute-Karte blendet sich selbst ein/aus (siehe todayTick) */ }
+function showDueBanner() { updateToday(); }
+// „Heute gießen“-Karte oben: bleibt sichtbar, solange etwas fällig ist
+let todayList = [], todayVis = false;
+function updateToday() {
+  todayList = state.plants.filter((p) => dueInfo(p, compute(p).r).due);
+  const n = todayList.length;
+  if (!n) { todayTick(); return; }
+  $('pf-dbn-t').textContent = `Heute gießen: ${n === 1 ? '1 Pflanze' : `${n} Pflanzen`}`;
+  const names = todayList.map((p) => p.nick || plantDef(p.plantId).name);
+  const ml = todayList.reduce((a, p) => { const r = compute(p).r; return a + (r && !isDip(r) ? +r.mlPerWatering || 0 : 0); }, 0);
+  const nm = names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2}` : names.join(', ');
+  $('pf-dbn-s').textContent = ml ? `${nm} · zusammen ca. ${ml >= 1000 ? (Math.round(ml / 100) / 10).toLocaleString('de-DE') + ' l' : fmtInt(ml) + ' ml'}` : nm;
+  todayTick();
 }
-$('pf-dbn-go').addEventListener('click', (e) => { e.stopPropagation(); hideDueBanner(); openList(); });
-$('pf-dbn-x').addEventListener('click', (e) => { e.stopPropagation(); hideDueBanner(); });
-appEl.addEventListener('pointerdown', (e) => { if (!e.target.closest('#pf-dbn')) hideDueBanner(); }, true);
+// pro Bild billig prüfen, ob die Karte gerade Platz hat (nicht bei offenem Fenster, Gestalten, Verschieben …)
+function todayTick() {
+  const vis = todayList.length > 0 && !selected && !moveMode && !addMode && !design.on && !orient.on
+    && !listSheet.classList.contains('open') && !setSheet.classList.contains('open');
+  if (vis === todayVis) return;
+  todayVis = vis;
+  $('pf-dbn').classList.toggle('hide', !vis);
+  appEl.classList.toggle('pf-today', vis);
+}
+$('pf-dbn-go').addEventListener('click', (e) => { e.stopPropagation(); waterPlants(todayList.slice()); });
+$('pf-dbn-open').addEventListener('click', (e) => { e.stopPropagation(); openList(); });
 function initNativeReminders() {
   const LN = nativeLN();
   if (!LN) return;
@@ -4943,6 +4990,7 @@ function updateCount() {
   c.textContent = n; c.classList.toggle('due', n > 0);
   $('pf-list-btn').setAttribute('aria-label', n ? `Meine Pflanzen – ${n} heute gießen` : 'Meine Pflanzen – nichts fällig');
   renderMiniBadges();
+  updateToday();
 }
 // Tageswechsel: Fälligkeiten neu berechnen
 let lastDay = dayNum(nowDate());
