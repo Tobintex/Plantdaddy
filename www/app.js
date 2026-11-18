@@ -453,6 +453,12 @@ input[type=range]::-webkit-slider-thumb{width:30px!important;height:30px!importa
 .pf-bkask>div{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .pf-bkask .pf-act{flex:0 0 auto;padding:0 16px}
 .pf-ds .chip.ok,.pf-ds .acts button.ok{background:var(--olive);color:var(--ivory)}
+.pf-nav{overflow:visible}
+.pf-nav button.pf-fab{flex:0 0 72px;background:transparent!important;overflow:visible}
+.pf-fab i{width:62px;height:62px;margin-top:-28px;border-radius:50%;background:var(--olive);color:var(--ivory);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(52,69,47,.35);border:4px solid var(--ivory);transition:transform .2s,background .2s}
+.pf-fab i svg{width:26px!important;height:26px!important}
+.pf-fab.on i{background:var(--forest);transform:rotate(45deg)}
 .pf-nav button.pf-addbtn .pl{width:26px;height:26px;margin:-3px 0 -1px;border-radius:50%;background:var(--olive);color:var(--ivory);display:flex;align-items:center;justify-content:center}
 .pf-nav button.pf-addbtn .pl svg{width:16px;height:16px}
 .pf-nav button.pf-addbtn.on .pl{background:var(--ivory);color:var(--olive)}
@@ -557,11 +563,10 @@ root.innerHTML = `
   </div>
   <div class="pf-bottom" id="pf-bottom">
     <nav class="pf-nav" aria-label="Ansicht">
-      <div id="pf-viewseg" style="display:contents"><button data-v="3d" class="on">${ICONS.cube}<span>3D</span></button><button data-v="top">${ICONS.plan}<span>Draufsicht</span></button></div>
-      <button class="pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte">${ICONS.sun}<span>Licht</span></button>
+      <div id="pf-viewseg" style="display:contents"><button data-v="3d" class="on">${ICONS.cube}<span>3D</span></button><button data-v="top">${ICONS.plan}<span>Plan</span></button></div>
+      <button class="pf-fab" id="pf-nav-add" aria-label="Pflanze hinzufügen"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i></button>
+      <button class="pf-lbtn" id="pf-light" aria-pressed="false" aria-label="Lichtkarte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17M14.8 3.5v17"/><rect x="14.8" y="3.5" width="5.7" height="5.7" fill="currentColor" stroke="none" opacity=".9"/><rect x="9.2" y="3.5" width="5.6" height="5.7" fill="currentColor" stroke="none" opacity=".5"/><rect x="14.8" y="9.2" width="5.7" height="5.6" fill="currentColor" stroke="none" opacity=".5"/></svg><span>Lichtkarte</span></button>
       <button class="pf-sbtn" id="pf-sun" aria-pressed="false" aria-label="Sonnenlauf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 6v2M5.6 9.6l1.4 1.4M18.4 9.6 17 11M2 14h2M20 14h2"/></svg><span>Sonne</span></button>
-      <button id="pf-nav-list" aria-label="Meine Pflanzen">${ICONS.leaf}<span>Pflanzen</span></button>
-      <button class="pf-addbtn" id="pf-nav-add" aria-label="Pflanze hinzufügen"><i class="pl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i><span>Neu</span></button>
     </nav>
   </div>
   <div class="pf-bb hide" id="pf-bb" role="status"><div class="pf-emoji" id="pf-bb-e"></div>
@@ -5162,7 +5167,6 @@ function renderMiniBadges() {
 }
 $('pf-addr').textContent = FP.name || '';
 $('pf-list-btn').addEventListener('click', openList);
-$('pf-nav-list').addEventListener('click', openList);
 $('pf-nav-add').addEventListener('click', () => (addMode ? endAdd() : startAdd()));
 $('pf-add-cancel').addEventListener('click', endAdd);
 $('pf-compass').addEventListener('click', openSettings);
