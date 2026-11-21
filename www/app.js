@@ -229,6 +229,11 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
 .pf-water:active{transform:scale(.96)}
 .pf-water.done{background:var(--card);color:var(--green-d);box-shadow:none;border:1px solid rgba(60,98,71,.25)}
 #pf-sheet .pf-field{padding:7px 0}
+.pf-wet{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:12.5px;color:var(--ink2)}
+.pf-wet[hidden]{display:none}
+.pf-wet button{flex:none;height:32px;padding:0 13px;border-radius:999px;border:1px solid rgba(47,116,208,.35);color:var(--blue);background:rgba(255,255,255,.7);font-weight:650;font-size:13px}
+.pf-wet button:active{transform:scale(.96)}
+.pf-wt{flex:none;height:30px;padding:0 10px;border-radius:999px;border:1px solid rgba(47,116,208,.35);color:var(--blue);font-weight:650;font-size:12px;background:none}
 .pf-fb{margin-top:9px;padding-top:9px;border-top:1px solid rgba(60,98,71,.14)}
 .pf-fb .q{font-size:13px;font-weight:650;color:var(--ink);display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .pf-fb .q small{font-weight:500;color:var(--ink2);font-size:11.5px;white-space:nowrap}
@@ -694,13 +699,14 @@ function dueInfo(p, r) {
   if (!r || !Number.isFinite(+r.intervalDays)) return { days: Infinity, due: false, text: '–', cls: '' };
   const iv = Math.max(1, Math.round(+r.intervalDays));
   const last = new Date(p.lastWateredAt || nowDate().toISOString());
-  const days = dayNum(last) + iv - dayNum(nowDate());
+  const shift = Math.max(0, Math.round(+p.dueShift || 0)); // „noch feucht“: Termin verschoben
+  const days = dayNum(last) + iv + shift - dayNum(nowDate());
   let text;
   if (days < 0) text = `${-days} T. überfällig`;
   else if (days === 0) text = 'heute fällig';
   else if (days === 1) text = 'morgen';
   else text = `in ${days} T.`;
-  return { days, due: days <= 0, text, cls: days < 0 ? 'over' : days === 0 ? 'due' : '', iv };
+  return { days, due: days <= 0, text, cls: days < 0 ? 'over' : days === 0 ? 'due' : '', iv, shift };
 }
 function agoText(iso) {
   const d = dayNum(nowDate()) - dayNum(new Date(iso));
@@ -739,6 +745,9 @@ function load() {
             onItem: typeof p.onItem === 'string' ? p.onItem.slice(0, 40) : undefined,
             waterAdj: Math.round(num(p.waterAdj, 1, ADJ_MIN, ADJ_MAX) * 100) / 100,
             fbAt: validIso(p.fbAt, Date.now() + 86400000),
+            ivAdj: Math.round(num(p.ivAdj, 1, IV_MIN, IV_MAX) * 100) / 100,
+            dueShift: Math.round(num(p.dueShift, 0, 0, 60)),
+            wetAt: validIso(p.wetAt, Date.now() + 86400000),
           };
         });
     }
@@ -924,15 +933,30 @@ function compute(p) {
 /* Rückmeldung „Wasser lief unten raus“: Faktor je Pflanze auf die Gießmenge.
  * Ziel: ca. 15 % Ablauf – dann ist der ganze Wurzelballen nass, aber nicht zu viel. */
 const ADJ_MIN = 0.4, ADJ_MAX = 1.8, RUNOFF_TARGET = 0.15;
+/* Rückmeldung „Erde noch feucht“: Faktor je Pflanze auf den Gießrhythmus (gelernt beim nächsten Gießen). */
+const IV_MIN = 0.5, IV_MAX = 2.5;
 const round10 = (v) => Math.round(v / 10) * 10;
 function applyAdj(p, r) {
-  const k = +p.waterAdj || 1;
-  r.mlBase = r.mlPerWatering;
-  if (isDip(r) || Math.abs(k - 1) < 0.005) { r.adj = 1; return r; }
-  r.adj = k;
-  r.mlPerWatering = Math.max(20, round10(r.mlBase * k));
-  r.mlPerWeek = Math.max(10, round10(r.mlPerWatering * 7 / Math.max(1, r.intervalDays)));
+  const k = +p.waterAdj || 1, ki = +p.ivAdj || 1;
+  r.mlBase = r.mlPerWatering; r.ivBase = r.intervalDays;
+  r.adj = 1; r.ivAdj = 1;
+  if (Math.abs(ki - 1) >= 0.005 && Number.isFinite(+r.intervalDays)) {
+    r.ivAdj = ki;
+    r.intervalDays = Math.max(1, Math.round(r.ivBase * ki));
+  }
+  if (!isDip(r) && Math.abs(k - 1) >= 0.005) {
+    r.adj = k;
+    r.mlPerWatering = Math.max(20, round10(r.mlBase * k));
+  }
+  if (!isDip(r) && (r.adj !== 1 || r.ivAdj !== 1)) r.mlPerWeek = Math.max(10, round10(r.mlPerWatering * 7 / Math.max(1, r.intervalDays)));
   return r;
+}
+// Wie lange „noch feucht“ den Termin schiebt: ca. 30 % des Rhythmus, 1–3 Tage
+const snoozeDaysFor = (iv) => clamp(Math.round(iv * 0.3), 1, 3);
+// neuer Rhythmus-Faktor aus der tatsächlichen Trocknungszeit (gedämpft: eine Beobachtung ist nur ein Hinweis)
+function ivAdjFromDry(k, iv, actualDays) {
+  const f = 1 + 0.7 * (clamp(actualDays / iv, 1, 2) - 1);
+  return Math.round(clamp(k * f, IV_MIN, IV_MAX) * 100) / 100;
 }
 // neuer Faktor aus gemessenem Ablauf (ml); 0 = nichts kam raus
 function adjFromRunoff(k, poured, runoff) {
@@ -2887,7 +2911,7 @@ const sheet = $('pf-sheet'), sheetBody = $('pf-sheet');
 function newPlant(x, y, plantId) {
   const lastId = state.lastPlantId && PLANTS.some((p) => p.id === state.lastPlantId) ? state.lastPlantId : (PLANTS[0] && PLANTS[0].id);
   const today = nowDate().toISOString();
-  return { uid: uid(), plantId: plantId || lastId, x, y, potDiameterCm: 18, plantHeightCm: 50, standCm: 0, lastWateredAt: today, waterLog: [today], nick: '', waterAdj: 1, fbAt: today }; // fbAt = heute: keine Ablauf-Frage direkt nach dem Platzieren
+  return { uid: uid(), plantId: plantId || lastId, x, y, potDiameterCm: 18, plantHeightCm: 50, standCm: 0, lastWateredAt: today, waterLog: [today], nick: '', waterAdj: 1, fbAt: today, ivAdj: 1, dueShift: 0 }; // fbAt = heute: keine Ablauf-Frage direkt nach dem Platzieren
 }
 function placeNew(x, y, item) {
   const p = newPlant(x, y);
@@ -2996,6 +3020,7 @@ function renderSheet(isNew) {
       <div id="s-result"></div>
       <div class="pf-due"><div class="d"><b id="s-due"></b><span id="s-last"></span></div>
         <button class="pf-water" id="s-water" type="button">✓ Gegossen</button></div>
+      <div class="pf-wet" id="s-wet" hidden><span>Erde oben noch feucht?</span><button type="button" id="s-wet-btn"></button></div>
       <div class="pf-fb" id="s-fb" hidden></div>
     </div>
     <details class="pf-why" id="s-why"><summary>Wie wird das berechnet? · Pflege</summary><div id="s-why-body"></div><div class="pf-note" id="s-note"></div></details>
@@ -3056,6 +3081,7 @@ function renderSheet(isNew) {
   hh.addEventListener('change', () => { cancelAnimationFrame(liveRaf); liveRaf = 0; syncPlantObj(p); refreshSheet(); });
   $('s-close').addEventListener('click', () => closeSheet());
   $('s-water').addEventListener('click', () => waterPlants([p]));
+  $('s-wet-btn').addEventListener('click', () => snoozePlants([p]));
   const nk = $('s-nick');
   nk.addEventListener('input', () => { p.nick = cleanNick(nk.value); $('s-name').textContent = p.nick || plantDef(p.plantId).name; });
   nk.addEventListener('change', () => { nk.value = p.nick; });
@@ -3123,19 +3149,22 @@ function resultHTML(r, a) {
   const w0 = (r.warnings || [])[0];
   const warn = w0 ? `<div class="pf-warn" title="${esc(w0)}">${ICONS.warn}<span>${esc(w0)}</span></div>` : '';
   const winChip = `<span class="pf-chip" id="s-win">${esc(windowText(a))}</span>`;
+  const ivChip = r.ivAdj && r.ivAdj !== 1 ? `<span class="pf-chip adj" title="Aus deiner Rückmeldung „noch feucht“">${ICONS.drop}Rhythmus angepasst</span>` : '';
   if (isDip(r)) return `<div class="big"><span class="ml dip">Tauchen</span> <span class="ival">· ${intervalText(r.intervalDays)}</span></div>
-    <div class="sub"><span>10 min in Wasser, dann abtropfen</span><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}</div>${warn}`;
+    <div class="sub"><span>10 min in Wasser, dann abtropfen</span><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}${ivChip}</div>${warn}`;
   const adjChip = r.adj && r.adj !== 1 ? `<span class="pf-chip adj" title="Aus deiner Rückmeldung zum Ablaufwasser">${ICONS.drop}angepasst ${pctTxt(r.adj)}</span>` : '';
   return `<div class="big"><span class="ml">${fmtInt(r.mlPerWatering)}<small> ml</small></span><span class="ival">${intervalText(r.intervalDays)}</span></div>
-    <div class="sub"><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}${adjChip}</div>${warn}`;
+    <div class="sub"><span class="pf-chip">${ICONS.sun}${esc(r.lightLabel || '')}</span>${winChip}${adjChip}${ivChip}</div>${warn}`;
 }
 function whyHTML(r) {
   if (!r) return '';
   const warn = (r.warnings || []).map((w) => `<div class="pf-warn">${ICONS.warn}<span>${esc(w)}</span></div>`).join('');
   const lines = [...(r.explanation || [])];
   if (r.adj && r.adj !== 1) lines.push(`Deine Rückmeldung zum Ablaufwasser: ${fmtInt(r.mlBase)} ml ${pctTxt(r.adj)} → ${fmtInt(r.mlPerWatering)} ml`);
+  if (r.ivAdj && r.ivAdj !== 1) lines.push(`Deine Rückmeldung „noch feucht“: ${intervalText(r.ivBase)} → ${intervalText(r.intervalDays)}`);
   if (r.mlPerWeek != null && !isDip(r)) lines.push(`≈ ${fmtInt(r.mlPerWeek)} ml pro Woche`);
-  const reset = r.adj && r.adj !== 1 ? '<button type="button" class="pf-mini" id="s-adj-reset">Anpassung zurücksetzen</button>' : '';
+  const reset = (r.adj && r.adj !== 1 ? '<button type="button" class="pf-mini" id="s-adj-reset">Menge zurücksetzen</button> ' : '')
+    + (r.ivAdj && r.ivAdj !== 1 ? '<button type="button" class="pf-mini" id="s-iv-reset">Rhythmus zurücksetzen</button>' : '');
   return `${warn}${lines.length ? `<ul>${lines.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${reset}`;
 }
 function refreshSheet() {
@@ -3157,14 +3186,24 @@ function refreshSheet() {
   $('s-why-body').innerHTML = whyHTML(r);
   const due = dueInfo(p, r);
   const db = $('s-due');
-  db.textContent = due.due ? (due.days < 0 ? `Gießen · ${due.text}` : 'Heute gießen') : `Nächstes Gießen ${due.text}`;
+  db.textContent = due.due ? (due.days < 0 ? `Gießen · ${due.text}` : 'Heute gießen') : due.shift ? `Nochmal prüfen ${due.text}` : `Nächstes Gießen ${due.text}`;
   db.className = due.cls || (due.due ? 'due' : '');
   const justNow = p.lastWateredAt && dayNum(new Date(p.lastWateredAt)) === dayNum(nowDate());
-  $('s-last').textContent = p.lastWateredAt ? `zuletzt gegossen: ${agoText(p.lastWateredAt)}` : '';
+  const wetNote = due.shift && p.wetAt ? ` · ${agoText(p.wetAt)} noch feucht` : '';
+  $('s-last').textContent = p.lastWateredAt ? `zuletzt gegossen: ${agoText(p.lastWateredAt)}${wetNote}` : '';
   $('s-water').classList.toggle('done', !due.due && !!justNow);
+  const wet = $('s-wet'), showWet = due.due && state.plants.includes(p);
+  wet.hidden = !showWet;
+  if (showWet) $('s-wet-btn').textContent = `Noch feucht · +${snoozeDaysFor(due.iv)} T.`;
   renderFeedback(p, r, !!justNow);
   const rs = $('s-adj-reset');
-  if (rs) rs.addEventListener('click', () => setAdj(p, 1, 'Anpassung zurückgesetzt'));
+  if (rs) rs.addEventListener('click', () => setAdj(p, 1, 'Menge zurückgesetzt'));
+  const ivr = $('s-iv-reset');
+  if (ivr) ivr.addEventListener('click', () => {
+    const k0 = p.ivAdj;
+    p.ivAdj = 1; save(); afterWaterChange();
+    toast('Rhythmus zurückgesetzt', () => { p.ivAdj = k0; save(); afterWaterChange(); });
+  });
   const bi = `<span class="bi">${plantIcon(def)}</span>`;
   badge.innerHTML = r ? (isDip(r) ? `${bi}Tauchen · ${esc(intervalText(r.intervalDays))}` : `${bi}${fmtInt(r.mlPerWatering)} ml · ${esc(intervalText(r.intervalDays))}`) : esc(def.name);
   updateDistLine(p);
@@ -3217,16 +3256,57 @@ function deleteSelected() {
 function waterPlants(list) {
   if (!list.length) return;
   const now = nowDate().toISOString();
-  const before = list.map((p) => ({ p, last: p.lastWateredAt, log: (p.waterLog || []).slice() }));
+  const before = list.map((p) => ({ p, last: p.lastWateredAt, log: (p.waterLog || []).slice(), sh: p.dueShift || 0, ki: p.ivAdj, wet: p.wetAt }));
+  const learned = [];
   for (const p of list) {
+    // War die Erde beim fälligen Termin noch feucht, ist die echte Trocknungszeit länger → Rhythmus lernen
+    const sh = Math.round(+p.dueShift || 0);
+    if (sh > 0 && p.lastWateredAt) {
+      const { r } = compute(p);
+      if (r && Number.isFinite(+r.intervalDays)) {
+        const iv = Math.max(1, Math.round(+r.intervalDays));
+        const actual = Math.min(dayNum(nowDate()) - dayNum(new Date(p.lastWateredAt)), iv + sh);
+        if (actual > iv) {
+          const k0 = +p.ivAdj || 1, k = ivAdjFromDry(k0, iv, actual);
+          if (k !== k0) {
+            p.ivAdj = k;
+            learned.push({ p, iv: Math.max(1, Math.round(compute(p).r.intervalDays)) });
+          }
+        }
+      }
+    }
+    p.dueShift = 0; p.wetAt = null;
     p.lastWateredAt = now;
     p.waterLog = [...(p.waterLog || []), now].slice(-10);
   }
   if (list.some((p) => state.plants.includes(p))) save();
   list.forEach((p, i) => waterFx(p, i * 140));
   afterWaterChange();
-  toast(list.length > 1 ? `${list.length} gegossen` : 'Gegossen', () => {
-    for (const b of before) { b.p.lastWateredAt = b.last; b.p.waterLog = b.log; }
+  let msg = list.length > 1 ? `${list.length} gegossen` : 'Gegossen';
+  if (learned.length === 1) msg += ` · ${learned[0].p.nick || plantDef(learned[0].p.plantId).name} künftig ${intervalText(learned[0].iv)}`;
+  else if (learned.length > 1) msg += ` · Rhythmus für ${learned.length} Pflanzen angepasst`;
+  toast(msg, () => {
+    for (const b of before) { b.p.lastWateredAt = b.last; b.p.waterLog = b.log; b.p.dueShift = b.sh; b.p.ivAdj = b.ki; b.p.wetAt = b.wet; }
+    save(); afterWaterChange();
+  });
+}
+// „Erde noch feucht“: Termin ein paar Tage schieben (mit Rückgängig). Gelernt wird erst beim nächsten Gießen.
+function snoozePlants(list) {
+  const items = list.map((p) => ({ p, d: dueInfo(p, compute(p).r) })).filter((x) => Number.isFinite(x.d.days));
+  if (!items.length) return;
+  const before = items.map(({ p }) => ({ p, sh: p.dueShift || 0, wet: p.wetAt }));
+  const now = nowDate().toISOString();
+  let S = 0;
+  for (const { p, d } of items) {
+    const s = snoozeDaysFor(d.iv);
+    S = Math.max(S, s);
+    p.dueShift = Math.min(60, (p.dueShift || 0) + Math.max(0, s - d.days));
+    p.wetAt = now;
+  }
+  if (items.some(({ p }) => state.plants.includes(p))) save();
+  afterWaterChange();
+  toast(`Noch feucht – ${S === 1 ? 'morgen' : `in ${S} Tagen`} nochmal prüfen`, () => {
+    for (const b of before) { b.p.dueShift = b.sh; b.p.wetAt = b.wet; }
     save(); afterWaterChange();
   });
 }
@@ -3666,6 +3746,7 @@ function renderList() {
         <div class="t"><b>${plantTitle(p, def)}</b><span>${esc(a.roomName || '–')}${a.outdoor ? '' : a.windowDistanceM != null ? ` · ${compassName(a.windowCompassDeg)}fenster ${fmt1(a.windowDistanceM)} m` : ' · ohne Fenster'}</span>${w0 ? `<span class="wn">⚠ ${esc(w0)}</span>` : ''}</div>
         <div class="w">${r ? `<b>${isDip(r) ? 'Tauchen' : fmtInt(r.mlPerWatering) + ' ml'}</b>` : ''}<span class="${due.cls || (due.due ? 'due' : '')}">${esc(due.text)}</span></div>
       </button>
+      ${due.due ? `<button class="pf-wt" data-wet="${esc(p.uid)}" aria-label="Erde noch feucht – in ${snoozeDaysFor(due.iv)} Tagen nochmal prüfen" title="Noch feucht">feucht</button>` : ''}
       <button class="pf-ck${due.due ? ' due' : ''}" data-water="${esc(p.uid)}" aria-label="Gegossen" title="Gegossen">✓</button>
     </div>`;
   };
@@ -3694,6 +3775,10 @@ function renderList() {
   body.querySelectorAll('[data-water]').forEach((b) => b.addEventListener('click', () => {
     const p = state.plants.find((q) => q.uid === b.dataset.water);
     if (p) waterPlants([p]);
+  }));
+  body.querySelectorAll('[data-wet]').forEach((b) => b.addEventListener('click', () => {
+    const p = state.plants.find((q) => q.uid === b.dataset.wet);
+    if (p) snoozePlants([p]);
   }));
 }
 
@@ -4323,7 +4408,8 @@ function waterSchedule(fromIso, toIso) {
     const r = it.r; if (!r || !Number.isFinite(+r.intervalDays)) continue;
     const iv = Math.max(1, Math.round(+r.intervalDays));
     const last = new Date(it.p.lastWateredAt || nowDate().toISOString()); last.setHours(12, 0, 0, 0);
-    let d = new Date(last.getTime() + iv * 864e5);
+    const shift = Math.max(0, Math.round(+it.p.dueShift || 0)); // „noch feucht“ verschoben
+    let d = new Date(last.getTime() + (iv + shift) * 864e5);
     if (d < from) d = new Date(from);
     const dates = [];
     while (d <= to) { dates.push(new Date(d)); d = new Date(d.getTime() + iv * 864e5); }
